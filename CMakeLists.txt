@@ -15,6 +15,10 @@ target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/g
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm)
 
+# stb_image
+add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image/stb_image.cpp)
+target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image)
+
 # Gather all source files in src/ recursively
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
@@ -22,4 +26,4 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRE
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
 
 add_executable(NineThousand ${SOURCES})
-target_link_libraries(NineThousand PRIVATE glfw glad glm)
+target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image)
