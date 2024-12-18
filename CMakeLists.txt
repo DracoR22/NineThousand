@@ -19,6 +19,11 @@ target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party
 add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image/stb_image.cpp)
 target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image)
 
+# assimp
+add_library(assimp STATIC IMPORTED)
+set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/lib/assimp-vc143-mtd.lib)
+target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/include)
+
 # Gather all source files in src/ recursively
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
@@ -26,4 +31,4 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRE
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
 
 add_executable(NineThousand ${SOURCES})
-target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image)
+target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp)
