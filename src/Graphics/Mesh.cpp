@@ -1,5 +1,35 @@
 #include "Mesh.h"
 
+std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
+	std::vector<Vertex> ret(noVertices);
+
+	/*int stride = sizeof(Vertex) / sizeof(float);*/
+
+	int stride = 8;
+
+	for (int i = 0; i < noVertices; i++) {
+		ret[i].Position = glm::vec3(
+			vertices[i * stride + 0],
+			vertices[i * stride + 1],
+			vertices[i * stride + 2]
+		);
+
+		ret[i].Normal = glm::vec3(
+			vertices[i * stride + 3],
+			vertices[i * stride + 4],
+			vertices[i * stride + 5]
+		);
+
+		ret[i].TexCoords = glm::vec2(
+			vertices[i * stride + 6],
+			vertices[i * stride + 7]
+		);
+	}
+
+	return ret;
+}
+
+
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
 	this->vertices = vertices;
 	this->indices = indices;
@@ -39,20 +69,26 @@ void Mesh::setupMesh() {
 void Mesh::draw(Shader& shader) {
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
-	for (unsigned int i = 0; i < textures.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-	
-		std::string number;
-		std::string name = textures[i].type;
-		if (name == "texture_diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (name == "texture_specular")
-			number = std::to_string(specularNr++);
 
-		shader.setInt(("material." + name + number).c_str(), i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+	for (unsigned int i = 0; i < textures.size(); i++) {
+		glActiveTexture(GL_TEXTURE0 + i);
+
+		std::string name;
+		switch (textures[i].type) {
+		case aiTextureType_DIFFUSE:
+			name = "diffuse" + std::to_string(diffuseNr++);
+			break;
+		case aiTextureType_SPECULAR:
+			name = "specular" + std::to_string(specularNr++);
+			break;
+		}
+
+		// set shader value
+		shader.setInt(name, i);
+
+		textures[i].bind();
 	}
+	
 	glActiveTexture(GL_TEXTURE0);
 
 	// draw mesh

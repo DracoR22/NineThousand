@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shader.h"
+#include "Texture.h"
 
 #include <glm/glm.hpp>
 
@@ -11,11 +12,8 @@ struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
-};
 
-struct Texture {
-	unsigned int id;
-	std::string type;
+	static std::vector<struct Vertex> genList(float* vertices, int noVertices);
 };
 
 class Mesh {
