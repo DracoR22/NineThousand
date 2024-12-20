@@ -4,7 +4,7 @@
 
 class Cube : public Model {
 public: 
-	Cube(glm::vec3 pos = glm::vec3(0.0f), glm::vec3(1.0f))
+	Cube(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f))
 		: Model(pos, size) {}
 
 	void init() {
@@ -60,11 +60,15 @@ public:
             indices[i] = i;
         }
 
-       Texture tex("assets/flag.png", "material.diffuse");
+      /* Texture tex("resources/textures/atlas.png", "material.diffuse");
        tex.load();
-       Texture tex_specular("assets/flag_specular.png", "material.specular");
-       tex_specular.load();
+       Texture tex_specular("resources/textures/atlas.png", "material.specular");
+       tex_specular.load();*/
 
-       meshes.push_back(Mesh(br, Vertex::genList(vertices, noVertices), indices));
+       meshes.push_back(Mesh(Vertex::genList(vertices, noVertices), indices));
 	}
+
+    void render(Shader shader) {
+        Model::draw(shader);
+    }
 };
