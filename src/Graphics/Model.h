@@ -23,15 +23,17 @@ public:
 	glm::vec3 size;
 
 	std::vector<Mesh> meshes;
+
+	void loadModel(std::string path);
+
+	void cleanup();
 private:
 	std::string directory;
 	std::vector<Texture> textures_loaded;
 	
-	void loadModel(std::string path);
 	void processNode(aiNode* node, const aiScene* scene);
 	
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
-
 };

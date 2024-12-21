@@ -27,6 +27,7 @@ public:
 
 	void draw(Shader& shader);
 
+	void cleanup();
 private:
 	unsigned int VAO, VBO, EBO;
 

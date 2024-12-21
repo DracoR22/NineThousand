@@ -28,13 +28,13 @@ set_target_properties(assimp PROPERTIES
 target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/include)
 
 
-# Gather all source files in src/ recursively
+# Link all files inside /src
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
-# Include the resources
+# Include resources folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
 
-# Define the executable
+# executable
 add_executable(NineThousand ${SOURCES})
 target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp)
 

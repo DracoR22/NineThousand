@@ -43,7 +43,8 @@ void Texture::load(bool flip) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 	else {
-		std::cout << "Failed to load texture" << std::endl;
+		std::cout << "Failed to load texture: " << (dir + "/" + path) << std::endl;
+		std::cout << "STB Image failure reason: " << stbi_failure_reason() << std::endl;
 	}
 
 	stbi_image_free(data);

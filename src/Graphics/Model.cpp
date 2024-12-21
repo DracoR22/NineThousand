@@ -139,3 +139,9 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 	return textures;
 }
 
+void Model::cleanup() {
+	for (Mesh mesh : meshes) {
+		mesh.cleanup();
+	}
+}
+

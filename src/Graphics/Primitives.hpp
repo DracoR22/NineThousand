@@ -60,15 +60,15 @@ public:
             indices[i] = i;
         }
 
-      /* Texture tex("resources/textures/atlas.png", "material.diffuse");
+       Texture tex("resources/textures/", "atlas.png", aiTextureType_DIFFUSE);
        tex.load();
-       Texture tex_specular("resources/textures/atlas.png", "material.specular");
-       tex_specular.load();*/
+       Texture tex_specular("resources/textures/", "atlas.png", aiTextureType_SPECULAR);
+       tex_specular.load();
 
        meshes.push_back(Mesh(Vertex::genList(vertices, noVertices), indices));
 	}
 
-    void render(Shader shader) {
+    void draw(Shader shader) {
         Model::draw(shader);
     }
 };
