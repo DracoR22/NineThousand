@@ -5,6 +5,7 @@
 
 #include "Graphics/Shader.h"
 #include "Graphics/Primitives.hpp"
+#include "Graphics/Cubemap.h"
 
 #include "Input/Camera.h"
 #include "Input/Keyboard.h"
@@ -60,12 +61,28 @@ int main() {
 
 	// shaders
 	Shader shader("resources/shaders/triangle.vs", "resources/shaders/triangle.fs");
+	Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 
-	Model m(glm::vec3(0.0f), glm::vec3(10.0f));
-	m.loadModel("resources/models/table/scene.gltf");
+	// skybox
+	CubeMap cubemap;
 
-	/*Cube cube(glm::vec3(0.0f), glm::vec3(0.75f));
-	cube.init();*/
+	std::vector<std::string> faces{
+		"resources/textures/right.jpg",
+		"resources/textures/left.jpg",
+		"resources/textures/top.jpg",
+		"resources/textures/bottom.jpg",
+		"resources/textures/front.jpg",
+		"resources/textures/back.jpg",
+	};
+
+	cubemap.loadTextures(faces);
+	cubemap.init();
+
+	/*Model m(glm::vec3(0.0f), glm::vec3(10.0f));
+	m.loadModel("resources/models/table/scene.gltf");*/
+
+	Cube cube(glm::vec3(0.0f), glm::vec3(0.75f));
+	cube.init();
 
 	float deltaTime = 0.0f;
 	float lastFrame = 0.0f;
@@ -87,20 +104,23 @@ int main() {
 		view = Camera::defaultCamera.getViewMatrix();
 		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
+		cubemap.render(skyboxShader, Camera::defaultCamera.getViewMatrix(), projection);
+
 		shader.activate();
 		shader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 
-		/*cube.draw(shader);*/
-		m.draw(shader);
+		cube.draw(shader);
+		/*m.draw(shader);*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	/*cube.cleanup();*/
-	m.cleanup();
+	cube.cleanup();
+	/*m.cleanup();*/
+	cubemap.cleanup();
 
 	glfwTerminate();
 	return 0;
