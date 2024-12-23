@@ -20,6 +20,8 @@ public:
 	void init();
 	void cleanup();
 
+	unsigned int getId() const;
+
 private:
 	unsigned int id;
 	unsigned int VAO, VBO;

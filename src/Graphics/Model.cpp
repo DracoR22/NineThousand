@@ -6,6 +6,16 @@ Model::Model(glm::vec3 pos, glm::vec3 size)
 }
 
 void Model::draw(Shader& shader) {
+	glm::mat4 model = glm::mat4(1.0f);
+
+	model = glm::translate(model, pos);
+	model = glm::scale(model, size);
+
+	// TODO: make this an argument
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	shader.setMat4("model", model);
+
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].draw(shader);
 }
@@ -20,7 +30,8 @@ void Model::loadModel(std::string path) {
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
         return;
     }
-    directory = path.substr(0, path.find_last_of('/'));
+   /* directory = path.substr(0, path.find_last_of('/'));*/
+	directory = "resources/textures";
 
     processNode(scene->mRootNode, scene);
 }
@@ -117,20 +128,22 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);
-		std::cout << str.C_Str() << std::endl;
+		std::string fullPath = str.C_Str();
+		std::string fileName = fullPath.substr(fullPath.find_last_of("/\\") + 1);
+		std::cout << "textures: " << fileName << std::endl;
 
 		// prevent duplicate loading
 		bool skip = false;
-		for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
-				textures.push_back(textures_loaded[j]);
+		for (const auto& loadedTex : textures_loaded) {
+			if (loadedTex.path == fileName) { // Compare file names
+				textures.push_back(loadedTex);
 				skip = true;
 				break;
 			}
 		}
 
 		if (!skip) {
-			Texture tex(directory, str.C_Str(), type);
+			Texture tex(directory, fileName, type);
 			tex.load(false);
 			textures.push_back(tex);
 			textures_loaded.push_back(tex);

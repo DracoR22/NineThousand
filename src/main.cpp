@@ -61,27 +61,32 @@ int main() {
 
 	// shaders
 	Shader shader("resources/shaders/triangle.vs", "resources/shaders/triangle.fs");
+	Shader cubeShader("resources/shaders/triangle.vs", "resources/shaders/triangle.fs");
 	Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
+	Shader mirrorShader("resources/shaders/mirror.vs", "resources/shaders/mirror.fs");
 
 	// skybox
 	CubeMap cubemap;
 
 	std::vector<std::string> faces{
-		"resources/textures/right.jpg",
-		"resources/textures/left.jpg",
-		"resources/textures/top.jpg",
-		"resources/textures/bottom.jpg",
-		"resources/textures/front.jpg",
-		"resources/textures/back.jpg",
+		"resources/textures/sky_right.jpg",
+		"resources/textures/sky_left.jpg",
+		"resources/textures/sky_top.jpg",
+		"resources/textures/sky_bottom.jpg",
+		"resources/textures/sky_front.jpg",
+		"resources/textures/sky_back.jpg",
 	};
 
 	cubemap.loadTextures(faces);
 	cubemap.init();
 
-	/*Model m(glm::vec3(0.0f), glm::vec3(10.0f));
+	/*Model m(glm::vec3(10.0f, 0.0f, 10.0f), glm::vec3(0.05f));
 	m.loadModel("resources/models/table/scene.gltf");*/
 
-	Cube cube(glm::vec3(0.0f), glm::vec3(0.75f));
+	Model troll(glm::vec3(0.0f), glm::vec3(0.05f));
+	troll.loadModel("resources/models/Glock.fbx");
+
+	Cube cube(glm::vec3(10.0f, 0.0f, 0.0f), glm::vec3(0.75f));
 	cube.init();
 
 	float deltaTime = 0.0f;
@@ -104,22 +109,36 @@ int main() {
 		view = Camera::defaultCamera.getViewMatrix();
 		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-		cubemap.render(skyboxShader, Camera::defaultCamera.getViewMatrix(), projection);
+	/*	cubeShader.activate();
+		cubeShader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+		cubeShader.setMat4("view", view);
+		cubeShader.setMat4("projection", projection);
+		cube.draw(cubeShader);*/
 
 		shader.activate();
 		shader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 
+		/*mirrorShader.activate();
+		mirrorShader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+		mirrorShader.setMat4("view", view);
+		mirrorShader.setMat4("projection", projection);
+		mirrorShader.*/
+
+	/*	m.draw(shader);*/
+		troll.draw(shader);
 		cube.draw(shader);
-		/*m.draw(shader);*/
+
+		cubemap.render(skyboxShader, Camera::defaultCamera.getViewMatrix(), projection);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	cube.cleanup();
-	/*m.cleanup();*/
+	//m.cleanup();
+	troll.cleanup();
 	cubemap.cleanup();
 
 	glfwTerminate();

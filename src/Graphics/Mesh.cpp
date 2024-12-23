@@ -88,13 +88,16 @@ void Mesh::draw(Shader& shader) {
 
 		textures[i].bind();
 	}
-	
-	glActiveTexture(GL_TEXTURE0);
 
 	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	for (unsigned int i = 0; i < textures.size(); i++) {
+		glBindTexture(GL_TEXTURE_2D, 0); // Unbind each texture
+	}
 }
 
 void Mesh::cleanup() {

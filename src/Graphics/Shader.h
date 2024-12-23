@@ -36,4 +36,7 @@ public:
 	//void set4Float(const std::string& name, aiColor4D color);
 	void set4Float(const std::string& name, glm::vec4 v);
 	void setMat4(const std::string& name, glm::mat4 val);
+
+	void setVec3(const std::string& name, float x, float y, float z);
+	void setVec3(const std::string& name, glm::vec3 value);
 };

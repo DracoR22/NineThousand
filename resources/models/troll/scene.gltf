@@ -1,0 +1,465 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 10414,
+      "max": [
+        199.50941467285156,
+        117.75025939941406,
+        49.82711410522461
+      ],
+      "min": [
+        -199.50941467285156,
+        -127.42281341552734,
+        -45.81058120727539
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 124968,
+      "componentType": 5126,
+      "count": 10414,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 10414,
+      "max": [
+        1.0,
+        0.9999961853027344,
+        0.9999551177024841,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.9999988675117493,
+        -0.9999549388885498,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 10414,
+      "max": [
+        0.9950528144836426,
+        0.9960604310035706
+      ],
+      "min": [
+        0.002987658604979515,
+        0.005398772656917572
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 52266,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 249936,
+      "componentType": 5126,
+      "count": 278,
+      "max": [
+        99.5603256225586,
+        295.97625732421875,
+        69.36619567871094
+      ],
+      "min": [
+        -99.5603256225586,
+        129.48599243164063,
+        -71.74918365478516
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 253272,
+      "componentType": 5126,
+      "count": 278,
+      "max": [
+        0.9916296005249023,
+        0.9826517105102539,
+        0.9991554617881775
+      ],
+      "min": [
+        -0.9916296005249023,
+        -0.9306194186210632,
+        -0.9993187189102173
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 166624,
+      "componentType": 5126,
+      "count": 278,
+      "max": [
+        0.8475827574729919,
+        0.9999947547912598,
+        0.9357848763465881,
+        1.0
+      ],
+      "min": [
+        -0.9805426001548767,
+        -0.9988608956336975,
+        -0.9740368127822876,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 83312,
+      "componentType": 5126,
+      "count": 278,
+      "max": [
+        0.9943640828132629,
+        0.9920995831489563
+      ],
+      "min": [
+        0.006753742694854736,
+        0.004854440689086914
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 85536,
+      "componentType": 5126,
+      "count": 278,
+      "max": [
+        0.9943640828132629,
+        0.9920995831489563
+      ],
+      "min": [
+        0.006753742694854736,
+        0.004854440689086914
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 209064,
+      "componentType": 5125,
+      "count": 1206,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Ole Gunnar Isager (https://sketchfab.com/FrenchBaguette)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/lotr-troll-for-animatingrigging-f4d777fd41d045fb8692f19f07b998fe",
+      "title": "LOTR Troll - (for animating/rigging)"
+    },
+    "generator": "Sketchfab-12.63.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 213888,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 87760,
+      "byteOffset": 213888,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 256608,
+      "byteOffset": 301648,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 171072,
+      "byteOffset": 558256,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 729328,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/TEX_Troll_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/TEX_Troll_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/TEX_Troll_emissive.jpeg"
+    },
+    {
+      "uri": "textures/TEX_Troll_normal.png"
+    },
+    {
+      "uri": "textures/TEX_pants_baseColor.png"
+    },
+    {
+      "uri": "textures/TEX_pants_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/TEX_pants_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissiveTexture": {
+        "index": 2
+      },
+      "name": "TEX_Troll",
+      "normalTexture": {
+        "index": 3
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "alphaCutoff": 0.5687881097560976,
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "TEX_pants",
+      "normalTexture": {
+        "index": 6
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 4
+        },
+        "metallicRoughnessTexture": {
+          "index": 5
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "polySurface7_TEX_Troll_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Pants_TEX_pants_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TANGENT": 7,
+            "TEXCOORD_0": 8,
+            "TEXCOORD_1": 9
+          },
+          "indices": 10,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "4a8a972e9a1b416da7c17879bb7c0d34.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        2.200000047683716,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.200000047683716,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.200000047683716,
+        0.0,
+        0.0,
+        280.5,
+        0.0,
+        1.0
+      ],
+      "name": "polySurface7"
+    },
+    {
+      "mesh": 0,
+      "name": "polySurface7_TEX_Troll_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "name": "group"
+    },
+    {
+      "children": [
+        7
+      ],
+      "name": "Pants"
+    },
+    {
+      "mesh": 1,
+      "name": "Pants_TEX_pants_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    },
+    {
+      "sampler": 0,
+      "source": 4
+    },
+    {
+      "sampler": 0,
+      "source": 5
+    },
+    {
+      "sampler": 0,
+      "source": 6
+    }
+  ]
+}

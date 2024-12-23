@@ -1,0 +1,11 @@
+Model Information:
+* title:	LOTR Troll - (for animating/rigging)
+* source:	https://sketchfab.com/3d-models/lotr-troll-for-animatingrigging-f4d777fd41d045fb8692f19f07b998fe
+* author:	Ole Gunnar Isager (https://sketchfab.com/FrenchBaguette)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "LOTR Troll - (for animating/rigging)" (https://sketchfab.com/3d-models/lotr-troll-for-animatingrigging-f4d777fd41d045fb8692f19f07b998fe) by Ole Gunnar Isager (https://sketchfab.com/FrenchBaguette) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -103,7 +103,7 @@ void CubeMap::init() {
 }
 
 void CubeMap::render(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection) {
-	glDepthMask(GL_FALSE);
+	glDepthFunc(GL_LEQUAL);
 	shader.activate();
 
 	// TODO: Change the Camera class and projection usage. Myabe create a Scene class or make it part of the Player class
@@ -117,11 +117,15 @@ void CubeMap::render(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection) 
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 
-	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
 }
 
 void CubeMap::cleanup() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteTextures(1, &id);
+}
+
+unsigned int CubeMap::getId() const {
+	return id;
 }
