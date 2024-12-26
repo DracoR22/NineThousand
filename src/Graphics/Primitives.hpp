@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include "Model.h"
 
@@ -60,15 +60,23 @@ public:
             indices[i] = i;
         }
 
-       Texture tex("resources/textures/", "atlas.png", aiTextureType_DIFFUSE);
-       tex.load();
-       Texture tex_specular("resources/textures/", "atlas.png", aiTextureType_SPECULAR);
-       tex_specular.load();
+        Texture diffuse("resources/textures", "atlas.png", aiTextureType_DIFFUSE);
+        diffuse.load(false);
 
-       meshes.push_back(Mesh(Vertex::genList(vertices, noVertices), indices));
+        Texture specular("resources/textures", "atlas.png", aiTextureType_SPECULAR);
+        specular.load(false);
+
+        if (diffuse.id) {
+            std::cout << "Cube diffuse texture loaded: " << diffuse.path << std::endl;
+        }
+        if (specular.id) {
+            std::cout << "Cube specular texture loaded: " << specular.path << std::endl;
+        }
+
+        Mesh cubeMesh(Vertex::genList(vertices, noVertices), indices);
+        cubeMesh.textures.push_back(diffuse);    // Add diffuse texture
+        cubeMesh.textures.push_back(specular);  // Add specular texture
+
+        meshes.push_back(cubeMesh);
 	}
-
-    void draw(Shader shader) {
-        Model::draw(shader);
-    }
 };

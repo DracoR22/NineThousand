@@ -26,6 +26,7 @@ public:
 	std::vector<Mesh> meshes;
 
 	void loadModel(std::string path);
+	void loadCubePrimitive(const std::string& texturePath);
 
 	void cleanup();
 private:
