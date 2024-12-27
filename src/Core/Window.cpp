@@ -9,7 +9,7 @@ namespace Window {
 
 	GLFWwindow* window = nullptr;
 
-	void init() {
+	void Init() {
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -24,7 +24,7 @@ namespace Window {
 		}
 
 		glfwMakeContextCurrent(window);
-		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+		glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
 		// inputs
 		glfwSetKeyCallback(window, Keyboard::keyCallback);
@@ -46,35 +46,39 @@ namespace Window {
 
 	}
 
-	void processEvents(double dt) {
-		processInput(dt);
+	void PrepareFrame() {
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void ProcessEvents() {
 		glfwSwapBuffers(Window::window);
 		glfwPollEvents();
 	}
 
-	bool windowShouldClose() {
+	bool WindowShouldClose() {
 		return glfwWindowShouldClose(window);
 	}
 
-	void setWindowShouldClose(bool shouldClose) {
+	void SetWindowShouldClose(bool shouldClose) {
 		glfwSetWindowShouldClose(Window::window, shouldClose);
 	}
 
-	void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
 		currentWidth = width;
 		currentHeight = height;
 
 		glViewport(0, 0, width, height);
 	}
 
-	void shutDown() {
+	void ShutDown() {
 		glfwTerminate();
 	}
 
 	// TODO: remove this shit, this need to be part of the player class instead
-	void processInput(double dt) {
+	void ProcessInput(double dt) {
 		if (Keyboard::key(GLFW_KEY_ESCAPE)) {
-			setWindowShouldClose(true);
+			SetWindowShouldClose(true);
 		}
 
 		// move camera

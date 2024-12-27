@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+Camera Camera::defaultCamera(glm::vec3(1.0f));
+
 Camera::Camera(glm::vec3 position)
 : cameraPos(position),
 worldUp(glm::vec3(0.0f, 1.0f, 0.0f)),

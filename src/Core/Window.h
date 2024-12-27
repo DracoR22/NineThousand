@@ -18,14 +18,16 @@ namespace Window {
  extern	int currentHeight;
 
  extern	GLFWwindow* window;
+	void Init();
+	void PrepareFrame();
 
-	void init();
-	void processInput(double dt);
-	bool windowShouldClose();
-	void setWindowShouldClose(bool shouldClose);
-	void processEvents(double dt);
-	void processInput(double dt);
-	void shutDown();
+	bool WindowShouldClose();
+	void SetWindowShouldClose(bool shouldClose);
 
-	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+	void ProcessEvents();
+	void ProcessInput(double dt);
+
+	void ShutDown();
+
+	void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 }

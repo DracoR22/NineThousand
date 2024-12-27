@@ -2,11 +2,18 @@
 
 #include <iostream>
 
+#include "../Core/Window.h"
 
-class Engine {
-public:
-	Engine();
+#include "../Graphics/Shader.h"
+#include "../Graphics/Primitives.hpp"
+#include "../Graphics/Cubemap.h"
 
-	bool init();
-	void run();
-};
+#include "../Input/Camera.h"
+#include "../Input/Keyboard.h"
+#include "../Input/Mouse.h"
+
+#include <stb_image.h>
+
+namespace Engine {
+	void Run();
+}
