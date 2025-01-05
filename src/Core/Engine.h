@@ -12,6 +12,11 @@
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
 
+#include "../Physics/Physics.h"
+
+#include <PxPhysics.h>
+#include <PxPhysicsAPI.h>
+
 #include <stb_image.h>
 
 namespace Engine {

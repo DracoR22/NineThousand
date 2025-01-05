@@ -79,7 +79,19 @@ public:
 
         meshes.push_back(cubeMesh);
 	}
+
+    
+   /* void drawCube(Shader& shader) {
+        shader.activate();
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotation;
+        shader.setMat4("model", model);
+        for (auto& mesh : meshes) {
+            mesh.draw(shader);
+        }
+    }*/
+
 };
+
 
 class Plane : public Model {
 public: 

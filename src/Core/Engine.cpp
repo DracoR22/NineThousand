@@ -3,6 +3,12 @@
 namespace Engine {
 	void Run() {
 		Window::Init();
+		Physics::InitPhysx();
+
+		float rotationAngle = 0.0f;
+		
+		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicActor(physx::PxVec3(0.0f, 5.0f, 0.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
+		physx::PxRigidStatic* planeActor = Physics::CreateStaticActor(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 
 		// shaders
 		Shader texturedObjectShader("resources/shaders/textured_obj.vs", "resources/shaders/textured_obj.fs");
@@ -27,7 +33,7 @@ namespace Engine {
 		/*Model m(glm::vec3(10.0f, 0.0f, 10.0f), glm::vec3(0.05f));
 		m.loadModel("resources/models/table/scene.gltf");*/
 
-		Cube cube(glm::vec3(10.0f, 3.0f, 0.0f), glm::vec3(0.75f));
+		Cube cube(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.75f));
 		cube.init();
 
 		Plane plane(glm::vec3(0.0f), glm::vec3(50.0f));
@@ -44,6 +50,9 @@ namespace Engine {
 			deltaTime = currentTime - lastFrame;
 			lastFrame = currentTime;
 
+			// step the physics simulation
+			Physics::Simulate(deltaTime);
+
 			Window::ProcessInput(deltaTime);
 			Window::PrepareFrame();
 
@@ -59,8 +68,20 @@ namespace Engine {
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
 
+			// test rotation
+			rotationAngle += glm::radians(1.0f); // Increment the angle (1 degree per frame)
+			if (rotationAngle >= glm::two_pi<float>()) { // Reset after full rotation
+				rotationAngle = 0.0f;
+			}
+			glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+
 			/*	m.draw(shader);*/
 			cube.draw(texturedObjectShader);
+			Physics::UpdateModelFromPhysics(cube, cubeActor);
+			cube.setRotation(rotationMatrix);
+
+			/*cube.setPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+			cube.setRotation(glm::mat4(1.0f));*/
 
 			plane.draw(texturedObjectShader);
 
@@ -76,6 +97,8 @@ namespace Engine {
 		glock.cleanup();
 		cubemap.cleanup();
 		plane.cleanup();
+
+		Physics::CleanupPhysX();
 
 		Window::ShutDown();
 	}

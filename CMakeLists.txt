@@ -28,25 +28,26 @@ set_target_properties(assimp PROPERTIES
 target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/include)
 
 # physx
-file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/debug/*.lib")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/debug/*.lib")
+else()
+    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/release/*.lib")
+endif()
+
 file(GLOB_RECURSE PHYSX_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
-
-add_library(physx STATIC IMPORTED)
-set_target_properties(physx PROPERTIES 
-    IMPORTED_LOCATION ${PHYSX_LIBS}
-)
-target_include_directories(physx INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/include)
-
 
 # Link all files inside /src
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
+# Create the executable first
+add_executable(NineThousand ${SOURCES})
+
+# Set include directories and libraries after the target is created
+target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/include)
+target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp ${PHYSX_LIBS})
+
 # Include resources folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
-
-# executable
-add_executable(NineThousand ${SOURCES})
-target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp physx)
 
 # Add PhysX DLLs to output folder
 foreach(DLL ${PHYSX_DLLS})
@@ -55,10 +56,3 @@ foreach(DLL ${PHYSX_DLLS})
         ${DLL} $<TARGET_FILE_DIR:NineThousand>
     )
 endforeach()
-
-# Add assimp dll to out folder
-#add_custom_command(TARGET NineThousand POST_BUILD
-#   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/assimp-vc143-mtd.dll
-#    $<TARGET_FILE_DIR:NineThousand>
-#)

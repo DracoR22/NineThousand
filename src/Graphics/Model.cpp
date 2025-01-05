@@ -10,15 +10,24 @@ void Model::draw(Shader& shader) {
 
 	model = glm::translate(model, pos);
 	model = glm::scale(model, size);
+	model *= rotation;
 
-	// TODO: make this an argument
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	/*model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
 
 	shader.setMat4("model", model);
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].draw(shader);
 }
+
+void Model::setPosition(const glm::vec3& newPos) {
+	pos = newPos;
+}
+
+void Model::setRotation(const glm::mat4& newRotation) {
+     rotation = newRotation;
+}
+
 
 void Model::loadModel(std::string path) {
 	Assimp::Importer import;
