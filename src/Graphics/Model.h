@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -9,10 +10,16 @@
 
 #include "Mesh.h"
 #include "Texture.h"
+#include "../Animations/AssimpGlmHelpers.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+struct BoneInfo
+{
+	int id;
+	glm::mat4 offset;
+};
 
 class Model {
 public:
@@ -30,9 +37,10 @@ public:
 	std::vector<Mesh> meshes;
 
 	void loadModel(std::string path);
-	void loadCubePrimitive(const std::string& texturePath);
-
 	void cleanup();
+
+	std::map<std::string, BoneInfo>& GetBoneInfoMap();
+	int& GetBoneCount();
 private:
 	std::string directory;
 	std::vector<Texture> textures_loaded;
@@ -42,4 +50,12 @@ private:
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
+
+	// for animations
+	std::map<std::string, BoneInfo> m_BoneInfoMap;
+	int m_BoneCounter = 0;
+
+	void SetVertexBoneDataToDefault(Vertex& vertex);
+	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 };

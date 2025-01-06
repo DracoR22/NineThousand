@@ -32,7 +32,7 @@ namespace Physics {
     }
 
 
-    PxRigidDynamic* CreateDynamicActor(const PxVec3& position, const PxVec3& halfExtents, PxReal mass) {
+    PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass) {
         PxTransform transform(position);
         PxRigidDynamic* cubeActor = _gPhysics->createRigidDynamic(transform);
 
@@ -43,20 +43,16 @@ namespace Physics {
         PxRigidBodyExt::updateMassAndInertia(*cubeActor, mass);
         _gScene->addActor(*cubeActor);
 
-        printf("Cube actor created at position: x=%f, y=%f, z=%f\n",
-            position.x, position.y, position.z);
-
         _cubeActor = cubeActor;
 
         return cubeActor;
     }
 
-    PxRigidStatic* CreateStaticActor(const PxVec3& position, const PxVec3& halfExtents) {
+    PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents) {
         PxTransform transform(position);
 
         PxRigidStatic* staticActor = _gPhysics->createRigidStatic(transform);
 
-        // Attach a shape with box geometry to the actor
         PxShape* shape = _gPhysics->createShape(PxBoxGeometry(halfExtents), *_gMaterial);
         staticActor->attachShape(*shape);
         shape->release();
@@ -73,16 +69,16 @@ namespace Physics {
         _gScene->fetchResults(true);
     }
 
-    void UpdateModelFromPhysics(Model& model, const physx::PxRigidActor* actor) {
-        if (!actor) return;
+    PhysicsTransformData GetTransformFromPhysics(const physx::PxRigidActor* actor) {
+        PhysicsTransformData transformData;
+
+        if (!actor) return transformData;
 
         const physx::PxTransform& transform = actor->getGlobalPose();
-        glm::vec3 position(transform.p.x, transform.p.y, transform.p.z);
-        glm::quat rotationQuat(transform.q.w, transform.q.x, transform.q.y, transform.q.z);
-        glm::mat4 rotation = glm::mat4_cast(rotationQuat);
+        transformData.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
+        transformData.rotation = glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z);
 
-        model.setPosition(position);
-        model.setRotation(rotation);
+        return transformData;
     }
 
     void CleanupPhysX() {

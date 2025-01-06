@@ -8,10 +8,15 @@
 #include <string>
 #include <vector>
 
+#define MAX_BONE_INFLUENCE 4
+
 struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
+
+	int m_BoneIDs[MAX_BONE_INFLUENCE];
+	float m_Weights[MAX_BONE_INFLUENCE];
 
 	static std::vector<struct Vertex> genList(float* vertices, int noVertices);
 };

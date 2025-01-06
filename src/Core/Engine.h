@@ -14,6 +14,9 @@
 
 #include "../Physics/Physics.h"
 
+#include "../Animations/Animation.hpp"
+#include "../Animations/Animator.hpp"
+
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
