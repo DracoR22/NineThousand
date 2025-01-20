@@ -28,6 +28,10 @@ void Model::setRotation(const glm::mat4& newRotation) {
      rotation = newRotation;
 }
 
+void Model::setSize(const glm::vec3& newSize) {
+	size = newSize;
+}
+
 
 void Model::loadModel(std::string path) {
 	Assimp::Importer import;

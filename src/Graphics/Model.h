@@ -33,6 +33,7 @@ public:
 
 	void setPosition(const glm::vec3& newPos);
 	void setRotation(const glm::mat4& newRotation);
+	void setSize(const glm::vec3& newSize);
 
 	std::vector<Mesh> meshes;
 

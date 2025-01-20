@@ -7,6 +7,8 @@
 #include "../Graphics/Shader.h"
 #include "../Graphics/Primitives.hpp"
 #include "../Graphics/Cubemap.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include "../Input/Camera.h"
 #include "../Input/Keyboard.h"
