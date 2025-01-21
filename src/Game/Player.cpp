@@ -5,6 +5,8 @@ Player::Player(glm::vec3 position, float height, float mass)
 	camera = Camera(position);
 }
 
+
+
 glm::vec3 Player::getPosition() {
 	return camera.cameraPos;
 }

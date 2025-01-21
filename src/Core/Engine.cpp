@@ -5,6 +5,8 @@ namespace Engine {
 		Window::Init();
 		Physics::InitPhysx();
 
+		Player player(glm::vec3(0.0f, 0.5f, 0.0f), 1.5f, 80.0f);
+
 		float rotationAngle = 0.0f;
 		
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 5.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
@@ -70,8 +72,8 @@ namespace Engine {
 			glm::mat4 projection = glm::mat4(1.0f);
 
 
-			view = Camera::defaultCamera.getViewMatrix();
-			projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
+			view = player.camera.getViewMatrix();
+			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
 
 			animShader.activate();
 			animShader.setMat4("view", view);
@@ -84,7 +86,7 @@ namespace Engine {
 			glock.draw(animShader);
 
 			texturedObjectShader.activate();
-			texturedObjectShader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+			texturedObjectShader.set3Float("viewPos", player.getPosition());
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
 
@@ -106,7 +108,7 @@ namespace Engine {
 			glDisable(GL_DEPTH_TEST);
 
 			stencilShader.activate();
-			stencilShader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+			stencilShader.set3Float("viewPos", player.getPosition());
 			stencilShader.setMat4("view", view);
 			stencilShader.setMat4("projection", projection);
 
@@ -120,7 +122,7 @@ namespace Engine {
 			glStencilFunc(GL_ALWAYS, 0, 0xFF);
 			glEnable(GL_DEPTH_TEST);
 
-			cubemap.render(skyboxShader, Camera::defaultCamera.getViewMatrix(), projection);
+			cubemap.render(skyboxShader, player.camera.getViewMatrix(), projection);
 
 			Window::ProcessEvents();
 		}

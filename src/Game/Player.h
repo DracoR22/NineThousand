@@ -5,7 +5,6 @@
 class Player {
 public:
 	Player(glm::vec3 position, float height, float mass);
-	~Player();
 
 	void update(float deltaTime);
 

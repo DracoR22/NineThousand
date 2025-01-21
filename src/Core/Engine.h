@@ -19,6 +19,8 @@
 #include "../Animations/Animation.hpp"
 #include "../Animations/Animator.hpp"
 
+#include "../Game/Player.h"
+
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
