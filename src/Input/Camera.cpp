@@ -79,7 +79,6 @@ void Camera::updateCameraZoom(double dy) {
     }
 }
 
-
 void Camera::updateCameraVectors() {
     glm::vec3 direction;
     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -89,4 +88,8 @@ void Camera::updateCameraVectors() {
 
     cameraRight = glm::normalize(glm::cross(cameraFront, worldUp));
     cameraUp = glm::normalize(glm::cross(cameraRight, cameraFront));
+}
+
+void Camera::setPosition(const glm::vec3& position) {
+    cameraPos = position;
 }

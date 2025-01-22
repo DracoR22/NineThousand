@@ -16,6 +16,7 @@ namespace Physics {
     void InitPhysx();
 
     PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass);
+    PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass);
 
     PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents);
   

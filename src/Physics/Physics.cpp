@@ -22,7 +22,7 @@ namespace Physics {
 
         // Create a PhysX scene with gravity
         PxSceneDesc sceneDesc(_gPhysics->getTolerancesScale()); 
-        sceneDesc.gravity = PxVec3(0.0f, -0.05f, 0.0f); // -9.81 earths gravity
+        sceneDesc.gravity = PxVec3(0.0f, -0.5f, 0.0f); // -9.81 earths gravity
         sceneDesc.cpuDispatcher = _gDispatcher;
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
         _gScene = _gPhysics->createScene(sceneDesc);
@@ -59,9 +59,23 @@ namespace Physics {
 
         _gScene->addActor(*staticActor);
 
-        printf("Static actor (wall) created at position: x=%f, y=%f, z=%f\n", position.x, position.y, position.z);
-
         return staticActor;
+    }
+
+    PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass) {
+        PxTransform transform(position);
+
+        PxRigidDynamic* capsuleActor = _gPhysics->createRigidDynamic(transform);
+
+        PxShape* shape = _gPhysics->createShape(PxCapsuleGeometry(radius, halfHeight), *_gMaterial);
+        capsuleActor->attachShape(*shape);
+        shape->release();
+
+        PxRigidBodyExt::updateMassAndInertia(*capsuleActor, mass);
+
+        _gScene->addActor(*capsuleActor);
+
+        return capsuleActor;
     }
 
     void Simulate(double dt) {

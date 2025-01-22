@@ -1,6 +1,10 @@
 #pragma once
 
 #include "../Input/Camera.h"
+#include "../Input/Keyboard.h"
+#include "../Input/Mouse.h"
+
+#include "../Physics/Physics.h"
 
 class Player {
 public:
@@ -8,10 +12,13 @@ public:
 
 	void update(float deltaTime);
 
+    void processInput(double deltaTime);
+
 	Camera camera;
 
-	glm::mat4 getViewMatix();
 	glm::vec3 getPosition();
+
+	physx::PxRigidDynamic* actor;
 
 private:
 	glm::vec3 velocity;

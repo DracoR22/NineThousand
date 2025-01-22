@@ -5,11 +5,11 @@ namespace Engine {
 		Window::Init();
 		Physics::InitPhysx();
 
-		Player player(glm::vec3(0.0f, 0.5f, 0.0f), 1.5f, 80.0f);
+		Player player(glm::vec3(0.0f, 10.5f, 0.0f), 1.5f, 14.0f);
 
 		float rotationAngle = 0.0f;
 		
-		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 5.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
+		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 		physx::PxRigidStatic* planeActor = Physics::CreateStaticBox(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 
 		// shaders
@@ -62,6 +62,7 @@ namespace Engine {
 			// step the physics simulation
 			Physics::Simulate(deltaTime);
 
+			player.processInput(deltaTime);
 			Window::ProcessInput(deltaTime);
 			Window::PrepareFrame();
 
@@ -90,10 +91,15 @@ namespace Engine {
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
 
+			PhysicsTransformData playerTransformData = Physics::GetTransformFromPhysics(player.actor);
+			glm::mat4 playerRotationMatrix = glm::mat4_cast(playerTransformData.rotation);
+
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			plane.draw(texturedObjectShader);
+
+			
 
 			// 1fst render pass
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
