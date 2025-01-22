@@ -30,11 +30,17 @@ void Player::processInput(double deltaTime) {
     if (Keyboard::key(GLFW_KEY_A)) {
         moveDirection -= camera.cameraRight;
     }
-    if (Keyboard::key(GLFW_KEY_SPACE)) {
-        moveDirection += camera.cameraUp;
-    }
     if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
         moveDirection -= camera.cameraUp;
+    }
+
+    if (Keyboard::key(GLFW_KEY_SPACE)) {
+
+       /* moveDirection += camera.cameraUp;*/
+        float jumpImpulse = 2.0f;
+        physx::PxVec3 jumpForce(0.0f, jumpImpulse, 0.0f);
+        actor->addForce(jumpForce, physx::PxForceMode::eIMPULSE);
+        isOnGround = false;
     }
 
     // Normalize move direction to avoid faster diagonal movement
@@ -60,6 +66,10 @@ void Player::processInput(double deltaTime) {
     physx::PxTransform actorTransform = actor->getGlobalPose();
     glm::vec3 actorPosition(actorTransform.p.x, actorTransform.p.y, actorTransform.p.z);
     camera.setPosition(actorPosition);
+
+    if (actorPosition.y <= 0.5f) { // Example: check if player is close to the ground
+        isOnGround = true;
+    }
 
     //printf("Actor position: (%f, %f, %f)\n", actorPosition.x, actorPosition.y, actorPosition.z);
 }

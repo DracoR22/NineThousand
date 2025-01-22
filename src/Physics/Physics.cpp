@@ -22,7 +22,7 @@ namespace Physics {
 
         // Create a PhysX scene with gravity
         PxSceneDesc sceneDesc(_gPhysics->getTolerancesScale()); 
-        sceneDesc.gravity = PxVec3(0.0f, -0.5f, 0.0f); // -9.81 earths gravity
+        sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f); // -9.81 earths gravity
         sceneDesc.cpuDispatcher = _gDispatcher;
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
         _gScene = _gPhysics->createScene(sceneDesc);
@@ -78,9 +78,17 @@ namespace Physics {
         return capsuleActor;
     }
 
-    void Simulate(double dt) {
-        _gScene->simulate(dt);
-        _gScene->fetchResults(true);
+    void Simulate(double deltaTime) {
+        const double fixedTimestep = 1.0 / 60.0; // 60 fps
+        static double accumulatedTime = 0.0;
+
+        accumulatedTime += deltaTime;
+
+        while (accumulatedTime >= fixedTimestep) {
+            _gScene->simulate(fixedTimestep);
+            _gScene->fetchResults(true);
+            accumulatedTime -= fixedTimestep;
+        }
     }
 
     PhysicsTransformData GetTransformFromPhysics(const physx::PxRigidActor* actor) {

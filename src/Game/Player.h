@@ -20,6 +20,8 @@ public:
 
 	physx::PxRigidDynamic* actor;
 
+	bool isOnGround = true;
+
 private:
 	glm::vec3 velocity;
 	float speed;
