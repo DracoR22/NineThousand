@@ -18,9 +18,6 @@ public:
 
 	glm::vec3 getPosition();
 
-	physx::PxRigidDynamic* actor;
-
-
 	//float eyeHeight = position.y + (height * 0.8f);
 	bool isOnGround = true;
 
@@ -28,4 +25,5 @@ private:
 	glm::vec3 velocity;
 	float speed;
 	float height;
+	float verticalVelocity = 0.0f;
 };

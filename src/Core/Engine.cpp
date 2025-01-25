@@ -91,8 +91,8 @@ namespace Engine {
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
 
-			PhysicsTransformData playerTransformData = Physics::GetTransformFromPhysics(player.actor);
-			glm::mat4 playerRotationMatrix = glm::mat4_cast(playerTransformData.rotation);
+			/*PhysicsTransformData playerTransformData = Physics::GetTransformFromPhysics(player.actor);*/
+			/*glm::mat4 playerRotationMatrix = glm::mat4_cast(playerTransformData.rotation);*/
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
