@@ -1,8 +1,10 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: velocity(0.0f), speed(11.0f), camera(position) {
-	camera = Camera(position);
+	: velocity(0.0f), speed(11.0f), camera(position), height(height) {
+    float eyeHeight = position.y + (height * 0.8f);
+
+	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
 
 	// Convert glm::vec3 to PxVec3
 	physx::PxVec3 pxPosition(position.x, position.y, position.z);
@@ -34,10 +36,10 @@ void Player::processInput(double deltaTime) {
         moveDirection -= camera.cameraUp;
     }
 
-    if (Keyboard::key(GLFW_KEY_SPACE)) {
+    if (Keyboard::keyWentDown(GLFW_KEY_SPACE) && isOnGround) {
 
        /* moveDirection += camera.cameraUp;*/
-        float jumpImpulse = 2.0f;
+        float jumpImpulse = 302.25f;
         physx::PxVec3 jumpForce(0.0f, jumpImpulse, 0.0f);
         actor->addForce(jumpForce, physx::PxForceMode::eIMPULSE);
         isOnGround = false;
@@ -65,9 +67,11 @@ void Player::processInput(double deltaTime) {
     // Update the camera's position to match the actor's position
     physx::PxTransform actorTransform = actor->getGlobalPose();
     glm::vec3 actorPosition(actorTransform.p.x, actorTransform.p.y, actorTransform.p.z);
-    camera.setPosition(actorPosition);
+    float eyeHeightOffset = height * 0.8f;
+    glm::vec3 adjustedCameraPosition = actorPosition + glm::vec3(0.0f, eyeHeightOffset, 0.0f);
+    camera.setPosition(adjustedCameraPosition);
 
-    if (actorPosition.y <= 0.5f) { // Example: check if player is close to the ground
+    if (actorPosition.y <= 0.5f) {
         isOnGround = true;
     }
 

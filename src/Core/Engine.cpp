@@ -5,7 +5,7 @@ namespace Engine {
 		Window::Init();
 		Physics::InitPhysx();
 
-		Player player(glm::vec3(0.0f, 10.5f, 0.0f), 1.5f, 14.0f);
+		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 1.8f, 75.0f);
 
 		float rotationAngle = 0.0f;
 		

@@ -13,21 +13,18 @@ namespace Physics {
     PxRigidDynamic* _cubeActor = nullptr;
 
     void InitPhysx() {
-        // Initialize PhysX foundation and physics instance
         _gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gAllocator, _gErrorCallback);
         _gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *_gFoundation, PxTolerancesScale(), true);
 
         // Create a CPU dispatcher for multithreading
         _gDispatcher = PxDefaultCpuDispatcherCreate(2);
 
-        // Create a PhysX scene with gravity
         PxSceneDesc sceneDesc(_gPhysics->getTolerancesScale()); 
         sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f); // -9.81 earths gravity
         sceneDesc.cpuDispatcher = _gDispatcher;
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
         _gScene = _gPhysics->createScene(sceneDesc);
 
-        // Create a default material for the simulation
         _gMaterial = _gPhysics->createMaterial(0.5f, 0.5f, 0.6f); // Static friction, dynamic friction, restitution
     }
 
