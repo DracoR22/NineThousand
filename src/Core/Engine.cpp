@@ -18,7 +18,7 @@ namespace Engine {
 		Shader texturedObjectShader("resources/shaders/textured_obj.vs", "resources/shaders/textured_obj.fs");
 		Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 		Shader animShader("resources/shaders/animated.vs", "resources/shaders/animated.fs");
-		Shader stencilShader("resources/shaders/stencil_color.vs", "resources/shaders/stencil_color.fs");
+		Shader lampShader("resources/shaders/lamp.vs", "resources/shaders/lamp.fs");
 
 		// skybox
 		CubeMap cubemap;
@@ -35,14 +35,12 @@ namespace Engine {
 		cubemap.loadTextures(faces);
 		cubemap.init();
 
-		/*Model m(glm::vec3(10.0f, 0.0f, 10.0f), glm::vec3(0.05f));
-		m.loadModel("resources/models/table/scene.gltf");*/
 
 		Cube cube(glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
 		cube.init();
 
-		Cube dCube(glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
-		dCube.init();
+		Cube cubeLamp(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
+		cubeLamp.init();
 
 		Plane plane(glm::vec3(0.0f), glm::vec3(50.0f));
 		plane.init();
@@ -118,17 +116,26 @@ namespace Engine {
 			auto transforms = glockAnimator.GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
 				animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-
 			glock.draw(animShader);
 
 			texturedObjectShader.activate();
 			texturedObjectShader.set3Float("viewPos", player.getPosition());
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
-
 			plane.draw(texturedObjectShader);
 
+			texturedObjectShader.activate();
+			texturedObjectShader.set3Float("viewPos", player.getPosition());
+			texturedObjectShader.setMat4("view", view);
+			texturedObjectShader.setMat4("projection", projection);
 			cube.draw(texturedObjectShader);
+
+			lampShader.activate();
+			lampShader.set3Float("viewPos", player.getPosition());
+			lampShader.setMat4("view", view);
+			lampShader.setMat4("projection", projection);
+			lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+			cubeLamp.draw(lampShader);
 
 			cubemap.render(skyboxShader, player.camera.getViewMatrix(), projection);
 
@@ -136,8 +143,8 @@ namespace Engine {
 		}
 
 		cube.cleanup();
-		dCube.cleanup();
 		glock.cleanup();
+		cubeLamp.cleanup();
 		cubemap.cleanup();
 		plane.cleanup();
 
