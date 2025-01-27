@@ -44,14 +44,11 @@ namespace Window {
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	}
 
 	void PrepareFrame() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void ProcessEvents() {

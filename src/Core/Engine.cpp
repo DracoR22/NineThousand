@@ -5,7 +5,9 @@ namespace Engine {
 		Window::Init();
 		Physics::InitPhysx();
 
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 1.8f, 75.0f);
+		glm::vec3 gunOffset(0.2f, -3.5f, 2.6f);
+
+		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
 
 		float rotationAngle = 0.0f;
 		
@@ -48,7 +50,7 @@ namespace Engine {
 		Model glock(glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		glock.loadModel("resources/models/Glock.fbx");
 
-		Animation glockIdleAnimation("resources/animations/Glock_Reload.fbx", &glock);
+		Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
 		Animator glockAnimator(&glockIdleAnimation);
 
 		float deltaTime = 0.0f;
@@ -76,6 +78,40 @@ namespace Engine {
 			view = player.camera.getViewMatrix();
 			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
 
+
+			glm::vec3 gunPosition = player.getPosition() +
+				(player.camera.cameraFront * 0.7f) +   // Offset forward
+				(player.camera.cameraUp * -3.85f);    // Offset downward
+
+			// Calculate gun rotation to align with the camera
+			glm::mat4 gunRotation = glm::mat4(1.0f);
+
+			// Rotate around camera right (tilt up/down)
+			float theta = acos(glm::dot(player.camera.worldUp, player.camera.cameraFront) /
+				(glm::length(player.camera.worldUp) * glm::length(player.camera.cameraFront)));
+			gunRotation = glm::rotate(gunRotation, glm::half_pi<float>() - theta, player.camera.cameraRight);
+
+			// Rotate around camera up (align gun to camera facing direction in horizontal plane)
+			glm::vec2 front2D = glm::vec2(player.camera.cameraFront.x, player.camera.cameraFront.z);
+			theta = acos(glm::dot(glm::vec2(1.0f, 0.0f), glm::normalize(front2D)));
+			gunRotation = glm::rotate(gunRotation, player.camera.cameraFront.z < 0 ? theta : -theta, player.camera.worldUp);
+
+			// Apply local rotation adjustment to align gun's forward direction
+			glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Adjust for left-facing gun
+			localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); // Slight upward pitch adjustment
+			gunRotation = gunRotation * localRotationFix;
+
+			// Apply transformations to the gun
+			glock.setPosition(gunPosition);
+			glock.setRotation(gunRotation);
+
+			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
+			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
+
+			cube.setRotation(rotationMatrix);
+			cube.setPosition(cubeTransformData.position);
+
+			// Render Pipeline
 			animShader.activate();
 			animShader.setMat4("view", view);
 			animShader.setMat4("projection", projection);
@@ -83,7 +119,6 @@ namespace Engine {
 			for (int i = 0; i < transforms.size(); ++i)
 				animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 
-			glStencilMask(0x00);
 			glock.draw(animShader);
 
 			texturedObjectShader.activate();
@@ -91,42 +126,9 @@ namespace Engine {
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
 
-			/*PhysicsTransformData playerTransformData = Physics::GetTransformFromPhysics(player.actor);*/
-			/*glm::mat4 playerRotationMatrix = glm::mat4_cast(playerTransformData.rotation);*/
-
-			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
-			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
-
 			plane.draw(texturedObjectShader);
 
-			
-
-			// 1fst render pass
-			glStencilFunc(GL_ALWAYS, 1, 0xFF);
-			glStencilMask(0xFF);
 			cube.draw(texturedObjectShader);
-			cube.setRotation(rotationMatrix);
-			cube.setPosition(cubeTransformData.position);
-
-			// 2nd render pass
-			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-			glStencilMask(0x00);
-			glDisable(GL_DEPTH_TEST);
-
-			stencilShader.activate();
-			stencilShader.set3Float("viewPos", player.getPosition());
-			stencilShader.setMat4("view", view);
-			stencilShader.setMat4("projection", projection);
-
-			float scale = 0.5f;
-			dCube.setSize(glm::vec3(scale));
-			dCube.draw(stencilShader);
-			dCube.setRotation(rotationMatrix);
-			dCube.setPosition(cubeTransformData.position);
-		
-			glStencilMask(0xFF);
-			glStencilFunc(GL_ALWAYS, 0, 0xFF);
-			glEnable(GL_DEPTH_TEST);
 
 			cubemap.render(skyboxShader, player.camera.getViewMatrix(), projection);
 

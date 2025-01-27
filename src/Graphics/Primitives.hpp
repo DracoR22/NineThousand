@@ -138,3 +138,8 @@ public:
         meshes.push_back(planeMesh);
     }
 };
+
+class Lamp : public Cube {
+public:
+    glm::vec3 lightColor;
+};
