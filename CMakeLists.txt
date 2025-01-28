@@ -34,7 +34,7 @@ else()
     file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/release/*.lib")
 endif()
 
-file(GLOB_RECURSE PHYSX_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
+file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
 
 # Link all files inside /src
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
@@ -49,8 +49,8 @@ target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp ${PHYS
 # Include resources folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
 
-# Add PhysX DLLs to output folder
-foreach(DLL ${PHYSX_DLLS})
+# Add All DLLs to output folder
+foreach(DLL ${ALL_DLLS})
     add_custom_command(TARGET NineThousand POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${DLL} $<TARGET_FILE_DIR:NineThousand>

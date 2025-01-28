@@ -60,10 +60,10 @@ public:
             indices[i] = i;
         }
 
-        Texture diffuse("resources/textures", "atlas.png", aiTextureType_DIFFUSE);
+        Texture diffuse("resources/textures", "Concrete_Diff.png", aiTextureType_DIFFUSE);
         diffuse.load(false);
 
-        Texture specular("resources/textures", "atlas.png", aiTextureType_SPECULAR);
+        Texture specular("resources/textures", "Concrete_Spec.png", aiTextureType_SPECULAR);
         specular.load(false);
 
         if (diffuse.id) {
