@@ -6,6 +6,7 @@ namespace Engine {
 		Physics::InitPhysx();
 
 		glm::vec3 gunOffset(0.2f, -3.5f, 2.6f);
+		glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
 
@@ -122,12 +123,16 @@ namespace Engine {
 			texturedObjectShader.set3Float("viewPos", player.getPosition());
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
+			texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
+			texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
 			plane.draw(texturedObjectShader);
 
 			texturedObjectShader.activate();
 			texturedObjectShader.set3Float("viewPos", player.getPosition());
 			texturedObjectShader.setMat4("view", view);
 			texturedObjectShader.setMat4("projection", projection);
+			texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
+			texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
 			cube.draw(texturedObjectShader);
 
 			lampShader.activate();
