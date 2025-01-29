@@ -16,7 +16,7 @@ void main() {
      vec3 lightColor = vec3(1.0, 1.0, 1.0);
      vec3 objectColor = vec3(1.0, 1.0, 1.0);
 
-     float ambientStrength = 0.1;
+     float ambientStrength = 0.4;
      vec3 ambient = ambientStrength * lightColor;
      
      vec3 norm = normalize(Normal);

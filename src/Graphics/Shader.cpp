@@ -1,8 +1,13 @@
 #include "Shader.h"
 
 // constructor
-Shader::Shader() {}
-Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
+Shader::Shader() {};
+
+void Shader::load(const char* vertexShaderPath, const char* fragmentShaderPath) {
+	if (id != 0) {
+		glDeleteProgram(id);  
+	}
+
 	generate(vertexShaderPath, fragmentShaderPath);
 }
 
@@ -10,8 +15,14 @@ void Shader::generate(const char* vertexShaderPath, const char* fragmentShaderPa
 	int success;
 	char infolog[512];
 
-	GLuint vertexShader = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
-	GLuint fragShader = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+	const char* debugShaderPathPrefix = "../../../resources/shaders/";
+	const char* releaseShaderPathPrefix = "resources/shaders/";
+
+	std::string vertexShaderFile = std::string(debugShaderPathPrefix) + vertexShaderPath;
+	std::string fragmentShaderFile = std::string(debugShaderPathPrefix) + fragmentShaderPath;
+
+	GLuint vertexShader = compileShader(vertexShaderFile.c_str(), GL_VERTEX_SHADER);
+	GLuint fragShader = compileShader(fragmentShaderFile.c_str(), GL_FRAGMENT_SHADER);
 
 	id = glCreateProgram();
 
@@ -49,7 +60,7 @@ std::string Shader::loadShaderSrc(const char* filename) {
 		ret = buf.str();
 	}
 	else {
-		std::cout << "Could not open " << filename << std::endl;
+		std::cout << "Could not open Shader " << filename << std::endl;
 	}
 
 	file.close();
@@ -102,10 +113,6 @@ void Shader::set3Float(const std::string& name, glm::vec3 v) {
 void Shader::set4Float(const std::string& name, float v1, float v2, float v3, float v4) {
 	glUniform4f(glGetUniformLocation(id, name.c_str()), v1, v2, v3, v4);
 }
-
-//void Shader::set4Float(const std::string& name, aiColor4D color) {
-//	glUniform4f(glGetUniformLocation(id, name.c_str()), color.r, color.g, color.b, color.a);
-//}
 
 void Shader::set4Float(const std::string& name, glm::vec4 v) {
 	glUniform4f(glGetUniformLocation(id, name.c_str()), v.x, v.y, v.z, v.w);

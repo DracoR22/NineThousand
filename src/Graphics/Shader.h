@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,11 +16,16 @@ public:
 	unsigned int id;
 
 	Shader();
-	Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
 
 	void generate(const char* vertexShaderPath, const char* fragmentShaderPath);
 
+	void load(const char* vertexShaderPath, const char* fragmentShaderPath);
+
+	/*static void hotLoadShaders(std::vector<Shader*>& shaders);*/
+
 	void activate();
+
+	std::vector<Shader*> shaders;
 
 	// utility functions 
 	std::string loadShaderSrc(const char* filepath);

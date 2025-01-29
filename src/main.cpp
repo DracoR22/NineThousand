@@ -4,7 +4,7 @@
 int activeCam = 0;
 
 int main() {
-	std::cout << "Hello engine" << std::endl;
+	std::cout << "NineThousaaaaaand" << std::endl;
 	Engine::Run();
 	
 	return 0;
