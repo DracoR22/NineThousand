@@ -7,7 +7,7 @@ namespace Engine {
 		Shader skyboxShader;
 		Shader animShader;
 		Shader lampShader;
-	} gl_shaders;
+	} _shaders;
 
 	void Run() {
 		Window::Init();
@@ -24,10 +24,10 @@ namespace Engine {
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		// load shaders
-		gl_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
-		gl_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
-		gl_shaders.animShader.load("animated.vs", "animated.fs");
-		gl_shaders.lampShader.load("lamp.vs", "lamp.fs");
+		_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
+		_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
+		_shaders.animShader.load("animated.vs", "animated.fs");
+		_shaders.lampShader.load("lamp.vs", "lamp.fs");
 
 		// load skybox
 		CubeMap cubemap;
@@ -74,10 +74,10 @@ namespace Engine {
 			player.processInput(deltaTime);
 			Window::ProcessInput(deltaTime);
 			if (Keyboard::keyWentDown(GLFW_KEY_R)) {
-				gl_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
-				gl_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
-				gl_shaders.animShader.load("animated.vs", "animated.fs");
-				gl_shaders.lampShader.load("lamp.vs", "lamp.fs");
+				_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
+				_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
+				_shaders.animShader.load("animated.vs", "animated.fs");
+				_shaders.lampShader.load("lamp.vs", "lamp.fs");
 			}
 			Window::PrepareFrame();
 
@@ -122,38 +122,38 @@ namespace Engine {
 			cube.setPosition(cubeTransformData.position);
 
 			// Render Pipeline
-			gl_shaders.animShader.activate();
-			gl_shaders.animShader.setMat4("view", view);
-			gl_shaders.animShader.setMat4("projection", projection);
+			_shaders.animShader.activate();
+			_shaders.animShader.setMat4("view", view);
+			_shaders.animShader.setMat4("projection", projection);
 			auto transforms = glockAnimator.GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
-				gl_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			glock.draw(gl_shaders.animShader);
+				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			glock.draw(_shaders.animShader);
 
-			gl_shaders.texturedObjectShader.activate();
-			gl_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
-			gl_shaders.texturedObjectShader.setMat4("view", view);
-			gl_shaders.texturedObjectShader.setMat4("projection", projection);
-			gl_shaders.texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
-			gl_shaders.texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
-			plane.draw(gl_shaders.texturedObjectShader);
+			_shaders.texturedObjectShader.activate();
+			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
+			_shaders.texturedObjectShader.setMat4("view", view);
+			_shaders.texturedObjectShader.setMat4("projection", projection);
+			_shaders.texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
+			_shaders.texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
+			plane.draw(_shaders.texturedObjectShader);
 
-			gl_shaders.texturedObjectShader.activate();
-			gl_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
-			gl_shaders.texturedObjectShader.setMat4("view", view);
-			gl_shaders.texturedObjectShader.setMat4("projection", projection);
-			gl_shaders.texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
-			gl_shaders.texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
-			cube.draw(gl_shaders.texturedObjectShader);
+			_shaders.texturedObjectShader.activate();
+			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
+			_shaders.texturedObjectShader.setMat4("view", view);
+			_shaders.texturedObjectShader.setMat4("projection", projection);
+			_shaders.texturedObjectShader.setVec3("lightPos", cubeLamp.pos);
+			_shaders.texturedObjectShader.setVec3("viewPos", player.camera.cameraPos);
+			cube.draw(_shaders.texturedObjectShader);
 
-			gl_shaders.lampShader.activate();
-			gl_shaders.lampShader.set3Float("viewPos", player.getPosition());
-			gl_shaders.lampShader.setMat4("view", view);
-			gl_shaders.lampShader.setMat4("projection", projection);
-			gl_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-			cubeLamp.draw(gl_shaders.lampShader);
+			_shaders.lampShader.activate();
+			_shaders.lampShader.set3Float("viewPos", player.getPosition());
+			_shaders.lampShader.setMat4("view", view);
+			_shaders.lampShader.setMat4("projection", projection);
+			_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+			cubeLamp.draw(_shaders.lampShader);
 
-			cubemap.render(gl_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
+			cubemap.render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
 			Window::ProcessEvents();
 		}
