@@ -2,13 +2,15 @@
 
 #include <iostream>
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "../Core/Window.h"
 
 #include "../Graphics/Shader.h"
 #include "../Graphics/Primitives.hpp"
 #include "../Graphics/Cubemap.h"
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "../Graphics/ShadowMap.h"
 
 #include "../Input/Camera.h"
 #include "../Input/Keyboard.h"

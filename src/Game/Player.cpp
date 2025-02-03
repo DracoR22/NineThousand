@@ -41,6 +41,7 @@ void Player::processInput(double deltaTime) {
     }
 
      glm::vec3 targetVelocity = moveDirection * moveSpeed;
+
      Physics::MoveCharacterActor(targetVelocity);
 
      // Handle mouse input for camera rotation
