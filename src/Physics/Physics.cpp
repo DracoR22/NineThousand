@@ -138,7 +138,7 @@ namespace Physics {
 
 
     void Simulate(double deltaTime) {
-        const double fixedTimestep = 1.0 / 60.0; // 60 fps
+        const double fixedTimestep = 1.0 / 440; // 440 fps
         static double accumulatedTime = 0.0;
 
         accumulatedTime += deltaTime;
