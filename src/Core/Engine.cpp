@@ -11,6 +11,16 @@ namespace Engine {
 		Shader groundShader;
 	} _shaders;
 
+	struct Models {
+		PrimitiveModel cube;
+		PrimitiveModel cubeLamp;
+		PrimitiveModel cubeLamp2;
+		PrimitiveModel plane;
+
+		Model glock;
+
+	} g_models;
+
 	struct PointLight {
 		glm::vec3 position;
 
@@ -62,17 +72,17 @@ namespace Engine {
 		cubemap.init();
 
 		// load models
-		Cube cube(glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
-		cube.init();
+		PrimitiveModel cube(PrimitiveModel::Type::CUBE, glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
+		cube.Init();
 
-		Cube cubeLamp(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
-		cubeLamp.init();
+		PrimitiveModel cubeLamp(PrimitiveModel::Type::CUBE, glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
+		cubeLamp.Init();
 
-		Cube cubeLamp2(glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.75f));
-		cubeLamp2.init();
+		PrimitiveModel cubeLamp2(PrimitiveModel::Type::CUBE, glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.75f));
+		cubeLamp2.Init();
 
-		Plane plane(glm::vec3(0.0f), glm::vec3(50.0f));
-		plane.init();
+		PrimitiveModel plane(PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
+		plane.Init();
 
 		Model glock(glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		glock.loadModel("resources/models/Glock.fbx");
@@ -101,10 +111,22 @@ namespace Engine {
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
 
+		double lastTime = glfwGetTime();
+		int nbFrames = 0;
+
 		while (!Window::WindowShouldClose()) {
 			double currentTime = glfwGetTime();
 			deltaTime = currentTime - lastFrame;
 			lastFrame = currentTime;
+
+			nbFrames++;
+			if (currentTime - lastTime >= 1.0) { // If a second has passed
+				// Print and reset FPS counter
+				std::cout << "FPS: " << nbFrames << std::endl;
+				nbFrames = 0;
+				lastTime += 1.0;
+			}
+
 
 			Physics::Simulate(deltaTime);
 

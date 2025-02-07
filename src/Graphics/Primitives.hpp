@@ -2,12 +2,29 @@
 
 #include "Model.h"
 
-class Cube : public Model {
-public: 
-	Cube(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f))
-		: Model(pos, size) {}
+class PrimitiveModel : public Model {
+public:
+    enum class Type {
+        CUBE, 
+        PLANE
+    };
 
-	void init() {
+    PrimitiveModel(Type type, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f))
+        : Model(pos, size), m_type(type) {}
+
+    void Init() {
+        if (m_type == Type::CUBE) {
+            InitCube();
+        }
+        else if (m_type == Type::PLANE) {
+            InitPlane();
+        }
+    }
+
+private:
+    Type m_type;
+
+    void InitCube() {
         int noVertices = 36;
 
         float vertices[] = {
@@ -78,27 +95,9 @@ public:
         cubeMesh.textures.push_back(specular);  // Add specular texture
 
         meshes.push_back(cubeMesh);
-	}
+    }
 
-    
-   /* void drawCube(Shader& shader) {
-        shader.activate();
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * rotation;
-        shader.setMat4("model", model);
-        for (auto& mesh : meshes) {
-            mesh.draw(shader);
-        }
-    }*/
-
-};
-
-
-class Plane : public Model {
-public: 
-    Plane(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f))
-        : Model(pos, size) {}
-
-    void init() {
+    void InitPlane() {
         int noVertices = 6;
 
         float vertices[] = {
@@ -138,19 +137,3 @@ public:
         meshes.push_back(planeMesh);
     }
 };
-
-//class Lamp : public Cube {
-//public:
-//    glm::vec3 lightColor;
-//
-//    Lamp(glm::vec3 lightColor = glm::vec3(1.0f),
-//        glm::vec4 ambient = glm::vec4(1.0f),
-//        glm::vec4 diffuse = glm::vec4(1.0f),
-//        glm::vec4 specular = glm::vec4(1.0f),
-//        float k0 = 1.0f,
-//        float k1 = 0.07f,
-//        float k2 = 0.017f,
-//        glm::vec3 pos = glm::vec3(0.0f),
-//        glm::vec3 size = glm::vec3(1.0f))
-//        : lightColor(lightColor)
-//};
