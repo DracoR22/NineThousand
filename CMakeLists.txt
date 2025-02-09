@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION "3.19.2")
 
 project(NineThousand)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # glfw
 add_library(glfw STATIC IMPORTED)
@@ -39,14 +41,14 @@ file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
 # Link all files inside /src
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
-# Create the executable first
+# Create the executable
 add_executable(NineThousand ${SOURCES})
 
 # Set include directories and libraries after the target is created
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/include)
 target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp ${PHYSX_LIBS})
 
-# Include resources folder
+# Include resources to output folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)
 
 # Add All DLLs to output folder

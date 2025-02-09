@@ -3,7 +3,7 @@
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
-#include "../Graphics/Model.h"
+#include "../Core/Model.h"
 
 struct PhysicsTransformData {
     glm::vec3 position = glm::vec3(0.0f);

@@ -11,16 +11,6 @@ namespace Engine {
 		Shader groundShader;
 	} _shaders;
 
-	struct Models {
-		PrimitiveModel cube;
-		PrimitiveModel cubeLamp;
-		PrimitiveModel cubeLamp2;
-		PrimitiveModel plane;
-
-		Model glock;
-
-	} g_models;
-
 	struct PointLight {
 		glm::vec3 position;
 
@@ -44,7 +34,7 @@ namespace Engine {
 		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
 
 		float rotationAngle = 0.0f;
-		
+
 		physx::PxRigidStatic* planeActor = Physics::CreateStaticBox(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
@@ -72,25 +62,30 @@ namespace Engine {
 		cubemap.init();
 
 		// load models
-		PrimitiveModel cube(PrimitiveModel::Type::CUBE, glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
+	/*	PrimitiveModel cube("Cube", PrimitiveModel::Type::CUBE, glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
 		cube.Init();
 
-		PrimitiveModel cubeLamp(PrimitiveModel::Type::CUBE, glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
+		PrimitiveModel cubeLamp("CubeLamp", PrimitiveModel::Type::CUBE, glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
 		cubeLamp.Init();
 
-		PrimitiveModel cubeLamp2(PrimitiveModel::Type::CUBE, glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.75f));
+		PrimitiveModel cubeLamp2("CubeLamp2", PrimitiveModel::Type::CUBE, glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.75f));
 		cubeLamp2.Init();
 
-		PrimitiveModel plane(PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
-		plane.Init();
+		PrimitiveModel plane("Plane", PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
+		plane.Init();*/
 
-		Model glock(glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
+		Model glock("Glock", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		glock.loadModel("resources/models/Glock.fbx");
+
+		Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
+		p90.loadModel("resources/models/P90.fbx");
+
+		Scene::LoadGamePrimitiveObjects();
 
 		std::vector<PointLight> sceneLights;
 
 		PointLight cubeLampLight;
-		cubeLampLight.position = cubeLamp.pos;
+		cubeLampLight.position = Scene::GetPrimitiveModelByName("CubeLamp")->pos;
 		cubeLampLight.constant = 1.0f;
 		cubeLampLight.linear = 0.02f;
 		cubeLampLight.quadratic = 0.01f;
@@ -107,6 +102,9 @@ namespace Engine {
 		// load animations
 		Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
 		Animator glockAnimator(&glockIdleAnimation);
+
+		Animation p90IdleAnimation("resources/animations/P90_ReloadEmpty.fbx", &p90);
+		Animator p90Animator(&p90IdleAnimation);
 
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
@@ -141,6 +139,7 @@ namespace Engine {
 			Window::PrepareFrame();
 
 			glockAnimator.UpdateAnimation(deltaTime);
+			p90Animator.UpdateAnimation(deltaTime);
 
 			glm::mat4 view = glm::mat4(1.0f);
 			glm::mat4 projection = glm::mat4(1.0f);
@@ -177,13 +176,13 @@ namespace Engine {
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
-			cube.setRotation(rotationMatrix);
-			cube.setPosition(cubeTransformData.position);
+			Scene::GetPrimitiveModelByName("Cube")->setRotation(rotationMatrix);
+			Scene::GetPrimitiveModelByName("Cube")->setPosition(cubeTransformData.position);
 
 
 			// ------ 1. SHADOW PASS (Render to Depth Map) ------
 			glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, cube.pos, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, Scene::GetPrimitiveModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
 			glm::mat4 lightProjection = orthogonalProjection * lightView;
 
 			_shaders.shadowMapShader.activate();
@@ -192,7 +191,7 @@ namespace Engine {
 			shadowMap.Clear();
 
 			glCullFace(GL_FRONT);
-			cube.draw(_shaders.shadowMapShader);
+			Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.shadowMapShader);
 			glCullFace(GL_BACK);
 
 			shadowMap.Unbind();
@@ -200,7 +199,7 @@ namespace Engine {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-			// ------ 2. RENDER PASS (Normal Rendering Map) ------
+			// ------ 2. RENDER PASS ------
 			_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
 			_shaders.animShader.setMat4("projection", projection);
@@ -209,27 +208,13 @@ namespace Engine {
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			glock.draw(_shaders.animShader);
 
-			_shaders.texturedObjectShader.activate();
-			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
-			_shaders.texturedObjectShader.setMat4("view", view);
-			_shaders.texturedObjectShader.setMat4("projection", projection);
-			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
-			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
-			_shaders.texturedObjectShader.setInt("shadowMap", 2);
-			for (int i = 0; i < sceneLights.size(); i++) {
-				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
-
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".position", sceneLights[i].position);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".constant", sceneLights[i].constant);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".linear", sceneLights[i].linear);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".quadratic", sceneLights[i].quadratic);
-
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".ambient", sceneLights[i].ambient);
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
-			}
-
-			plane.draw(_shaders.texturedObjectShader);
+			_shaders.animShader.activate();
+			_shaders.animShader.setMat4("view", view);
+			_shaders.animShader.setMat4("projection", projection);
+			auto p90Transforms = p90Animator.GetFinalBoneMatrices();
+			for (int i = 0; i < p90Transforms.size(); ++i)
+				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
+			p90.draw(_shaders.animShader);
 
 			_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -250,14 +235,36 @@ namespace Engine {
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
 			}
-			cube.draw(_shaders.texturedObjectShader);
+
+			Scene::GetPrimitiveModelByName("Plane")->draw(_shaders.texturedObjectShader);
+
+			_shaders.texturedObjectShader.activate();
+			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
+			_shaders.texturedObjectShader.setMat4("view", view);
+			_shaders.texturedObjectShader.setMat4("projection", projection);
+			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
+			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
+			_shaders.texturedObjectShader.setInt("shadowMap", 2);
+			for (int i = 0; i < sceneLights.size(); i++) {
+				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
+
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".position", sceneLights[i].position);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".constant", sceneLights[i].constant);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".linear", sceneLights[i].linear);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".quadratic", sceneLights[i].quadratic);
+
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".ambient", sceneLights[i].ambient);
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
+			}
+			Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.texturedObjectShader);
 
 			_shaders.lampShader.activate();
 			_shaders.lampShader.set3Float("viewPos", player.getPosition());
 			_shaders.lampShader.setMat4("view", view);
 			_shaders.lampShader.setMat4("projection", projection);
 			_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-			cubeLamp.draw(_shaders.lampShader);
+			Scene::GetPrimitiveModelByName("CubeLamp")->draw(_shaders.lampShader);
 
 			cubemap.render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
@@ -265,11 +272,12 @@ namespace Engine {
 		}
 
 		shadowMap.Cleanup();
-		cube.cleanup();
+		Scene::GetPrimitiveModelByName("Cube")->cleanup();
 		glock.cleanup();
-		cubeLamp.cleanup();
+		p90.cleanup();
+		Scene::GetPrimitiveModelByName("CubeLamp")->cleanup();
 		cubemap.cleanup();
-		plane.cleanup();
+		Scene::GetPrimitiveModelByName("Plane")->cleanup();
 
 		Physics::CleanupPhysX();
 

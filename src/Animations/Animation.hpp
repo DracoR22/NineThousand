@@ -6,7 +6,7 @@
 #include <assimp/scene.h>
 #include "Bone.hpp"
 #include <functional>
-#include "../Graphics/Model.h"
+#include "../Core/Model.h"
 
 struct AssimpNodeData
 {

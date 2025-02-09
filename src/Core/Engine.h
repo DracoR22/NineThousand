@@ -6,9 +6,10 @@
 #include <GLFW/glfw3.h>
 
 #include "../Core/Window.h"
+#include "../Core/AssetManager.h"
+
 
 #include "../Graphics/Shader.h"
-#include "../Graphics/Primitives.hpp"
 #include "../Graphics/Cubemap.h"
 #include "../Graphics/ShadowMap.h"
 
@@ -22,6 +23,7 @@
 #include "../Animations/Animator.hpp"
 
 #include "../Game/Player.h"
+#include "../Game/Scene.h"
 
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
