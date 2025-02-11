@@ -2,7 +2,7 @@
 
 namespace OpenGLRenderer {
 
-	struct Shaders {
+	/*struct Shaders {
 		Shader texturedObjectShader;
 		Shader skyboxShader;
 		Shader animShader;
@@ -21,7 +21,7 @@ namespace OpenGLRenderer {
 		glm::vec3 ambient;
 		glm::vec3 diffuse;
 		glm::vec3 specular;
-	};
+	};*/
 
 	void Init() {
 		
