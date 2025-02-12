@@ -77,8 +77,10 @@ namespace Engine {
 		Model glock("Glock", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		glock.loadModel("resources/models/Glock.fbx");
 
-		Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
-		p90.loadModel("resources/models/P90.fbx");
+		AssetManager::LoadModel("P90", "resources/models/P90.fbx");
+
+		/*Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
+		p90.loadModel("resources/models/P90.fbx");*/
 
 		Scene::LoadGamePrimitiveObjects();
 
@@ -103,8 +105,8 @@ namespace Engine {
 		Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
 		Animator glockAnimator(&glockIdleAnimation);
 
-		Animation p90IdleAnimation("resources/animations/P90_ReloadEmpty.fbx", &p90);
-		Animator p90Animator(&p90IdleAnimation);
+		/*Animation p90IdleAnimation("resources/animations/P90_ReloadEmpty.fbx", &p90);
+		Animator p90Animator(&p90IdleAnimation);*/
 
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
@@ -139,7 +141,7 @@ namespace Engine {
 			Window::PrepareFrame();
 
 			glockAnimator.UpdateAnimation(deltaTime);
-			p90Animator.UpdateAnimation(deltaTime);
+		/*	p90Animator.UpdateAnimation(deltaTime);*/
 
 			glm::mat4 view = glm::mat4(1.0f);
 			glm::mat4 projection = glm::mat4(1.0f);
@@ -208,13 +210,36 @@ namespace Engine {
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			glock.draw(_shaders.animShader);
 
-			_shaders.animShader.activate();
+			/*_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
 			_shaders.animShader.setMat4("projection", projection);
 			auto p90Transforms = p90Animator.GetFinalBoneMatrices();
 			for (int i = 0; i < p90Transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
-			p90.draw(_shaders.animShader);
+			p90.draw(_shaders.animShader);*/
+
+			_shaders.texturedObjectShader.activate();
+			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
+			_shaders.texturedObjectShader.setMat4("view", view);
+			_shaders.texturedObjectShader.setMat4("projection", projection);
+			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
+			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
+			_shaders.texturedObjectShader.setInt("shadowMap", 2);
+			for (int i = 0; i < sceneLights.size(); i++) {
+				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
+
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".position", sceneLights[i].position);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".constant", sceneLights[i].constant);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".linear", sceneLights[i].linear);
+				_shaders.texturedObjectShader.setFloat(lightUniform + ".quadratic", sceneLights[i].quadratic);
+
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".ambient", sceneLights[i].ambient);
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
+				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
+			}
+
+			/*AssetManager::GetModelByName("P90").*/
+			AssetManager::DrawModel("P90", _shaders.texturedObjectShader);
 
 			_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -274,7 +299,7 @@ namespace Engine {
 		shadowMap.Cleanup();
 		Scene::GetPrimitiveModelByName("Cube")->cleanup();
 		glock.cleanup();
-		p90.cleanup();
+		/*p90.cleanup();*/
 		Scene::GetPrimitiveModelByName("CubeLamp")->cleanup();
 		cubemap.cleanup();
 		Scene::GetPrimitiveModelByName("Plane")->cleanup();

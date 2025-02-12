@@ -1,15 +1,11 @@
 #include "AssetManager.h"
 
 namespace AssetManager {
-    std::string g_directory = "resources/textures";
-    std::vector<Mesh> g_meshes;
-    std::unordered_map<std::string, std::vector<Mesh>> g_models;
-    std::unordered_map<std::string, std::string> g_directories;
-	std::vector<Texture> g_texturesLoaded;
+	std::unordered_map<std::string, int> g_modelIndexMap;
 
-	void LoadModel(std::string& name, std::string& path) {
-        g_models[name].clear();
-        g_directories[name] = path.substr(0, path.find_last_of('/'));
+	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
+	void LoadModel(const std::string& name, const std::string& path) {
+		ModelData newModel = { name, {} };
 
 		Assimp::Importer import;
 
@@ -20,15 +16,17 @@ namespace AssetManager {
             std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
             return;
         }
-        /* directory = path.substr(0, path.find_last_of('/'));*/
 
-        AssetManager::ProcessNode(scene->mRootNode, scene, g_models[name]);
+        AssetManager::ProcessNode(scene->mRootNode, scene, newModel.meshes);
+
+		g_models.push_back(newModel);
+	    g_modelIndexMap[name] = g_models.size() - 1;
 	}
 
     void ProcessNode(aiNode* node, const aiScene* scene, std::vector<Mesh>& modelMeshes) {
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            modelMeshes.push_back(ProcessMesh(mesh, scene)); // Store meshes for this model
+            modelMeshes.push_back(ProcessMesh(mesh, scene)); 
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
             ProcessNode(node->mChildren[i], scene, modelMeshes);
@@ -70,28 +68,15 @@ namespace AssetManager {
 			vertices.push_back(vertex);
 		}
 
-		// process indices
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 			aiFace face = mesh->mFaces[i];
 			for (unsigned int j = 0; j < face.mNumIndices; j++) {
 				indices.push_back(face.mIndices[j]);
 			}
 		}
-		// process material
+	
 		if (mesh->mMaterialIndex >= 0) {
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-			//if (noTex) {
-			//	// diffuse color
-			//	aiColor4D diff(1.0f);
-			//	aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diff);
-
-			//	// specular color
-			//	aiColor4D spec(1.0f);
-			//	aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &spec);
-
-			//	return Mesh(br, vertices, indices, diff, spec);
-			//}
 
 			// diffuse maps
 			std::vector<Texture> diffuseMaps = AssetManager::LoadTextures(material, aiTextureType_DIFFUSE);
@@ -107,6 +92,39 @@ namespace AssetManager {
 		return Mesh(vertices, indices, textures);
     }
 
+	void DrawModel(const std::string& name, Shader& shader) {
+		ModelData* existingModel = AssetManager::GetModelByName(name);
+
+		if (!existingModel) {
+			std::cerr << "ERROR::DrawModel::Model '" << name << "' not found!" << std::endl;
+			return;
+		}
+
+		glm::mat4 model = glm::mat4(1.0f);
+
+		model = glm::translate(model, existingModel->position);
+		model *= existingModel->rotation;
+		model = glm::scale(model, existingModel->size);
+
+		/*model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
+
+		shader.setMat4("model", model);
+
+		for (unsigned int i = 0; i < existingModel->meshes.size(); i++)
+			existingModel->meshes[i].draw(shader);
+	}
+
+	ModelData* GetModelByName(const std::string& name) {
+		auto it = g_modelIndexMap.find(name);
+		if (it != g_modelIndexMap.end()) {
+			int index = it->second;
+			return &g_models[index];
+		}
+
+		return nullptr;
+	}
+
+	// ---------------------------------------------------------// TEXTURES //---------------------------------------------------------------------------//
 	std::vector<Texture> LoadTextures(aiMaterial* mat, aiTextureType type) {
 		std::vector<Texture> textures;
 		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -119,7 +137,7 @@ namespace AssetManager {
 
 			// prevent duplicate loading
 			bool skip = false;
-			for (const auto& loadedTex : g_texturesLoaded) {
+			for (const auto& loadedTex : g_textures) {
 				if (loadedTex.path == fileName) { // Compare file names
 					textures.push_back(loadedTex);
 					skip = true;
@@ -131,7 +149,7 @@ namespace AssetManager {
 				Texture tex("resources/textures", fileName, type);
 				tex.load(false);
 				textures.push_back(tex);
-				g_texturesLoaded.push_back(tex);
+				g_textures.push_back(tex);
 			}
 		}
 		return textures;
