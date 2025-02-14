@@ -74,10 +74,11 @@ namespace Engine {
 		PrimitiveModel plane("Plane", PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
 		plane.Init();*/
 
-		Model glock("Glock", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
-		glock.loadModel("resources/models/Glock.fbx");
+		/*Model glock("Glock", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
+		glock.loadModel("resources/models/Glock.fbx");*/
 
 		AssetManager::LoadModel("P90", "resources/models/P90.fbx");
+		AssetManager::LoadModel("Glock", "resources/models/Glock,fbx");
 
 		/*Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		p90.loadModel("resources/models/P90.fbx");*/
@@ -101,9 +102,13 @@ namespace Engine {
 		ShadowMap shadowMap;
 		shadowMap.Init();
 
+		ModelData* glock = AssetManager::GetModelByName("Glock");
+
 		// load animations
-		Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
-		Animator glockAnimator(&glockIdleAnimation);
+		AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glock);
+		/*Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
+		Animator glockAnimator(&glockIdleAnimation);*/
+		Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));
 
 		/*Animation p90IdleAnimation("resources/animations/P90_ReloadEmpty.fbx", &p90);
 		Animator p90Animator(&p90IdleAnimation);*/
@@ -141,7 +146,7 @@ namespace Engine {
 			Window::PrepareFrame();
 
 			glockAnimator.UpdateAnimation(deltaTime);
-		/*	p90Animator.UpdateAnimation(deltaTime);*/
+			/*	p90Animator.UpdateAnimation(deltaTime);*/
 
 			glm::mat4 view = glm::mat4(1.0f);
 			glm::mat4 projection = glm::mat4(1.0f);
@@ -172,14 +177,16 @@ namespace Engine {
 			gunRotation = gunRotation * localRotationFix;
 
 			// Apply transformations to the gun
-			glock.setPosition(gunPosition);
-			glock.setRotation(gunRotation);
+			glock->position = gunPosition;
+			glock->rotation = gunRotation;
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			Scene::GetPrimitiveModelByName("Cube")->setRotation(rotationMatrix);
 			Scene::GetPrimitiveModelByName("Cube")->setPosition(cubeTransformData.position);
+
+			AssetManager::GetModelByName("P90")->position = glm::vec3(5.0f, 5.0f, 5.0f);
 
 
 			// ------ 1. SHADOW PASS (Render to Depth Map) ------
@@ -208,7 +215,8 @@ namespace Engine {
 			auto transforms = glockAnimator.GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			glock.draw(_shaders.animShader);
+			/*glock.draw(_shaders.animShader);*/
+			AssetManager::DrawModel("Glock", _shaders.texturedObjectShader);
 
 			/*_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
@@ -238,7 +246,6 @@ namespace Engine {
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
 			}
 
-			/*AssetManager::GetModelByName("P90").*/
 			AssetManager::DrawModel("P90", _shaders.texturedObjectShader);
 
 			_shaders.texturedObjectShader.activate();
@@ -298,8 +305,9 @@ namespace Engine {
 
 		shadowMap.Cleanup();
 		Scene::GetPrimitiveModelByName("Cube")->cleanup();
-		glock.cleanup();
+		/*glock.cleanup();*/
 		/*p90.cleanup();*/
+		AssetManager::CleanupModels();
 		Scene::GetPrimitiveModelByName("CubeLamp")->cleanup();
 		cubemap.cleanup();
 		Scene::GetPrimitiveModelByName("Plane")->cleanup();

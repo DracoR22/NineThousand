@@ -6,7 +6,9 @@
 #include <assimp/scene.h>
 #include "Bone.hpp"
 #include <functional>
-#include "../Core/Model.h"
+
+struct ModelData;
+struct BoneInfo;
 
 struct AssimpNodeData
 {
@@ -21,7 +23,7 @@ class Animation
 public:
 	Animation() = default;
 
-	Animation(const std::string& animationPath, Model* model)
+	Animation(const std::string& animationPath, ModelData* model)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -61,12 +63,12 @@ public:
 	}
 
 private:
-	void ReadMissingBones(const aiAnimation* animation, Model& model)
+	void ReadMissingBones(const aiAnimation* animation, ModelData& model)
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = model.GetBoneInfoMap();//getting m_BoneInfoMap from Model class
-		int& boneCount = model.GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& boneInfoMap = model.boneInfoMap;//getting m_BoneInfoMap from Model class
+		int& boneCount = model.boneCounter; //getting the m_BoneCounter from Model class
 
 		//reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)

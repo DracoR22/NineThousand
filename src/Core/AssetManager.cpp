@@ -2,8 +2,13 @@
 
 namespace AssetManager {
 	std::unordered_map<std::string, int> g_modelIndexMap;
+	std::unordered_map<std::string, int> g_animationIndexMap;
 
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
+	void LoadPrimitiveModel(const std::string& name) {
+
+	}
+
 	void LoadModel(const std::string& name, const std::string& path) {
 		ModelData newModel = { name, {} };
 
@@ -17,23 +22,23 @@ namespace AssetManager {
             return;
         }
 
-        AssetManager::ProcessNode(scene->mRootNode, scene, newModel.meshes);
+        AssetManager::ProcessNode(scene->mRootNode, scene, newModel);
 
 		g_models.push_back(newModel);
 	    g_modelIndexMap[name] = g_models.size() - 1;
 	}
 
-    void ProcessNode(aiNode* node, const aiScene* scene, std::vector<Mesh>& modelMeshes) {
+    void ProcessNode(aiNode* node, const aiScene* scene, ModelData& model) {
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            modelMeshes.push_back(ProcessMesh(mesh, scene)); 
+            model.meshes.push_back(ProcessMesh(mesh, scene, model)); 
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            ProcessNode(node->mChildren[i], scene, modelMeshes);
+            ProcessNode(node->mChildren[i], scene, model);
         }
     }
 
-    Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene) {
+    Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& model) {
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 		std::vector<Texture> textures;
@@ -87,7 +92,7 @@ namespace AssetManager {
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 		}
 
-		/*ExtractBoneWeightForVertices(vertices, mesh, scene);*/
+		AssetManager::ExtractBoneWeightForVertices(vertices, mesh, scene, model);
 
 		return Mesh(vertices, indices, textures);
     }
@@ -124,6 +129,79 @@ namespace AssetManager {
 		return nullptr;
 	}
 
+	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, ModelData &model) {
+		auto& boneInfoMap = model.boneInfoMap;
+		int& boneCount = model.boneCounter;
+
+		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		{
+			int boneID = -1;
+			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+			if (boneInfoMap.find(boneName) == boneInfoMap.end())
+			{
+				BoneInfo newBoneInfo;
+				newBoneInfo.id = boneCount;
+				newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+				boneInfoMap[boneName] = newBoneInfo;
+				boneID = boneCount;
+				boneCount++;
+			}
+			else
+			{
+				boneID = boneInfoMap[boneName].id;
+			}
+			assert(boneID != -1);
+			auto weights = mesh->mBones[boneIndex]->mWeights;
+			int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+			{
+				int vertexId = weights[weightIndex].mVertexId;
+				float weight = weights[weightIndex].mWeight;
+				assert(vertexId <= vertices.size());
+				SetVertexBoneData(vertices[vertexId], boneID, weight);
+			}
+		}
+	}
+
+	void SetVertexBoneData(Vertex& vertex, int boneID, float weight) {
+		for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+		{
+			if (vertex.m_BoneIDs[i] < 0)
+			{
+				vertex.m_Weights[i] = weight;
+				vertex.m_BoneIDs[i] = boneID;
+				break;
+			}
+		}
+	}
+
+	void SetVertexBoneDataToDefault(Vertex& vertex) {
+		for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
+			vertex.m_BoneIDs[i] = -1;
+			vertex.m_Weights[i] = 0.0f;
+		}
+	}
+
+	/*std::map<std::string, BoneInfo>& GetBoneInfoMap() {
+
+	}
+
+	int& GetBoneCount() {
+
+	}*/
+
+	void CleanupModels() {
+		for (auto& model : g_models) {
+			for (auto& mesh : model.meshes) {
+				mesh.cleanup();
+			}
+		}
+		g_models.clear();
+		g_modelIndexMap.clear();
+		g_textures.clear();
+	}
+
 	// ---------------------------------------------------------// TEXTURES //---------------------------------------------------------------------------//
 	std::vector<Texture> LoadTextures(aiMaterial* mat, aiTextureType type) {
 		std::vector<Texture> textures;
@@ -153,5 +231,23 @@ namespace AssetManager {
 			}
 		}
 		return textures;
+	}
+
+// ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
+	void LoadAnimation(const std::string& name, const std::string& path, ModelData* model) {
+		Animation newAnimation(path, model);
+
+		g_animations.push_back(newAnimation);
+		g_animationIndexMap[name] = g_animations.size() - 1;
+	}
+
+	Animation* GetAnimationByName(const std::string& name) {
+		auto it = g_animationIndexMap.find(name);
+		if (it != g_animationIndexMap.end()) {
+			int index = it->second;
+			return &g_animations[index];
+		}
+
+		return nullptr;
 	}
 }
