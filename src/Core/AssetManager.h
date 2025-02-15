@@ -11,17 +11,11 @@
 
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Texture.h"
-
-#include "../Animations/AssimpGlmHelpers.hpp"
 #include "../Animations/Animation.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-struct BoneInfo {
-	int id;
-	glm::mat4 offset;
-};
 
 struct ModelData {
 	const std::string name;
@@ -36,7 +30,7 @@ struct ModelData {
 };
 
 namespace AssetManager {
-	inline std::vector<ModelData> g_models;
+	inline std::vector<Model> g_models;
 	inline std::vector<Texture> g_textures;
 	inline std::vector<Animation> g_animations;
 
@@ -44,15 +38,13 @@ namespace AssetManager {
 	void LoadModel(const std::string& name, const std::string& path);
 	void LoadPrimitiveModel(const std::string& name);
 
-	void ProcessNode(aiNode* node, const aiScene* scene, ModelData& model);
-	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& model);
 	void DrawModel(const std::string& name, Shader& shader);
 
-    ModelData* GetModelByName(const std::string& name);
+    Model* GetModelByName(const std::string& name);
 
-	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, ModelData& model);
-	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
-	void SetVertexBoneDataToDefault(Vertex& vertex);
+	//void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Model& model);
+	//void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+	//void SetVertexBoneDataToDefault(Vertex& vertex);
 
 	/*std::map<std::string, BoneInfo>& GetBoneInfoMap();
 	int& GetBoneCount();*/
@@ -63,6 +55,6 @@ namespace AssetManager {
 	std::vector<Texture> LoadTextures(aiMaterial* mat, aiTextureType type);
 
 	// animations
-	void LoadAnimation(const std::string& name, const std::string& path, ModelData* model);
+	void LoadAnimation(const std::string& name, const std::string& path, Model* model);
 	Animation* GetAnimationByName(const std::string& name);
 }

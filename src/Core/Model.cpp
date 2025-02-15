@@ -1,7 +1,7 @@
 #include "Model.h"
 
 Model::Model(const std::string& name, glm::vec3 pos, glm::vec3 size)
-: m_name(name), pos(pos), size(size) {}
+	: m_name(name), pos(pos), size(size) {}
 
 void Model::draw(Shader& shader) {
 	glm::mat4 model = glm::mat4(1.0f);
@@ -23,7 +23,7 @@ void Model::setPosition(const glm::vec3& newPos) {
 }
 
 void Model::setRotation(const glm::mat4& newRotation) {
-     rotation = newRotation;
+	rotation = newRotation;
 }
 
 void Model::setSize(const glm::vec3& newSize) {
@@ -31,23 +31,23 @@ void Model::setSize(const glm::vec3& newSize) {
 }
 
 const std::string& Model::GetName() {
-	 return m_name;
+	return m_name;
 }
 
 void Model::loadModel(std::string path) {
 	Assimp::Importer import;
 
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-        return;
-    }
-   /* directory = path.substr(0, path.find_last_of('/'));*/
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+		return;
+	}
+	/* directory = path.substr(0, path.find_last_of('/'));*/
 	directory = "resources/textures";
 
-    processNode(scene->mRootNode, scene);
+	processNode(scene->mRootNode, scene);
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene) {

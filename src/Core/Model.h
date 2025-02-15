@@ -44,16 +44,18 @@ public:
 	int& GetBoneCount();
 
 	const std::string& GetName();
+
 private:
 	std::string directory;
 	std::vector<Texture> textures_loaded;
-	std::string m_name;
-	
+
 	void processNode(aiNode* node, const aiScene* scene);
-	
+
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
+
+	std::string m_name;
 
 	// for animations
 	std::map<std::string, BoneInfo> m_BoneInfoMap;
