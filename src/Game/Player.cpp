@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: velocity(0.0f), speed(11.0f), camera(position), height(height) {
+	: velocity(0.0f), speed(9.0f), camera(position), height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
 	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));

@@ -10,7 +10,10 @@
 
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Texture.h"
+
 #include "../Animations/AssimpGlmHelpers.hpp"
+
+#include "CreateInfo.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,7 +26,7 @@ struct BoneInfo
 
 class Model {
 public:
-	Model(const std::string& name, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f));
+	Model(const std::string& name, const ModelCreateInfo& createInfo);
 
 	void draw(Shader& shader);
 

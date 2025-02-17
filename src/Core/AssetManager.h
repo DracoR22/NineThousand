@@ -11,7 +11,11 @@
 
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Texture.h"
+#include "../Graphics/Primitives.hpp"
+
 #include "../Animations/Animation.hpp"
+
+
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -35,19 +39,12 @@ namespace AssetManager {
 	inline std::vector<Animation> g_animations;
 
 	// models
-	void LoadModel(const std::string& name, const std::string& path);
-	void LoadPrimitiveModel(const std::string& name);
+	void LoadModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
+	void LoadPrimitiveModel(const std::string& name, PrimitiveModel::Type, ModelCreateInfo& createInfo);
 
 	void DrawModel(const std::string& name, Shader& shader);
 
     Model* GetModelByName(const std::string& name);
-
-	//void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Model& model);
-	//void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
-	//void SetVertexBoneDataToDefault(Vertex& vertex);
-
-	/*std::map<std::string, BoneInfo>& GetBoneInfoMap();
-	int& GetBoneCount();*/
 
 	void CleanupModels();
 

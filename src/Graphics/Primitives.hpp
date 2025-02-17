@@ -9,8 +9,8 @@ public:
         PLANE
     };
 
-    PrimitiveModel(const std::string& name, Type type, glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f))
-        : Model(name, pos, size), m_type(type) {}
+    PrimitiveModel(const std::string& name, Type type, ModelCreateInfo& createInfo)
+        : Model(name, createInfo), m_type(type) {}
 
     void Init() {
         if (m_type == Type::CUBE) {

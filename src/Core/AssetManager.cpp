@@ -5,26 +5,15 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_animationIndexMap;
 
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
-	void LoadPrimitiveModel(const std::string& name) {
+	void LoadPrimitiveModel(const std::string& name, PrimitiveModel::Type type, ModelCreateInfo& createInfo) {
+		PrimitiveModel primitiveModel(name, type, createInfo);
 
+		g_models.push_back(primitiveModel);
+		g_modelIndexMap[name] = g_models.size() - 1;
 	}
 
-	void LoadModel(const std::string& name, const std::string& path) {
-		/*Model newModel = { name, {} };
-
-		Assimp::Importer import;
-
-        const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-        {
-            std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-            return;
-        }
-
-        AssetManager::ProcessNode(scene->mRootNode, scene, newModel);*/
-
-		Model model(name, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
+	void LoadModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
+		Model model(name, createInfo);
 		model.loadModel(path);
 
 		g_models.push_back(model);
@@ -40,19 +29,6 @@ namespace AssetManager {
 		}
 
 		existingModel->draw(shader);
-
-		//glm::mat4 model = glm::mat4(1.0f);
-
-		//model = glm::translate(model, existingModel->pos);
-		//model *= existingModel->rotation;
-		//model = glm::scale(model, existingModel->size);
-
-		///*model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
-
-		//shader.setMat4("model", model);
-
-		//for (unsigned int i = 0; i < existingModel->meshes.size(); i++)
-		//	existingModel->meshes[i].draw(shader);
 	}
 
 	Model* GetModelByName(const std::string& name) {
@@ -109,11 +85,6 @@ namespace AssetManager {
 
 // ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
-		/*Animation newAnimation(path, model);
-
-		g_animations.push_back(newAnimation);
-		g_animationIndexMap[name] = g_animations.size() - 1;*/
-
 		Animation animation(path, model);
 		g_animations.push_back(animation);
 		g_animationIndexMap[name] = g_animations.size() - 1;

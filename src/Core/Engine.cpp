@@ -74,11 +74,45 @@ namespace Engine {
 		PrimitiveModel plane("Plane", PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
 		plane.Init();*/
 
-		Model glock("Glock", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
-		glock.loadModel("resources/models/Glock.fbx");
+		ModelCreateInfo glockCreateInfo {
+		 glm::vec3(0.0f, 3.0f, 0.0f), 
+	     glm::vec3(0.05f),               
+		 glm::mat4(1.0f)
+		};
 
-		AssetManager::LoadModel("P90", "resources/models/P90.fbx");
-		/*AssetManager::LoadModel("Glock", "resources/models/Glock,fbx");*/
+		ModelCreateInfo p90CreateInfo{
+		 glm::vec3(0.0f, 5.0f, 0.0f),
+		 glm::vec3(0.05f),
+		 glm::mat4(1.0f)
+		};
+
+		ModelCreateInfo cubeCreateInfo{
+			glm::vec3(0.0f, 5.0f, 1.0f),
+			glm::vec3(0.75f),
+			glm::mat4(1.0f)
+		};
+
+		ModelCreateInfo lampCreateInfo{
+			glm::vec3(10.0f, 5.0f, 5.0f),
+			glm::vec3(0.75f),
+			glm::mat4(1.0f)
+		};
+
+		ModelCreateInfo planeCreateInfo{
+			glm::vec3(0.0f),
+			glm::vec3(50.0f),
+			glm::mat4(1.0f)
+		};
+
+		/*Model glockModel("Glock", glockCreateInfo);
+		glocModk.loadModel("resources/models/Glock.fbx");*/
+
+		AssetManager::LoadModel("P90", "resources/models/P90.fbx", p90CreateInfo);
+		AssetManager::LoadModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
+
+		/*AssetManager::LoadPrimitiveModel("Cube", PrimitiveModel::Type::CUBE, cubeCreateInfo);
+		AssetManager::LoadPrimitiveModel("Plane", PrimitiveModel::Type::PLANE, planeCreateInfo);
+		AssetManager::LoadPrimitiveModel("CubeLamp", PrimitiveModel::Type::CUBE, lampCreateInfo);*/
 
 		/*Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
 		p90.loadModel("resources/models/P90.fbx");*/
@@ -104,15 +138,17 @@ namespace Engine {
 
 		//ModelData* glock = AssetManager::GetModelByName("Glock");
 
+	    Model* glockModel = AssetManager::GetModelByName("Glock");
+
 		// load animations
-	/*	AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glock);*/
-		Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);
-		Animator glockAnimator(&glockIdleAnimation);
+	/*	AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);*/
+		/*Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);*/
+		/*Animator glockAnimator(&glockIdleAnimation);*/
 		/*Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));*/
 
-		AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", AssetManager::GetModelByName("P90"));
+		/*AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", AssetManager::GetModelByName("P90"));
 		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90Idle");
-		Animator p90Animator(p90IdleAnimation);
+		Animator p90Animator(p90IdleAnimation);*/
 
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
@@ -146,8 +182,8 @@ namespace Engine {
 			}*/
 			Window::PrepareFrame();
 
-			glockAnimator.UpdateAnimation(deltaTime);
-		    p90Animator.UpdateAnimation(deltaTime);
+			/*glockAnimator.UpdateAnimation(deltaTime);
+		    p90Animator.UpdateAnimation(deltaTime);*/
 
 			glm::mat4 view = glm::mat4(1.0f);
 			glm::mat4 projection = glm::mat4(1.0f);
@@ -178,14 +214,17 @@ namespace Engine {
 			gunRotation = gunRotation * localRotationFix;
 
 			// Apply transformations to the gun
-			glock.setPosition(gunPosition);
-			glock.setRotation(gunRotation);
+			glockModel->setPosition(gunPosition);
+			glockModel->setRotation(gunRotation);
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			Scene::GetPrimitiveModelByName("Cube")->setRotation(rotationMatrix);
 			Scene::GetPrimitiveModelByName("Cube")->setPosition(cubeTransformData.position);
+
+			/*AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
+			AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);*/
 
 			AssetManager::GetModelByName("P90")->setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
 
@@ -210,22 +249,22 @@ namespace Engine {
 
 
 			// ------ 2. RENDER PASS ------
-			_shaders.animShader.activate();
-			_shaders.animShader.setMat4("view", view);
-			_shaders.animShader.setMat4("projection", projection);
-			auto transforms = glockAnimator.GetFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); ++i)
-				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			glock.draw(_shaders.animShader);
-			/*AssetManager::DrawModel("Glock", _shaders.texturedObjectShader);*/
+			//_shaders.animShader.activate();
+			//_shaders.animShader.setMat4("view", view);
+			//_shaders.animShader.setMat4("projection", projection);
+			//auto transforms = glockAnimator.GetFinalBoneMatrices();
+			//for (int i = 0; i < transforms.size(); ++i)
+			//	_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			//glockModel->draw(_shaders.animShader);
+			///*AssetManager::DrawModel("Glock", _shaders.texturedObjectShader);*/
 
-			_shaders.animShader.activate();
-			_shaders.animShader.setMat4("view", view);
-			_shaders.animShader.setMat4("projection", projection);
-			auto p90Transforms = p90Animator.GetFinalBoneMatrices();
-			for (int i = 0; i < p90Transforms.size(); ++i)
-				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
-			AssetManager::DrawModel("P90", _shaders.animShader);
+			//_shaders.animShader.activate();
+			//_shaders.animShader.setMat4("view", view);
+			//_shaders.animShader.setMat4("projection", projection);
+			//auto p90Transforms = p90Animator.GetFinalBoneMatrices();
+			//for (int i = 0; i < p90Transforms.size(); ++i)
+			//	_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
+			//AssetManager::DrawModel("P90", _shaders.animShader);
 
 			/*_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -305,7 +344,7 @@ namespace Engine {
 
 		shadowMap.Cleanup();
 		Scene::GetPrimitiveModelByName("Cube")->cleanup();
-		glock.cleanup();
+		/*glock.cleanup();*/
 		/*p90.cleanup();*/
 		AssetManager::CleanupModels();
 		Scene::GetPrimitiveModelByName("CubeLamp")->cleanup();

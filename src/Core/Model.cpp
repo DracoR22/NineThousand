@@ -1,7 +1,7 @@
 #include "Model.h"
 
-Model::Model(const std::string& name, glm::vec3 pos, glm::vec3 size)
-	: m_name(name), pos(pos), size(size) {}
+Model::Model(const std::string& name, const ModelCreateInfo& createInfo)
+	: m_name(name), pos(createInfo.position), size(createInfo.size), rotation(createInfo.rotation) {}
 
 void Model::draw(Shader& shader) {
 	glm::mat4 model = glm::mat4(1.0f);

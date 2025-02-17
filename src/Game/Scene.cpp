@@ -2,14 +2,36 @@
 
 namespace Scene {
 	void LoadGamePrimitiveObjects() {
-		g_primitiveGameObjects.emplace_back("Cube", PrimitiveModel::Type::CUBE, glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
-		g_primitiveGameObjects.back().Init();
+		ModelCreateInfo cubeCreateInfo{
+			glm::vec3(0.0f, 5.0f, 1.0f),
+			glm::vec3(0.75f),
+			glm::mat4(1.0f)
+		};
 
-		g_primitiveGameObjects.emplace_back("Plane", PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
-		g_primitiveGameObjects.back().Init();
+		ModelCreateInfo lampCreateInfo{
+			glm::vec3(10.0f, 5.0f, 5.0f),
+			glm::vec3(0.75f),
+			glm::mat4(1.0f)
+		};
 
-		g_primitiveGameObjects.emplace_back("CubeLamp", PrimitiveModel::Type::CUBE, glm::vec3(5.0f, 5.0f, 5.0f));
-		g_primitiveGameObjects.back().Init();
+		ModelCreateInfo planeCreateInfo{
+			glm::vec3(0.0f),
+			glm::vec3(50.0f),
+			glm::mat4(1.0f)
+		};
+
+		PrimitiveModel cubeModel("Cube", PrimitiveModel::Type::CUBE, cubeCreateInfo);
+		cubeModel.Init();
+
+		PrimitiveModel planeModel("Plane", PrimitiveModel::Type::PLANE, planeCreateInfo);
+		planeModel.Init();
+
+		PrimitiveModel lampModel("CubeLamp", PrimitiveModel::Type::CUBE, lampCreateInfo);
+		lampModel.Init();
+
+		g_primitiveGameObjects.push_back(cubeModel);
+		g_primitiveGameObjects.push_back(planeModel);
+		g_primitiveGameObjects.push_back(lampModel);
 
 		std::cout << "All Primitives Loaded" << std::endl;
 	}
