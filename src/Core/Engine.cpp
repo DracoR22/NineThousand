@@ -27,11 +27,9 @@ namespace Engine {
 	void Run() {
 		Window::Init();
 		Physics::InitPhysx();
+		Game::CreatePlayers();
 
-		glm::vec3 gunOffset(0.2f, -3.5f, 2.6f);
-		glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
+		Player& player = Game::GetPLayerByIndex(0);
 
 		float rotationAngle = 0.0f;
 
@@ -62,18 +60,6 @@ namespace Engine {
 		cubemap.init();
 
 		// load models
-	/*	PrimitiveModel cube("Cube", PrimitiveModel::Type::CUBE, glm::vec3(0.0f, 5.0f, 1.0f), glm::vec3(0.75f));
-		cube.Init();
-
-		PrimitiveModel cubeLamp("CubeLamp", PrimitiveModel::Type::CUBE, glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.75f));
-		cubeLamp.Init();
-
-		PrimitiveModel cubeLamp2("CubeLamp2", PrimitiveModel::Type::CUBE, glm::vec3(10.0f, 5.0f, 5.0f), glm::vec3(0.75f));
-		cubeLamp2.Init();
-
-		PrimitiveModel plane("Plane", PrimitiveModel::Type::PLANE, glm::vec3(0.0f), glm::vec3(50.0f));
-		plane.Init();*/
-
 		ModelCreateInfo glockCreateInfo {
 		 glm::vec3(0.0f, 3.0f, 0.0f), 
 	     glm::vec3(0.05f),               
@@ -104,25 +90,17 @@ namespace Engine {
 			glm::mat4(1.0f)
 		};
 
-		/*Model glockModel("Glock", glockCreateInfo);
-		glocModk.loadModel("resources/models/Glock.fbx");*/
+		AssetManager::LoadAssimpModel("P90", "resources/models/P90.fbx", p90CreateInfo);
+		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 
-		AssetManager::LoadModel("P90", "resources/models/P90.fbx", p90CreateInfo);
-		AssetManager::LoadModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
-
-		/*AssetManager::LoadPrimitiveModel("Cube", PrimitiveModel::Type::CUBE, cubeCreateInfo);
-		AssetManager::LoadPrimitiveModel("Plane", PrimitiveModel::Type::PLANE, planeCreateInfo);
-		AssetManager::LoadPrimitiveModel("CubeLamp", PrimitiveModel::Type::CUBE, lampCreateInfo);*/
-
-		/*Model p90("P90", glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.05f));
-		p90.loadModel("resources/models/P90.fbx");*/
-
-		Scene::LoadGamePrimitiveObjects();
+		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
+		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
+		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
 
 		std::vector<PointLight> sceneLights;
 
 		PointLight cubeLampLight;
-		cubeLampLight.position = Scene::GetPrimitiveModelByName("CubeLamp")->pos;
+		cubeLampLight.position = AssetManager::GetModelByName("CubeLamp")->pos;
 		cubeLampLight.constant = 1.0f;
 		cubeLampLight.linear = 0.02f;
 		cubeLampLight.quadratic = 0.01f;
@@ -136,15 +114,11 @@ namespace Engine {
 		ShadowMap shadowMap;
 		shadowMap.Init();
 
-		//ModelData* glock = AssetManager::GetModelByName("Glock");
-
 	    Model* glockModel = AssetManager::GetModelByName("Glock");
 
 		// load animations
-	/*	AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);*/
-		/*Animation glockIdleAnimation("resources/animations/Glock_Idle.fbx", &glock);*/
-		/*Animator glockAnimator(&glockIdleAnimation);*/
-		/*Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));*/
+		AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);
+		Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));
 
 		/*AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", AssetManager::GetModelByName("P90"));
 		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90Idle");
@@ -182,8 +156,8 @@ namespace Engine {
 			}*/
 			Window::PrepareFrame();
 
-			/*glockAnimator.UpdateAnimation(deltaTime);
-		    p90Animator.UpdateAnimation(deltaTime);*/
+			glockAnimator.UpdateAnimation(deltaTime);
+			/*p90Animator.UpdateAnimation(deltaTime);*/
 
 			glm::mat4 view = glm::mat4(1.0f);
 			glm::mat4 projection = glm::mat4(1.0f);
@@ -191,56 +165,30 @@ namespace Engine {
 			view = player.camera.getViewMatrix();
 			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 50.0f);
 
-			glm::vec3 gunPosition = player.getPosition() +
-				(player.camera.cameraFront * 0.7f) +   // Offset forward
-				(player.camera.cameraUp * -3.85f);    // Offset downward
-
-			// Calculate gun rotation to align with the camera
-			glm::mat4 gunRotation = glm::mat4(1.0f);
-
-			// Rotate around camera right (tilt up/down)
-			float theta = acos(glm::dot(player.camera.worldUp, player.camera.cameraFront) /
-				(glm::length(player.camera.worldUp) * glm::length(player.camera.cameraFront)));
-			gunRotation = glm::rotate(gunRotation, glm::half_pi<float>() - theta, player.camera.cameraRight);
-
-			// Rotate around camera up (align gun to camera facing direction in horizontal plane)
-			glm::vec2 front2D = glm::vec2(player.camera.cameraFront.x, player.camera.cameraFront.z);
-			theta = acos(glm::dot(glm::vec2(1.0f, 0.0f), glm::normalize(front2D)));
-			gunRotation = glm::rotate(gunRotation, player.camera.cameraFront.z < 0 ? theta : -theta, player.camera.worldUp);
-
-			// Apply local rotation adjustment to align gun's forward direction
-			glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Adjust for left-facing gun
-			localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); // Slight upward pitch adjustment
-			gunRotation = gunRotation * localRotationFix;
-
-			// Apply transformations to the gun
-			glockModel->setPosition(gunPosition);
-			glockModel->setRotation(gunRotation);
+			Game::Update();
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
-			Scene::GetPrimitiveModelByName("Cube")->setRotation(rotationMatrix);
-			Scene::GetPrimitiveModelByName("Cube")->setPosition(cubeTransformData.position);
-
-			/*AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
-			AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);*/
+			AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
+			AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
 
 			AssetManager::GetModelByName("P90")->setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
 
 
 			// ------ 1. SHADOW PASS (Render to Depth Map) ------
 			glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, Scene::GetPrimitiveModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
 			glm::mat4 lightProjection = orthogonalProjection * lightView;
-
-			_shaders.shadowMapShader.activate();
-			_shaders.shadowMapShader.setMat4("lightProjection", lightProjection);
 
 			shadowMap.Clear();
 
 			glCullFace(GL_FRONT);
-			Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.shadowMapShader);
+
+			_shaders.shadowMapShader.activate();
+			_shaders.shadowMapShader.setMat4("lightProjection", lightProjection);
+			AssetManager::DrawModel("Cube", _shaders.shadowMapShader);
+
 			glCullFace(GL_BACK);
 
 			shadowMap.Unbind();
@@ -249,14 +197,13 @@ namespace Engine {
 
 
 			// ------ 2. RENDER PASS ------
-			//_shaders.animShader.activate();
-			//_shaders.animShader.setMat4("view", view);
-			//_shaders.animShader.setMat4("projection", projection);
-			//auto transforms = glockAnimator.GetFinalBoneMatrices();
-			//for (int i = 0; i < transforms.size(); ++i)
-			//	_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			//glockModel->draw(_shaders.animShader);
-			///*AssetManager::DrawModel("Glock", _shaders.texturedObjectShader);*/
+			_shaders.animShader.activate();
+			_shaders.animShader.setMat4("view", view);
+			_shaders.animShader.setMat4("projection", projection);
+			auto transforms = glockAnimator.GetFinalBoneMatrices();
+			for (int i = 0; i < transforms.size(); ++i)
+				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			AssetManager::DrawModel("Glock", _shaders.animShader);
 
 			//_shaders.animShader.activate();
 			//_shaders.animShader.setMat4("view", view);
@@ -307,7 +254,8 @@ namespace Engine {
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
 			}
 
-			Scene::GetPrimitiveModelByName("Plane")->draw(_shaders.texturedObjectShader);
+			/*Scene::GetPrimitiveModelByName("Plane")->draw(_shaders.texturedObjectShader);*/
+			AssetManager::DrawModel("Plane", _shaders.texturedObjectShader);
 
 			_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -328,14 +276,16 @@ namespace Engine {
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
 				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
 			}
-			Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.texturedObjectShader);
+			/*Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.texturedObjectShader);*/
+			AssetManager::DrawModel("Cube", _shaders.shadowMapShader);
 
 			_shaders.lampShader.activate();
 			_shaders.lampShader.set3Float("viewPos", player.getPosition());
 			_shaders.lampShader.setMat4("view", view);
 			_shaders.lampShader.setMat4("projection", projection);
 			_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-			Scene::GetPrimitiveModelByName("CubeLamp")->draw(_shaders.lampShader);
+			/*Scene::GetPrimitiveModelByName("CubeLamp")->draw(_shaders.lampShader);*/
+			AssetManager::DrawModel("CubeLamp", _shaders.lampShader);
 
 			cubemap.render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
@@ -343,13 +293,11 @@ namespace Engine {
 		}
 
 		shadowMap.Cleanup();
-		Scene::GetPrimitiveModelByName("Cube")->cleanup();
 		/*glock.cleanup();*/
 		/*p90.cleanup();*/
 		AssetManager::CleanupModels();
-		Scene::GetPrimitiveModelByName("CubeLamp")->cleanup();
 		cubemap.cleanup();
-		Scene::GetPrimitiveModelByName("Plane")->cleanup();
+		/*Scene::GetPrimitiveModelByName("Plane")->cleanup();*/
 
 		Physics::CleanupPhysX();
 

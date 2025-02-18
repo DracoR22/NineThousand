@@ -18,7 +18,7 @@ public:
 
 	glm::vec3 getPosition();
 
-	//float eyeHeight = position.y + (height * 0.8f);
+public:
 	bool isOnGround = true;
 
 private:

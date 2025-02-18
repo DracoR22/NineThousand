@@ -5,16 +5,17 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_animationIndexMap;
 
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
-	void LoadPrimitiveModel(const std::string& name, PrimitiveModel::Type type, ModelCreateInfo& createInfo) {
-		PrimitiveModel primitiveModel(name, type, createInfo);
+	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
+		Model model(name, createInfo);
+		model.LoadModel(type);
 
-		g_models.push_back(primitiveModel);
+		g_models.push_back(model);
 		g_modelIndexMap[name] = g_models.size() - 1;
 	}
 
-	void LoadModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
+	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
 		Model model(name, createInfo);
-		model.loadModel(path);
+		model.loadAssimpModel(path);
 
 		g_models.push_back(model);
 	    g_modelIndexMap[name] = g_models.size() - 1;

@@ -15,23 +15,8 @@
 
 #include "../Animations/Animation.hpp"
 
-
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-
-struct ModelData {
-	const std::string name;
-
-	std::vector<Mesh> meshes;
-	glm::vec3 position = glm::vec3(0.0f);
-	glm::mat4 rotation = glm::mat4(1.0f);
-	glm::vec3 size = glm::vec3(0.05f);
-
-	std::map<std::string, BoneInfo> boneInfoMap;
-	int boneCounter = 0;
-};
 
 namespace AssetManager {
 	inline std::vector<Model> g_models;
@@ -39,8 +24,8 @@ namespace AssetManager {
 	inline std::vector<Animation> g_animations;
 
 	// models
-	void LoadModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
-	void LoadPrimitiveModel(const std::string& name, PrimitiveModel::Type, ModelCreateInfo& createInfo);
+	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
+	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo);
 
 	void DrawModel(const std::string& name, Shader& shader);
 

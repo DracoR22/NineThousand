@@ -19,20 +19,7 @@ namespace Scene {
 			glm::vec3(50.0f),
 			glm::mat4(1.0f)
 		};
-
-		PrimitiveModel cubeModel("Cube", PrimitiveModel::Type::CUBE, cubeCreateInfo);
-		cubeModel.Init();
-
-		PrimitiveModel planeModel("Plane", PrimitiveModel::Type::PLANE, planeCreateInfo);
-		planeModel.Init();
-
-		PrimitiveModel lampModel("CubeLamp", PrimitiveModel::Type::CUBE, lampCreateInfo);
-		lampModel.Init();
-
-		g_primitiveGameObjects.push_back(cubeModel);
-		g_primitiveGameObjects.push_back(planeModel);
-		g_primitiveGameObjects.push_back(lampModel);
-
+	
 		std::cout << "All Primitives Loaded" << std::endl;
 	}
 

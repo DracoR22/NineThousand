@@ -24,6 +24,7 @@
 
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
+#include "../Game/Game.h"
 
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>

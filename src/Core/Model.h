@@ -24,6 +24,11 @@ struct BoneInfo
 	glm::mat4 offset;
 };
 
+enum class ModelType {
+	CUBE,
+	PLANE
+};
+
 class Model {
 public:
 	Model(const std::string& name, const ModelCreateInfo& createInfo);
@@ -40,7 +45,9 @@ public:
 
 	std::vector<Mesh> meshes;
 
-	void loadModel(std::string path);
+	void loadAssimpModel(std::string path);
+	void LoadModel(ModelType type);
+
 	void cleanup();
 
 	std::map<std::string, BoneInfo>& GetBoneInfoMap();
