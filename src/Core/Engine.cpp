@@ -60,9 +60,9 @@ namespace Engine {
 		cubemap.init();
 
 		// load models
-		ModelCreateInfo glockCreateInfo {
-		 glm::vec3(0.0f, 3.0f, 0.0f), 
-	     glm::vec3(0.05f),               
+		ModelCreateInfo glockCreateInfo{
+		 glm::vec3(0.0f, 3.0f, 0.0f),
+		 glm::vec3(0.05f),
 		 glm::mat4(1.0f)
 		};
 
@@ -114,15 +114,15 @@ namespace Engine {
 		ShadowMap shadowMap;
 		shadowMap.Init();
 
-	    Model* glockModel = AssetManager::GetModelByName("Glock");
+		Model* glockModel = AssetManager::GetModelByName("Glock");
+		Model* p90Model = AssetManager::GetModelByName("P90");
 
 		// load animations
 		AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);
 		Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));
 
-		/*AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", AssetManager::GetModelByName("P90"));
-		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90Idle");
-		Animator p90Animator(p90IdleAnimation);*/
+		AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", p90Model);
+		Animator p90Animator(AssetManager::GetAnimationByName("P90Idle"));
 
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
@@ -205,13 +205,13 @@ namespace Engine {
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("Glock", _shaders.animShader);
 
-			//_shaders.animShader.activate();
-			//_shaders.animShader.setMat4("view", view);
-			//_shaders.animShader.setMat4("projection", projection);
-			//auto p90Transforms = p90Animator.GetFinalBoneMatrices();
-			//for (int i = 0; i < p90Transforms.size(); ++i)
-			//	_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
-			//AssetManager::DrawModel("P90", _shaders.animShader);
+		/*	_shaders.animShader.activate();
+			_shaders.animShader.setMat4("view", view);
+			_shaders.animShader.setMat4("projection", projection);
+			auto p90Transforms = p90Animator.GetFinalBoneMatrices();
+			for (int i = 0; i < p90Transforms.size(); ++i)
+				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
+			AssetManager::DrawModel("P90", _shaders.animShader);*/
 
 			/*_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -293,8 +293,6 @@ namespace Engine {
 		}
 
 		shadowMap.Cleanup();
-		/*glock.cleanup();*/
-		/*p90.cleanup();*/
 		AssetManager::CleanupModels();
 		cubemap.cleanup();
 		/*Scene::GetPrimitiveModelByName("Plane")->cleanup();*/

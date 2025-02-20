@@ -15,7 +15,8 @@ void Player::processInput(double deltaTime) {
     // Calculate direction based on keyboard input
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
-    if (Keyboard::key(GLFW_KEY_W)) {
+   /* if (Keyboard::key(GLFW_KEY_W)) {
+        camera.updateCameraPos(CameraDirection::FORWARD, deltaTime);
         moveDirection += camera.cameraFront;
     }
     if (Keyboard::key(GLFW_KEY_S)) {
@@ -29,6 +30,22 @@ void Player::processInput(double deltaTime) {
     }
     if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
         moveDirection -= camera.cameraUp;
+    }*/
+    if (Keyboard::key(GLFW_KEY_W)) {
+        camera.updateCameraPos(CameraDirection::FORWARD, deltaTime);
+       
+    }
+    if (Keyboard::key(GLFW_KEY_S)) {
+        camera.updateCameraPos(CameraDirection::BACKWARD, deltaTime);
+    }
+    if (Keyboard::key(GLFW_KEY_D)) {
+        camera.updateCameraPos(CameraDirection::RIGHTWARD, deltaTime);
+    }
+    if (Keyboard::key(GLFW_KEY_A)) {
+        camera.updateCameraPos(CameraDirection::LEFTWARD, deltaTime);
+    }
+    if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
+     
     }
 
     if (Keyboard::keyWentDown(GLFW_KEY_SPACE) && isOnGround) {
@@ -56,7 +73,7 @@ void Player::processInput(double deltaTime) {
     glm::vec3 actorPosition(actorTransform.p.x, actorTransform.p.y, actorTransform.p.z);
     float eyeHeightOffset = height * 0.8f;
     glm::vec3 adjustedCameraPosition = actorPosition + glm::vec3(0.0f, eyeHeightOffset, 0.0f);
-    camera.setPosition(adjustedCameraPosition);
+  /*  camera.setPosition(adjustedCameraPosition);*/
 
     if (actorPosition.y <= 0.5f) {
         isOnGround = true;

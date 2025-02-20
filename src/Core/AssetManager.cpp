@@ -3,6 +3,7 @@
 namespace AssetManager {
 	std::unordered_map<std::string, int> g_modelIndexMap;
 	std::unordered_map<std::string, int> g_animationIndexMap;
+	std::unordered_map<std::string, int> g_animatorIndexMap;
 
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
@@ -44,9 +45,7 @@ namespace AssetManager {
 
 	void CleanupModels() {
 		for (auto& model : g_models) {
-			for (auto& mesh : model.meshes) {
-				mesh.cleanup();
-			}
+			model.cleanup();
 		}
 		g_models.clear();
 		g_modelIndexMap.clear();
@@ -86,6 +85,12 @@ namespace AssetManager {
 
 // ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
+		static bool reserved = false;
+		if (!reserved) {
+			g_animations.reserve(10);  
+			reserved = true;
+		}
+
 		Animation animation(path, model);
 		g_animations.push_back(animation);
 		g_animationIndexMap[name] = g_animations.size() - 1;
@@ -98,6 +103,21 @@ namespace AssetManager {
 			return &g_animations[index];
 		}
 
+		std::cout << "AssetManager::GetAnimationByName() failed because '" << name << "' does not exist!\n";
+		return nullptr;
+	}
+
+	void LoadAnimator(const std::string& name, Animation* animation) {
+		g_animators.push_back(animation);
+		g_animatorIndexMap[name] = g_animators.size() - 1;
+	}
+
+	Animator* GetAnimatorByName(const std::string& name) {
+		auto it = g_animatorIndexMap.find(name);
+		if (it != g_animatorIndexMap.end()) {
+			int index = it->second;
+			return &g_animators[index];
+		}
 		return nullptr;
 	}
 }
