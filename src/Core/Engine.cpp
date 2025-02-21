@@ -135,6 +135,8 @@ namespace Engine {
 			deltaTime = currentTime - lastFrame;
 			lastFrame = currentTime;
 
+			/*deltaTime = glm::min(deltaTime, 0.05f);*/
+
 			nbFrames++;
 			if (currentTime - lastTime >= 1.0) { // If a second has passed
 				// Print and reset FPS counter
@@ -163,7 +165,7 @@ namespace Engine {
 			glm::mat4 projection = glm::mat4(1.0f);
 
 			view = player.camera.getViewMatrix();
-			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 50.0f);
+			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
 
 			Game::Update();
 

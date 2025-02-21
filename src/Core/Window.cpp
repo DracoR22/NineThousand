@@ -24,6 +24,7 @@ namespace Window {
 		}
 
 		glfwMakeContextCurrent(window);
+		/*glfwSwapInterval(1);*/
 		glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
 		// inputs
