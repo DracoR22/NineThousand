@@ -19,9 +19,14 @@ public:
 	glm::vec3 getPosition();
 
 public:
+	bool IsMoving();
+
+public:
 	bool isOnGround = true;
 
 private:
+	bool m_isMoving = false;
+
 	glm::vec3 velocity;
 	float speed;
 	float height;

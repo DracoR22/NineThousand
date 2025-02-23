@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: velocity(0.0f), speed(2.0f), camera(position), height(height) {
+	: velocity(0.0f), speed(9.0f), camera(position), height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
 	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
@@ -15,19 +15,19 @@ void Player::processInput(double deltaTime) {
     // Calculate direction based on keyboard input
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
-    if (Keyboard::key(GLFW_KEY_W)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_W)) {
         moveDirection += camera.cameraFront;
     }
-    if (Keyboard::key(GLFW_KEY_S)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_S)) {
         moveDirection -= camera.cameraFront;
     }
-    if (Keyboard::key(GLFW_KEY_D)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_D)) {
         moveDirection += camera.cameraRight;
     }
-    if (Keyboard::key(GLFW_KEY_A)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_A)) {
         moveDirection -= camera.cameraRight;
     }
-    if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
         moveDirection -= camera.cameraUp;
     }
  /*   if (Keyboard::key(GLFW_KEY_W)) {
@@ -45,11 +45,11 @@ void Player::processInput(double deltaTime) {
     }
     if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
      
-    }
-
-    if (Keyboard::keyWentDown(GLFW_KEY_SPACE) && isOnGround) {
-        Physics::CharacterActorJump();
     }*/
+
+    if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && isOnGround) {
+        Physics::CharacterActorJump();
+    }
 
     // Normalize move direction to avoid faster diagonal movement
     if (glm::length(moveDirection) > 0.0f) {
@@ -57,6 +57,8 @@ void Player::processInput(double deltaTime) {
     }
 
      glm::vec3 targetVelocity = moveDirection * moveSpeed;
+
+     m_isMoving = glm::length(moveDirection) > 0.0f;
 
      Physics::MoveCharacterActor(targetVelocity);
 
@@ -84,3 +86,6 @@ glm::vec3 Player::getPosition() {
 	return camera.cameraPos;
 }
 
+bool Player::IsMoving() {
+    return m_isMoving;
+}

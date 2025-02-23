@@ -2,8 +2,34 @@
 
 namespace Game {
 
-	void Update() {
-		// Weapons
+	void Update(double deltaTime) {
+		// Weapons Animations
+		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
+
+		Animation* glockReloadAnimation = AssetManager::GetAnimationByName("GlockReload");
+		Animation* glockIdleAnimation = AssetManager::GetAnimationByName("GlockIdle");
+		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("GlockWalk");
+		Animation* glockFire0Animation = AssetManager::GetAnimationByName("GlockFire0");
+
+		if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+			glockAnimator->PlayAnimation(glockReloadAnimation);
+		}
+
+		if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
+			glockAnimator->PlayAnimation(glockWalkAnimation);
+		}
+
+		if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
+			glockAnimator->PlayAnimation(glockFire0Animation);
+		}
+
+		if (glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
+			glockAnimator->PlayAnimation(glockIdleAnimation);
+		}
+
+		glockAnimator->UpdateAnimation(deltaTime);
+
+		// Weapons Position
 		Model* glockModel = AssetManager::GetModelByName("Glock");
 
 		glm::vec3 gunPosition = g_players[0].getPosition() +

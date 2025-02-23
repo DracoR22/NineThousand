@@ -14,6 +14,7 @@ public:
 	Animator(Animation* animation)
 	{
 		m_CurrentTime = 0.0;
+		m_DeltaTime = 0.0;
 		m_CurrentAnimation = animation;
 
 		m_FinalBoneMatrices.reserve(100);
@@ -27,16 +28,25 @@ public:
 		m_DeltaTime = dt;
 		if (m_CurrentAnimation)
 		{
+			float prevTime = m_CurrentTime;
 			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt;
 			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
+			if (prevTime > m_CurrentTime) {
+				m_AnimationFinished = true; 
+			}
 			CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
 		}
 	}
 
 	void PlayAnimation(Animation* pAnimation)
 	{
-		m_CurrentAnimation = pAnimation;
-		m_CurrentTime = 0.0f;
+	     	m_AnimationFinished = false;
+			m_CurrentAnimation = pAnimation;
+			m_CurrentTime = 0.0f;
+	}
+
+	bool IsAnimationFinished() const {
+		return m_AnimationFinished;
 	}
 
 	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
@@ -76,9 +86,12 @@ public:
 	}
 
 private:
-	std::vector<glm::mat4> m_FinalBoneMatrices;
-	Animation* m_CurrentAnimation;
 	float m_CurrentTime;
 	float m_DeltaTime;
 
+	bool m_AnimationFinished = false;
+
+	std::vector<glm::mat4> m_FinalBoneMatrices;
+private:
+	Animation* m_CurrentAnimation;
 };

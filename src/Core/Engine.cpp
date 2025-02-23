@@ -119,7 +119,12 @@ namespace Engine {
 
 		// load animations
 		AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);
-		Animator glockAnimator(AssetManager::GetAnimationByName("GlockIdle"));
+		AssetManager::LoadAnimation("GlockReload", "resources/animations/Glock_Reload.fbx", glockModel);
+		AssetManager::LoadAnimation("GlockWalk", "resources/animations/Glock_Walk.fbx", glockModel);
+		AssetManager::LoadAnimation("GlockFire0", "resources/animations/Glock_Fire0.fbx", glockModel);
+
+		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("GlockIdle"));
+		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
 		AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", p90Model);
 		Animator p90Animator(AssetManager::GetAnimationByName("P90Idle"));
@@ -158,7 +163,7 @@ namespace Engine {
 			}*/
 			Window::PrepareFrame();
 
-			glockAnimator.UpdateAnimation(deltaTime);
+			
 			/*p90Animator.UpdateAnimation(deltaTime);*/
 
 			glm::mat4 view = glm::mat4(1.0f);
@@ -167,7 +172,7 @@ namespace Engine {
 			view = player.camera.getViewMatrix();
 			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
 
-			Game::Update();
+			Game::Update(deltaTime);
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
@@ -202,7 +207,7 @@ namespace Engine {
 			_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
 			_shaders.animShader.setMat4("projection", projection);
-			auto transforms = glockAnimator.GetFinalBoneMatrices();
+			auto transforms = glockAnimator->GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("Glock", _shaders.animShader);

@@ -1,34 +1,34 @@
 #include "Keyboard.h"
 
-bool Keyboard::keys[GLFW_KEY_LAST] = { 0 };
-bool Keyboard::keysChanged[GLFW_KEY_LAST] = { 0 };
+bool Keyboard::m_keys[GLFW_KEY_LAST] = { 0 };
+bool Keyboard::m_keysChanged[GLFW_KEY_LAST] = { 0 };
 
 void Keyboard::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action != GLFW_RELEASE) {
-		if (!keys[key]) {
-			keys[key] = true;
+		if (!m_keys[key]) {
+			m_keys[key] = true;
 		}
 	}
 	else {
-		keys[key] = false;
+		m_keys[key] = false;
 	}
 
-	keysChanged[key] = action != GLFW_REPEAT;
+	m_keysChanged[key] = action != GLFW_REPEAT;
 }
 
 // accessors
-bool Keyboard::key(int key) {
-	return keys[key];
+bool Keyboard::KeyPressed(int key) {
+	return m_keys[key];
 }
-bool Keyboard::keyChanged(int key) {
-	bool ret = keysChanged[key];
-	keysChanged[key] = false;
+bool Keyboard::KeyChanged(int key) {
+	bool ret = m_keysChanged[key];
+	m_keysChanged[key] = false;
 
 	return ret;
 }
-bool Keyboard::keyWentUp(int key) {
-	return !keys[key] && keyChanged(key);
+bool Keyboard::KeyJustReleased(int key) {
+	return !m_keys[key] && KeyChanged(key);
 }
-bool Keyboard::keyWentDown(int key) {
-	return keys[key] && keyChanged(key);
+bool Keyboard::KeyJustPressed(int key) {
+	return m_keys[key] && KeyChanged(key);
 }

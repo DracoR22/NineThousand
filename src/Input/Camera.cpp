@@ -32,7 +32,7 @@ void Camera::updateCameraDirection(double dx, double dy) {
 void Camera::updateCameraPos(CameraDirection direction, double dt) {
     float velocity = (float)dt * speed;
 
-    if (Keyboard::key(GLFW_KEY_LEFT_CONTROL)) {
+    if (Keyboard::KeyPressed(GLFW_KEY_LEFT_CONTROL)) {
         velocity *= 2.0f;  // Double the velocity when running
     }
 

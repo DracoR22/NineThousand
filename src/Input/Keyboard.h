@@ -9,12 +9,12 @@ public:
 	static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 	// accessors
-	static bool key(int key);
-	static bool keyChanged(int key);
-	static bool keyWentUp(int key);
-	static bool keyWentDown(int key);
+	static bool KeyPressed(int key);
+	static bool KeyJustReleased(int key);
+	static bool KeyJustPressed(int key);
+	static bool KeyChanged(int key);
 
 private:
-	static bool keys[];
-	static bool keysChanged[];
+	static bool m_keys[];
+	static bool m_keysChanged[];
 };

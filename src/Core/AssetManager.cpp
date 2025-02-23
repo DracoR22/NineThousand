@@ -26,7 +26,7 @@ namespace AssetManager {
 		Model* existingModel = AssetManager::GetModelByName(name);
 
 		if (!existingModel) {
-			std::cerr << "ERROR::DrawModel::Model '" << name << "' not found!" << std::endl;
+			std::cout << "AssetManager::DrawModel() failed because '" << name << "' does not exist!\n";
 			return;
 		}
 
@@ -40,6 +40,7 @@ namespace AssetManager {
 			return &g_models[index];
 		}
 
+		std::cout << "AssetManager::GetModelByName() failed because '" << name << "' does not exist!\n";
 		return nullptr;
 	}
 
@@ -108,7 +109,8 @@ namespace AssetManager {
 	}
 
 	void LoadAnimator(const std::string& name, Animation* animation) {
-		g_animators.push_back(animation);
+		Animator animator(animation);
+		g_animators.push_back(animator);
 		g_animatorIndexMap[name] = g_animators.size() - 1;
 	}
 
@@ -118,6 +120,8 @@ namespace AssetManager {
 			int index = it->second;
 			return &g_animators[index];
 		}
+
+		std::cout << "AssetManager::GetAnimatorByName() failed because '" << name << "' does not exist!\n";
 		return nullptr;
 	}
 }

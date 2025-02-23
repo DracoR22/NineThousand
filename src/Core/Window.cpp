@@ -78,27 +78,27 @@ namespace Window {
 
 	// TODO: remove this shit, this need to be part of the player class instead
 	void ProcessInput(double dt) {
-		if (Keyboard::key(GLFW_KEY_ESCAPE)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_ESCAPE)) {
 			SetWindowShouldClose(true);
 		}
 
 		// move camera
-		if (Keyboard::key(GLFW_KEY_W)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_W)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::FORWARD, dt);
 		}
-		if (Keyboard::key(GLFW_KEY_S)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_S)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::BACKWARD, dt);
 		}
-		if (Keyboard::key(GLFW_KEY_D)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_D)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::RIGHTWARD, dt);
 		}
-		if (Keyboard::key(GLFW_KEY_A)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_A)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::LEFTWARD, dt);
 		}
-		if (Keyboard::key(GLFW_KEY_SPACE)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_SPACE)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::UPWARD, dt);
 		}
-		if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
+		if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::DOWNWARD, dt);
 		}
 
