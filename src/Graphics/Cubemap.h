@@ -20,6 +20,8 @@ public:
 	void init();
 	void cleanup();
 
+	void FlipImageHorizontally(unsigned char* data, int width, int height, int channels);
+
 	unsigned int getId() const;
 
 private:

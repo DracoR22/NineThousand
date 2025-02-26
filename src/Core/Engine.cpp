@@ -49,12 +49,12 @@ namespace Engine {
 		CubeMap cubemap;
 
 		std::vector<std::string> faces{
-			"resources/textures/sky_right.jpg",
-			"resources/textures/sky_left.jpg",
-			"resources/textures/sky_top.jpg",
-			"resources/textures/sky_bottom.jpg",
-			"resources/textures/sky_front.jpg",
-			"resources/textures/sky_back.jpg",
+			"resources/textures/SkyRight.jpg",
+			"resources/textures/SkyLeft.jpg",
+			"resources/textures/SkyTop.jpg",
+			"resources/textures/SkyBottom.jpg",
+			"resources/textures/SkyFront.jpg",
+			"resources/textures/SkyBack.jpg",
 		};
 
 		cubemap.loadTextures(faces);

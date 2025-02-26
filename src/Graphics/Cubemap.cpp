@@ -1,4 +1,4 @@
-#include "Cubemap.h"
+﻿#include "Cubemap.h"
 
 CubeMap::CubeMap() {}
 
@@ -14,26 +14,22 @@ void CubeMap::loadTextures(std::vector<std::string> faces) {
 
 		GLenum colorMode = GL_RED;
 
-		// TODO: Dont hardcode this shit
-		stbi_set_flip_vertically_on_load(false);
-
-		switch (nrChannels) {
-		case 3:
-			colorMode = GL_RGB;
-			break;
-		case 4:
-			colorMode = GL_RGBA;
-			break;
-		}
+	/*	stbi_set_flip_vertically_on_load(false);*/
 
 		if (data) {
+			GLenum colorMode = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+
+			// Workaround to flip SkyRight horizontically due to texture being inverted
+			if (i == 0) { // SkyRight is the first texture in the list tho
+				FlipImageHorizontally(data, width, height, nrChannels);
+			}
+
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
 		}
 		else {
 			std::cout << "Failed to load texture at " << faces[i] << std::endl;
 		}
-
-		stbi_image_free(data);
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -124,6 +120,22 @@ void CubeMap::cleanup() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteTextures(1, &id);
+}
+
+void CubeMap::FlipImageHorizontally(unsigned char* data, int width, int height, int channels) {
+	int rowSize = width * channels;
+	unsigned char* tempRow = new unsigned char[rowSize];
+
+	for (int y = 0; y < height; y++) {
+		unsigned char* rowStart = data + (y * rowSize);
+		for (int x = 0; x < width / 2; x++) {
+			for (int c = 0; c < channels; c++) {
+				std::swap(rowStart[x * channels + c], rowStart[(width - 1 - x) * channels + c]);
+			}
+		}
+	}
+
+	delete[] tempRow;
 }
 
 unsigned int CubeMap::getId() const {
