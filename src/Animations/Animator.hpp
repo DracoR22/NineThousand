@@ -29,7 +29,7 @@ public:
 		if (m_CurrentAnimation)
 		{
 			float prevTime = m_CurrentTime;
-			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt;
+			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt * m_AnimationSpeed;
 			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
 			if (prevTime > m_CurrentTime) {
 				m_AnimationFinished = true; 
@@ -38,11 +38,12 @@ public:
 		}
 	}
 
-	void PlayAnimation(Animation* pAnimation)
+	void PlayAnimation(Animation* pAnimation, float speed = 1.0f)
 	{
 	     	m_AnimationFinished = false;
 			m_CurrentAnimation = pAnimation;
 			m_CurrentTime = 0.0f;
+			m_AnimationSpeed = speed;
 	}
 
 	bool IsAnimationFinished() const {
@@ -88,6 +89,7 @@ public:
 private:
 	float m_CurrentTime;
 	float m_DeltaTime;
+	float m_AnimationSpeed = 1.0f;
 
 	bool m_AnimationFinished = false;
 

@@ -6,6 +6,8 @@
 
 #include "../Physics/Physics.h"
 
+#include "WeaponManager.h"
+
 class Player {
 public:
 	Player(glm::vec3 position, float height, float mass);
@@ -17,9 +19,9 @@ public:
 	Camera camera;
 
 	glm::vec3 getPosition();
-
-public:
 	bool IsMoving();
+	void EquipWeapon(std::string weaponName);
+	WeaponInfo* GetEquipedWeaponInfo();
 
 public:
 	bool isOnGround = true;
@@ -31,4 +33,6 @@ private:
 	float speed;
 	float height;
 	float verticalVelocity = 0.0f;
+
+	WeaponInfo* m_equippedWeapon = nullptr;
 };

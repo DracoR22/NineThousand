@@ -27,6 +27,7 @@ namespace Engine {
 	void Run() {
 		Window::Init();
 		Physics::InitPhysx();
+		Game::Init();
 		Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);
@@ -90,7 +91,7 @@ namespace Engine {
 			glm::mat4(1.0f)
 		};
 
-		AssetManager::LoadAssimpModel("P90", "resources/models/P90.fbx", p90CreateInfo);
+		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
@@ -118,16 +119,21 @@ namespace Engine {
 		Model* p90Model = AssetManager::GetModelByName("P90");
 
 		// load animations
-		AssetManager::LoadAnimation("GlockIdle", "resources/animations/Glock_Idle.fbx", glockModel);
-		AssetManager::LoadAnimation("GlockReload", "resources/animations/Glock_Reload.fbx", glockModel);
-		AssetManager::LoadAnimation("GlockWalk", "resources/animations/Glock_Walk.fbx", glockModel);
-		AssetManager::LoadAnimation("GlockFire0", "resources/animations/Glock_Fire0.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_Walk", "resources/animations/Glock_Walk.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_Fire0", "resources/animations/Glock_Fire0.fbx", glockModel);
 
-		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("GlockIdle"));
+		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
+		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);
+		AssetManager::LoadAnimation("P90_Walk", "resources/animations/P90_Walk.fbx", p90Model);
+		AssetManager::LoadAnimation("P90_Fire0", "resources/animations/P90_Fire0.fbx", p90Model);
+
+		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
-		AssetManager::LoadAnimation("P90Idle", "resources/animations/P90_Idle.fbx", p90Model);
-		Animator p90Animator(AssetManager::GetAnimationByName("P90Idle"));
+		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
+		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
 
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
@@ -180,9 +186,6 @@ namespace Engine {
 			AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
 			AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
 
-			AssetManager::GetModelByName("P90")->setPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-
-
 			// ------ 1. SHADOW PASS (Render to Depth Map) ------
 			glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -212,13 +215,13 @@ namespace Engine {
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("Glock", _shaders.animShader);
 
-		/*	_shaders.animShader.activate();
+			_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
 			_shaders.animShader.setMat4("projection", projection);
-			auto p90Transforms = p90Animator.GetFinalBoneMatrices();
+			auto p90Transforms = p90Animator->GetFinalBoneMatrices();
 			for (int i = 0; i < p90Transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
-			AssetManager::DrawModel("P90", _shaders.animShader);*/
+			AssetManager::DrawModel("P90", _shaders.animShader);
 
 			/*_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());

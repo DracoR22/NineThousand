@@ -89,3 +89,13 @@ glm::vec3 Player::getPosition() {
 bool Player::IsMoving() {
     return m_isMoving;
 }
+
+void Player::EquipWeapon(std::string weaponName) {
+    WeaponInfo* weapon = WeaponManager::GetWeaponInfoByName(weaponName);
+    m_equippedWeapon = weapon;
+    std::cout << "Equipped weapon: " << weapon->name << std::endl;
+}
+
+WeaponInfo* Player::GetEquipedWeaponInfo() {
+    return m_equippedWeapon;
+}

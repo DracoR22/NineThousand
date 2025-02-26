@@ -109,6 +109,12 @@ namespace AssetManager {
 	}
 
 	void LoadAnimator(const std::string& name, Animation* animation) {
+		static bool reserved = false;
+		if (!reserved) {
+			g_animators.reserve(10);
+			reserved = true;
+		}
+
 		Animator animator(animation);
 		g_animators.push_back(animator);
 		g_animatorIndexMap[name] = g_animators.size() - 1;

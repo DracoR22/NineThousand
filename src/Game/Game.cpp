@@ -2,35 +2,101 @@
 
 namespace Game {
 
+	void Init() {
+		WeaponManager::Init();
+	}
+
 	void Update(double deltaTime) {
-		// Weapons Animations
+		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
-		Animation* glockReloadAnimation = AssetManager::GetAnimationByName("GlockReload");
-		Animation* glockIdleAnimation = AssetManager::GetAnimationByName("GlockIdle");
-		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("GlockWalk");
-		Animation* glockFire0Animation = AssetManager::GetAnimationByName("GlockFire0");
+		Animation* glockReloadAnimation = AssetManager::GetAnimationByName("Glock_Reload");
+		Animation* glockIdleAnimation = AssetManager::GetAnimationByName("Glock_Idle");
+		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("Glock_Walk");
+		Animation* glockFire0Animation = AssetManager::GetAnimationByName("Glock_Fire0");
 
-		if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
-			glockAnimator->PlayAnimation(glockReloadAnimation);
+		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
+
+		Animation* p90ReloadAnimation = AssetManager::GetAnimationByName("P90_Reload");
+		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90_Idle");
+		Animation* p90WalkAnimation = AssetManager::GetAnimationByName("P90_Walk");
+		Animation* p90Fire0Animation = AssetManager::GetAnimationByName("P90_Fire0");
+
+		WeaponInfo* equipedWeapon = g_players[0].GetEquipedWeaponInfo();
+
+		if (!equipedWeapon) {
+			std::cerr << "ERROR: No equipped weapon!" << std::endl;
+			return;
 		}
 
-		if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
-			glockAnimator->PlayAnimation(glockWalkAnimation);
+		if (equipedWeapon->name == "Glock") {
+			if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+				glockAnimator->PlayAnimation(glockReloadAnimation);
+			}
+
+			if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
+				glockAnimator->PlayAnimation(glockWalkAnimation);
+			}
+
+			if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
+				glockAnimator->PlayAnimation(glockFire0Animation);
+			}
+
+			if (glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
+				glockAnimator->PlayAnimation(glockIdleAnimation);
+			}
+
+			glockAnimator->UpdateAnimation(deltaTime);
+		}
+		else if (equipedWeapon->name == "P90") {
+			if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+				p90Animator->PlayAnimation(p90ReloadAnimation);
+			}
+
+			if (g_players[0].IsMoving() && p90Animator->GetCurrentAnimation() == p90IdleAnimation) {
+				p90Animator->PlayAnimation(p90WalkAnimation);
+			}
+
+
+			if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT) && p90Animator->GetCurrentAnimation() != p90ReloadAnimation && p90Animator->GetCurrentAnimation() != p90Fire0Animation) {
+				p90Animator->PlayAnimation(p90Fire0Animation, 2.0f);
+			}
+
+			if (p90Animator->IsAnimationFinished() && p90Animator->GetCurrentAnimation() != p90IdleAnimation) {
+				p90Animator->PlayAnimation(p90IdleAnimation);
+			}
+
+			p90Animator->UpdateAnimation(deltaTime);
 		}
 
-		if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
-			glockAnimator->PlayAnimation(glockFire0Animation);
+		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
+			g_players[0].EquipWeapon("P90");
 		}
-
-		if (glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
-			glockAnimator->PlayAnimation(glockIdleAnimation);
+		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
+			g_players[0].EquipWeapon("Glock");
 		}
-
-		glockAnimator->UpdateAnimation(deltaTime);
 
 		// Weapons Position
-		Model* glockModel = AssetManager::GetModelByName("Glock");
+		UpdateWeaponPositionByName(equipedWeapon->name);
+		
+	}
+
+	void CreatePlayers() {
+		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
+		player.EquipWeapon("Glock");
+
+		g_players.push_back(player);
+	}
+
+	Player& GetPLayerByIndex(int index) {
+		if (index < 0 || index >= g_players.size()) {
+			throw std::out_of_range("ERROR::GetPlayerByIndex::Index out of range!");
+		}
+		return g_players[index];
+	}
+
+	void UpdateWeaponPositionByName(std::string name) {
+		Model* weaponModel = AssetManager::GetModelByName(name);
 
 		glm::vec3 gunPosition = g_players[0].getPosition() +
 			(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
@@ -52,23 +118,13 @@ namespace Game {
 		// Apply local rotation adjustment to align gun's forward direction
 		glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Adjust for left-facing gun
 		localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); // Slight upward pitch adjustment
+		if (name == "P90") {
+			localRotationFix = glm::rotate(localRotationFix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
 		gunRotation = gunRotation * localRotationFix;
 
 		// Apply transformations to the gun
-		glockModel->setPosition(gunPosition);
-		glockModel->setRotation(gunRotation);
-	}
-
-	void CreatePlayers() {
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
-
-		g_players.push_back(player);
-	}
-
-	Player& GetPLayerByIndex(int index) {
-		if (index < 0 || index >= g_players.size()) {
-			throw std::out_of_range("ERROR::GetPlayerByIndex::Index out of range!");
-		}
-		return g_players[index];
+		weaponModel->setPosition(gunPosition);
+		weaponModel->setRotation(gunRotation);
 	}
 }
