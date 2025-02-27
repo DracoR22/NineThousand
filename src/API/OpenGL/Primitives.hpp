@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Core/Model.h"
+#include "../../Core/Model.h"
 
 class PrimitiveModel : public Model {
 public:

@@ -20,20 +20,28 @@ void Texture::load(bool flip) {
 
 	unsigned char* data = stbi_load((dir + "/" + path).c_str(), &width, &height, &nChannels, 0);
 	/*std::cout << "texture path: " << path << std::endl;*/
-	GLenum colorMode = GL_RGB;
+
+	GLenum internalFormat = GL_RGB; 
+	GLenum format = GL_RGB;
 
 	switch (nChannels) {
 	case 1:
-		colorMode = GL_RED;
+		internalFormat = GL_RED;
+		format = GL_RED;
+		break;
+	case 3:
+		internalFormat = GL_SRGB;
+		format = GL_RGB;
 		break;
 	case 4:
-		colorMode = GL_RGBA;
+		internalFormat = GL_SRGB_ALPHA;
+		format = GL_RGBA;
 		break;
 	}
 
 	if (data) {
 		glBindTexture(GL_TEXTURE_2D, id);
-		glTexImage2D(GL_TEXTURE_2D, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);

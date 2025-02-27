@@ -11,9 +11,9 @@
 #include "../Core/AssetManager.h"
 
 
-#include "../Graphics/Shader.h"
-#include "../Graphics/Cubemap.h"
-#include "../Graphics/ShadowMap.h"
+#include "../API/OpenGL/Shader.h"
+#include "../API/OpenGL/Cubemap.h"
+#include "../API/OpenGL/ShadowMap.h"
 
 #include "../Input/Camera.h"
 #include "../Input/Keyboard.h"

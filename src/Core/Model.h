@@ -8,8 +8,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "../Graphics/Mesh.h"
-#include "../Graphics/Texture.h"
+#include "../API/OpenGL/Mesh.h"
+#include "../API/OpenGL/Texture.h"
 
 #include "../Animations/AssimpGlmHelpers.hpp"
 

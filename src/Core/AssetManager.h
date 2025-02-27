@@ -9,9 +9,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "../Graphics/Mesh.h"
-#include "../Graphics/Texture.h"
-#include "../Graphics/Primitives.hpp"
+#include "../API/OpenGL/Mesh.h"
+#include "../API/OpenGL/Texture.h"
+#include "../API/OpenGL/Primitives.hpp"
 
 #include "../Animations/Animation.hpp"
 #include "../Animations/Animator.hpp"

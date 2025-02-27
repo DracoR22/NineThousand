@@ -50,7 +50,13 @@ void main() {
      //lightingResult *= (1.0 - shadow);
      lightingResult = mix(lightingResult, lightingResult * 0.3, shadow);
 
-     FragColor = vec4(lightingResult, textureColor.a);
+     vec3 color = lightingResult * textureColor.rgb;
+
+     // Gamma Correction
+     float gamma = 2.0;
+     color = pow(color, vec3(1.0 / gamma));
+
+     FragColor = vec4(color, textureColor.a);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 textureColor) {
@@ -68,7 +74,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     vec3 diffuse  = light.diffuse  * diff * textureColor;
     vec3 specular = light.specular * spec * textureColor;
 
-    ambient  *= attenuation;
+    // ambient  *= attenuation;
     diffuse  *= attenuation;
     specular *= attenuation;
     return (ambient + diffuse + specular);

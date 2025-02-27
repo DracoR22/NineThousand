@@ -4,26 +4,27 @@
 #include <iostream>
 
 #include "../Core/Model.h"
-#include "../Graphics/Primitives.hpp"
-
-struct PointLight {
-	glm::vec3 position;
-
-	float constant;
-	float linear;
-	float quadratic;
-
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
-};
-
+#include "../API/OpenGL/Primitives.hpp"
 
 namespace Scene {
-    inline std::vector<PrimitiveModel> g_primitiveGameObjects;
+	struct PointLight {
+		glm::vec3 position;
+
+		float constant;
+		float linear;
+		float quadratic;
+
+		glm::vec3 ambient;
+		glm::vec3 diffuse;
+		glm::vec3 specular;
+	};
+
+
+	inline std::vector<PrimitiveModel> g_primitiveGameObjects;
 	inline std::vector<PointLight> g_scenePointLights;
 
 	void LoadGamePrimitiveObjects();
+	void LoadSceneLights();
 
 	PrimitiveModel* GetPrimitiveModelByName(const std::string& name);
 }

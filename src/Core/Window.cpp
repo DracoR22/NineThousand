@@ -43,8 +43,12 @@ namespace Window {
 			return exit(EXIT_FAILURE);
 		}
 
+		// enable depth buffer
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
+
+		// enable gamma correction
+		/*glEnable(GL_FRAMEBUFFER_SRGB);*/
 	}
 
 	void PrepareFrame() {

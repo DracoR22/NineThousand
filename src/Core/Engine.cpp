@@ -103,7 +103,7 @@ namespace Engine {
 		PointLight cubeLampLight;
 		cubeLampLight.position = AssetManager::GetModelByName("CubeLamp")->pos;
 		cubeLampLight.constant = 1.0f;
-		cubeLampLight.linear = 0.02f;
+		cubeLampLight.linear = 0.01f;
 		cubeLampLight.quadratic = 0.01f;
 		cubeLampLight.ambient = glm::vec3(0.3f);
 		cubeLampLight.diffuse = glm::vec3(0.8f);

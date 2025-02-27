@@ -23,6 +23,19 @@ namespace Scene {
 		std::cout << "All Primitives Loaded" << std::endl;
 	}
 
+	void LoadSceneLights() {
+		/*g_scenePointLights.clear();
+
+		PointLight& mainPointLight = g_scenePointLights.emplace_back();
+		mainPointLight.position = AssetManager::GetModelByName("CubeLamp")->pos;
+		mainPointLight.constant = 1.0f;
+		mainPointLight.linear = 0.009f;
+		mainPointLight.quadratic = 0.01f;
+		mainPointLight.ambient = glm::vec3(1.3f);
+		mainPointLight.diffuse = glm::vec3(0.8f);
+		mainPointLight.specular = glm::vec3(1.0f);*/
+	}
+
 	PrimitiveModel* GetPrimitiveModelByName(const std::string& name) {
 		for (auto& primitiveGameObject : g_primitiveGameObjects) {
 			if (primitiveGameObject.GetName() == name) {
