@@ -19,47 +19,54 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 in vec4 FragPosLight;
+in mat3 TBN;
 
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform int noPointLights;
 
-uniform sampler2D texture1;
-uniform sampler2D texture2;
+uniform sampler2D diffuse0;
+uniform sampler2D specular0;
+uniform sampler2D normal0;
 
 uniform vec3 viewPos;
 uniform sampler2D shadowMap;
 
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 textureColor);
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, PointLight light, vec3 fragPos);
 
 void main() {
-     vec3 norm = normalize(Normal);
+    // vec3 normal = normalize(texture(normal1, TexCoord).xyz * 2.0 - 1.0);
+      vec3 normal = normalize(Normal);
+      normal = texture(normal0, TexCoord).rgb;
+	  normal = normal * 2.0 - 1.0;   
+      normal = normalize(TBN * normal); 
+
      vec3 viewDir = normalize(viewPos - FragPos);
-   
-     vec4 textureColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
+
+     vec3 diffuseColor = texture(diffuse0, TexCoord).rgb;
+     vec3 specularColor = texture(specular0, TexCoord).rgb;
 
      vec3 lightingResult = vec3(0.0);
-
     for (int i = 0; i < noPointLights; i++) {
-        lightingResult += CalcPointLight(pointLights[i], norm, FragPos, viewDir, textureColor.rgb);
+        lightingResult += CalcPointLight(pointLights[i], normal, FragPos, viewDir, diffuseColor, specularColor);
     }
 
      // Shadow calculation
-     float shadow = ShadowCalculation(FragPosLight, norm, pointLights[0], FragPos);
-     //lightingResult *= (1.0 - shadow);
+     float shadow = ShadowCalculation(FragPosLight, normal, pointLights[0], FragPos);
      lightingResult = mix(lightingResult, lightingResult * 0.3, shadow);
 
-     vec3 color = lightingResult * textureColor.rgb;
+     vec3 color = lightingResult;
 
      // Gamma Correction
-     float gamma = 2.0;
+     float gamma = 2.2;
      color = pow(color, vec3(1.0 / gamma));
 
-     FragColor = vec4(color, textureColor.a);
+     vec3 normalColor = texture(normal0, TexCoord).rgb;
+     FragColor = vec4(color, 1.0);
 }
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 textureColor) {
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor) {
     vec3 lightDir = normalize(light.position - fragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
     vec3 reflectDir = reflect(-lightDir, normal);
@@ -70,9 +77,9 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
  
-    vec3 ambient  = light.ambient  * textureColor;
-    vec3 diffuse  = light.diffuse  * diff * textureColor;
-    vec3 specular = light.specular * spec * textureColor;
+    vec3 ambient  = light.ambient  * diffuseColor;
+    vec3 diffuse  = light.diffuse  * diff * diffuseColor;
+    vec3 specular = light.specular * spec * specularColor;
 
     // ambient  *= attenuation;
     diffuse  *= attenuation;

@@ -60,7 +60,6 @@ private:
 	std::vector<Texture> textures_loaded;
 
 	void processNode(aiNode* node, const aiScene* scene);
-
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);

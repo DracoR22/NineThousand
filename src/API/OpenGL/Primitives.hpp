@@ -12,14 +12,14 @@ public:
     PrimitiveModel(const std::string& name, Type type, ModelCreateInfo& createInfo)
         : Model(name, createInfo), m_type(type) {}
 
-    void Init() {
+ /*   void Init() {
         if (m_type == Type::CUBE) {
             InitCube();
         }
         else if (m_type == Type::PLANE) {
             InitPlane();
         }
-    }
+    }*/
 
 private:
     Type m_type;

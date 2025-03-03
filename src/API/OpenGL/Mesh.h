@@ -14,12 +14,16 @@ struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
+	glm::vec3 Tangent;   
 
 	int m_BoneIDs[MAX_BONE_INFLUENCE];
 	float m_Weights[MAX_BONE_INFLUENCE];
 
 	static std::vector<struct Vertex> genList(float* vertices, int noVertices);
+	static void CalcTanVectors(std::vector<Vertex>& list, std::vector<unsigned int>& indices);
 };
+
+void AverageVectors(glm::vec3& baseVec, glm::vec3 addition, unsigned char existingContributions);
 
 class Mesh {
 public:

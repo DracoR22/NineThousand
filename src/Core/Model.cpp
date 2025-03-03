@@ -88,11 +88,15 @@ void Model::LoadModel(ModelType type) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "Concrete_Diff.png", aiTextureType_DIFFUSE);
+		Texture diffuse("resources/textures", "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
 		diffuse.load(false);
 
-		Texture specular("resources/textures", "Concrete_Spec.png", aiTextureType_SPECULAR);
+		Texture specular("resources/textures", "brickwall_specular.jpg", aiTextureType_SPECULAR);
 		specular.load(false);
+
+		Texture normal("resources/textures", "brickwall_normal.jpg", aiTextureType_NORMALS);
+		normal.load(false);
+
 
 		if (diffuse.id) {
 			std::cout << "Cube diffuse texture loaded: " << diffuse.path << std::endl;
@@ -101,9 +105,17 @@ void Model::LoadModel(ModelType type) {
 			std::cout << "Cube specular texture loaded: " << specular.path << std::endl;
 		}
 
-		Mesh cubeMesh(Vertex::genList(vertices, noVertices), indices);
-		cubeMesh.textures.push_back(diffuse);    // Add diffuse texture
-		cubeMesh.textures.push_back(specular);  // Add specular texture
+		if (normal.id) {
+			std::cout << "Cube normal texture loaded: " << normal.path << std::endl;
+		}
+
+		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
+		Vertex::CalcTanVectors(vertexlist, indices);
+
+		Mesh cubeMesh(vertexlist, indices);
+		cubeMesh.textures.push_back(diffuse);    
+		cubeMesh.textures.push_back(specular);  
+		cubeMesh.textures.push_back(normal);  
 
 		meshes.push_back(cubeMesh);
 	}
@@ -127,11 +139,14 @@ void Model::LoadModel(ModelType type) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "atlas.png", aiTextureType_DIFFUSE);
+		Texture diffuse("resources/textures", "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
 		diffuse.load(false);
 
-		Texture specular("resources/textures", "atlas.png", aiTextureType_SPECULAR);
+		Texture specular("resources/textures", "brickwall_specular.jpg", aiTextureType_SPECULAR);
 		specular.load(false);
+
+		Texture normal("resources/textures", "brickwall_normal.jpg", aiTextureType_NORMALS);
+		normal.load(false);
 
 		if (diffuse.id) {
 			std::cout << "Plane diffuse texture loaded: " << diffuse.path << std::endl;
@@ -140,9 +155,20 @@ void Model::LoadModel(ModelType type) {
 			std::cout << "Plane specular texture loaded: " << specular.path << std::endl;
 		}
 
-		Mesh planeMesh(Vertex::genList(vertices, noVertices), indices);
+		if (normal.id) {
+			std::cout << "Plane normal texture loaded: " << normal.path << " (ID: " << normal.id << ")" << std::endl;
+		}
+		else {
+			std::cout << "Failed to load normal texture!" << std::endl;
+		}
+
+		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
+		Vertex::CalcTanVectors(vertexlist, indices);
+
+		Mesh planeMesh(vertexlist, indices);
 		planeMesh.textures.push_back(diffuse);    // Add diffuse texture
 		planeMesh.textures.push_back(specular);   // Add specular texture
+		planeMesh.textures.push_back(normal);
 
 		meshes.push_back(planeMesh);
 	}
@@ -151,7 +177,7 @@ void Model::LoadModel(ModelType type) {
 void Model::loadAssimpModel(std::string path) {
 	Assimp::Importer import;
 
-	const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene * scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -210,6 +236,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 			vertex.TexCoords = glm::vec2(0.0f);
 		}
 
+		// tangent vector
+		vertex.Tangent = {
+			mesh->mTangents[i].x,
+			mesh->mTangents[i].y,
+			mesh->mTangents[i].z
+		};
+
 		vertices.push_back(vertex);
 	}
 
@@ -243,6 +276,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		// specular maps
 		std::vector<Texture> specularMaps = loadTextures(material, aiTextureType_SPECULAR);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+		// normal maps (.obj files use aiTextureType_HEIGHT) 
+		std::vector<Texture> normalMaps = loadTextures(material, aiTextureType_NORMALS);
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
 
 	ExtractBoneWeightForVertices(vertices, mesh, scene);

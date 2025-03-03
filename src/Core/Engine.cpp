@@ -103,9 +103,9 @@ namespace Engine {
 		PointLight cubeLampLight;
 		cubeLampLight.position = AssetManager::GetModelByName("CubeLamp")->pos;
 		cubeLampLight.constant = 1.0f;
-		cubeLampLight.linear = 0.01f;
-		cubeLampLight.quadratic = 0.01f;
-		cubeLampLight.ambient = glm::vec3(0.3f);
+		cubeLampLight.linear = 0.0014f;
+		cubeLampLight.quadratic = 0.000007f;
+		cubeLampLight.ambient = glm::vec3(0.02f);
 		cubeLampLight.diffuse = glm::vec3(0.8f);
 		cubeLampLight.specular = glm::vec3(1.0f);
 
@@ -161,12 +161,12 @@ namespace Engine {
 
 			player.processInput(deltaTime);
 			Window::ProcessInput(deltaTime);
-			/*if (Keyboard::keyWentDown(GLFW_KEY_R)) {
+			if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 				_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
 				_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
 				_shaders.animShader.load("animated.vs", "animated.fs");
 				_shaders.lampShader.load("lamp.vs", "lamp.fs");
-			}*/
+			}
 			Window::PrepareFrame();
 
 			
@@ -250,7 +250,7 @@ namespace Engine {
 			_shaders.texturedObjectShader.setMat4("projection", projection);
 			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
-			_shaders.texturedObjectShader.setInt("shadowMap", 2);
+			_shaders.texturedObjectShader.setInt("shadowMap", 3);
 			for (int i = 0; i < sceneLights.size(); i++) {
 				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -273,7 +273,7 @@ namespace Engine {
 			_shaders.texturedObjectShader.setMat4("projection", projection);
 			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
-			_shaders.texturedObjectShader.setInt("shadowMap", 2);
+			_shaders.texturedObjectShader.setInt("shadowMap", 3);
 			for (int i = 0; i < sceneLights.size(); i++) {
 				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 

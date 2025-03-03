@@ -4,10 +4,10 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D texture1;
+uniform sampler2D texture0;
 
 void main() {    
-    vec3 color = texture(texture1, TexCoords).rgb;
+    vec3 color = texture(texture0, TexCoords).rgb;
 
     // Apply Gamma Correction
     float gamma = 2.2;

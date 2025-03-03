@@ -24,17 +24,19 @@ void Texture::load(bool flip) {
 	GLenum internalFormat = GL_RGB; 
 	GLenum format = GL_RGB;
 
+	bool isNormal = (type == aiTextureType_NORMALS);
+
 	switch (nChannels) {
 	case 1:
 		internalFormat = GL_RED;
 		format = GL_RED;
 		break;
 	case 3:
-		internalFormat = GL_SRGB;
+		internalFormat = isNormal ? GL_RGB : GL_SRGB;
 		format = GL_RGB;
 		break;
 	case 4:
-		internalFormat = GL_SRGB_ALPHA;
+		internalFormat = isNormal ? GL_RGBA : GL_SRGB_ALPHA;
 		format = GL_RGBA;
 		break;
 	}
