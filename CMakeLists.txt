@@ -21,6 +21,19 @@ target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party
 add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image/stb_image.cpp)
 target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image)
 
+# imGui
+file(GLOB IMGUI_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends/imgui_impl_glfw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends/imgui_impl_opengl3.cpp
+)
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/include
+)
+
 # assimp
 add_library(assimp SHARED IMPORTED)
 set_target_properties(assimp PROPERTIES 
@@ -46,7 +59,7 @@ add_executable(NineThousand ${SOURCES})
 
 # Set include directories and libraries after the target is created
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/include)
-target_link_libraries(NineThousand PRIVATE glfw glad glm stb_image assimp ${PHYSX_LIBS})
+target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp ${PHYSX_LIBS})
 
 # Include resources to output folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)

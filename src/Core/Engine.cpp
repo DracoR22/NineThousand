@@ -8,7 +8,7 @@ namespace Engine {
 		Shader animShader;
 		Shader lampShader;
 		Shader shadowMapShader;
-		Shader groundShader;
+		Shader weaponShader;
 	} _shaders;
 
 	struct PointLight {
@@ -38,12 +38,12 @@ namespace Engine {
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		// load shaders
-		_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
-		_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
-		_shaders.animShader.load("animated.vs", "animated.fs");
-		_shaders.lampShader.load("lamp.vs", "lamp.fs");
-		_shaders.shadowMapShader.load("shadow_map.vs", "shadow_map.fs");
-		_shaders.groundShader.load("ground.vert", "ground.frag");
+		_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
+		_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
+		_shaders.animShader.load("animated.vert", "animated.frag");
+		_shaders.lampShader.load("lamp.vert", "lamp.frag");
+		_shaders.shadowMapShader.load("shadow_map.vert", "shadow_map.frag");
+		_shaders.weaponShader.load("weapon.vert", "weapon.frag");
 
 		// load skybox
 		CubeMap cubemap;
@@ -139,7 +139,19 @@ namespace Engine {
 		float lastFrame = 0.0f;
 
 		double lastTime = glfwGetTime();
-		int nbFrames = 0;
+		
+		int fps = 0;
+		const int FPS_SMOOTHING_SAMPLES = 50; // Number of frames to average
+		double fpsBuffer[FPS_SMOOTHING_SAMPLES] = { 0 };
+		int fpsIndex = 0;
+
+		// IMGUI
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui::StyleColorsDark();
+		ImGui_ImplGlfw_InitForOpenGL(Window::window, true);
+		ImGui_ImplOpenGL3_Init("#version 330");
 
 		while (!Window::WindowShouldClose()) {
 			double currentTime = glfwGetTime();
@@ -148,13 +160,21 @@ namespace Engine {
 
 			/*deltaTime = glm::min(deltaTime, 0.05f);*/
 
-			nbFrames++;
-			if (currentTime - lastTime >= 1.0) { // If a second has passed
-				// Print and reset FPS counter
-				std::cout << "FPS: " << nbFrames << std::endl;
-				nbFrames = 0;
-				lastTime += 1.0;
+			if (deltaTime > 0.0) {
+				double currentFPS = 1.0 / deltaTime;
+
+				// Store FPS in the buffer
+				fpsBuffer[fpsIndex] = currentFPS;
+				fpsIndex = (fpsIndex + 1) % FPS_SMOOTHING_SAMPLES;
+
+				// Compute the moving average FPS
+				double fpsSum = 0.0;
+				for (int i = 0; i < FPS_SMOOTHING_SAMPLES; i++) {
+					fpsSum += fpsBuffer[i];
+				}
+				fps = fpsSum / FPS_SMOOTHING_SAMPLES;
 			}
+
 
 
 			Physics::Simulate(deltaTime);
@@ -162,13 +182,24 @@ namespace Engine {
 			player.processInput(deltaTime);
 			Window::ProcessInput(deltaTime);
 			if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
-				_shaders.texturedObjectShader.load("textured_obj.vs", "textured_obj.fs");
-				_shaders.skyboxShader.load("skybox.vs", "skybox.fs");
-				_shaders.animShader.load("animated.vs", "animated.fs");
-				_shaders.lampShader.load("lamp.vs", "lamp.fs");
+				_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
+				_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
+				_shaders.animShader.load("animated.vert", "animated.frag");
+				_shaders.lampShader.load("lamp.vert", "lamp.frag");
+				_shaders.weaponShader.load("weapon.vert", "weapon.frag");
+			
 			}
 			Window::PrepareFrame();
 
+			// IMGUI
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+			ImGui::Begin("Debug Window"); // Window title
+			ImGui::Text("FPS: %d", fps);
+			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
+			ImGui::End();
 			
 			/*p90Animator.UpdateAnimation(deltaTime);*/
 
@@ -207,13 +238,28 @@ namespace Engine {
 
 
 			// ------ 2. RENDER PASS ------
-			_shaders.animShader.activate();
-			_shaders.animShader.setMat4("view", view);
-			_shaders.animShader.setMat4("projection", projection);
+			_shaders.weaponShader.activate();
+			_shaders.weaponShader.setMat4("view", view);
+			_shaders.weaponShader.setMat4("projection", projection);
+			_shaders.weaponShader.setMat4("lightProjection", lightProjection);
+			_shaders.weaponShader.setInt("noPointLights", sceneLights.size());
+			
+			for (int i = 0; i < sceneLights.size(); i++) {
+				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
+
+				_shaders.weaponShader.setVec3(lightUniform + ".position", sceneLights[i].position);
+				_shaders.weaponShader.setFloat(lightUniform + ".constant", sceneLights[i].constant);
+				_shaders.weaponShader.setFloat(lightUniform + ".linear", sceneLights[i].linear);
+				_shaders.weaponShader.setFloat(lightUniform + ".quadratic", sceneLights[i].quadratic);
+
+				_shaders.weaponShader.setVec3(lightUniform + ".ambient", sceneLights[i].ambient);
+				_shaders.weaponShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
+				_shaders.weaponShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
+			}
 			auto transforms = glockAnimator->GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
-				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			AssetManager::DrawModel("Glock", _shaders.animShader);
+				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			AssetManager::DrawModel("Glock", _shaders.weaponShader);
 
 			_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
@@ -222,27 +268,6 @@ namespace Engine {
 			for (int i = 0; i < p90Transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
 			AssetManager::DrawModel("P90", _shaders.animShader);
-
-			/*_shaders.texturedObjectShader.activate();
-			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
-			_shaders.texturedObjectShader.setMat4("view", view);
-			_shaders.texturedObjectShader.setMat4("projection", projection);
-			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
-			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
-			_shaders.texturedObjectShader.setInt("shadowMap", 2);
-			for (int i = 0; i < sceneLights.size(); i++) {
-				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
-
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".position", sceneLights[i].position);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".constant", sceneLights[i].constant);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".linear", sceneLights[i].linear);
-				_shaders.texturedObjectShader.setFloat(lightUniform + ".quadratic", sceneLights[i].quadratic);
-
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".ambient", sceneLights[i].ambient);
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", sceneLights[i].diffuse);
-				_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", sceneLights[i].specular);
-			}
-			AssetManager::DrawModel("P90", _shaders.texturedObjectShader);*/
 
 			_shaders.texturedObjectShader.activate();
 			_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -299,8 +324,15 @@ namespace Engine {
 
 			cubemap.render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 			Window::ProcessEvents();
 		}
+
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 
 		shadowMap.Cleanup();
 		AssetManager::CleanupModels();
