@@ -25,17 +25,21 @@ public:
 
 	void UpdateAnimation(float dt)
 	{
+		if (!m_CurrentAnimation) return;
+
 		m_DeltaTime = dt;
-		if (m_CurrentAnimation)
-		{
-			float prevTime = m_CurrentTime;
-			m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt * m_AnimationSpeed;
-			m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
-			if (prevTime > m_CurrentTime) {
-				m_AnimationFinished = true; 
-			}
-			CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+		float prevTime = m_CurrentTime;
+
+		// Advance time
+		m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt * m_AnimationSpeed;
+
+		// Detect loop (animation finished)
+		if (m_CurrentTime >= m_CurrentAnimation->GetDuration() - 0.0001f) {
+			m_AnimationFinished = true;
+			m_CurrentTime = 0.0f; // Reset for next cycle
 		}
+
+		CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
 	}
 
 	void PlayAnimation(Animation* pAnimation, float speed = 1.0f)

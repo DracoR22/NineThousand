@@ -31,6 +31,8 @@ uniform sampler2D normal0;
 uniform vec3 viewPos;
 uniform sampler2D shadowMap;
 
+uniform float gamma;
+
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, PointLight light, vec3 fragPos);
@@ -59,7 +61,6 @@ void main() {
      vec3 color = lightingResult;
 
      // Gamma Correction
-     float gamma = 2.2;
      color = pow(color, vec3(1.0 / gamma));
 
      FragColor = vec4(color, 1.0);

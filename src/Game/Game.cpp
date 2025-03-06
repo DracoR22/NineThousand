@@ -1,8 +1,10 @@
 #include "Game.h"
 
 namespace Game {
+	GameState g_gameState = {};
 
 	void Init() {
+		g_gameState = GameState::PLAYING;
 		WeaponManager::Init();
 	}
 
@@ -26,7 +28,6 @@ namespace Game {
 
 		if (!equipedWeapon) {
 			std::cerr << "ERROR: No equipped weapon!" << std::endl;
-			return;
 		}
 
 		if (equipedWeapon->name == "Glock") {
@@ -126,5 +127,13 @@ namespace Game {
 		// Apply transformations to the gun
 		weaponModel->setPosition(gunPosition);
 		weaponModel->setRotation(gunRotation);
+	}
+
+	GameState GetGameState() {
+		return g_gameState;
+	}
+
+	void SetGameState(GameState newState) {
+		g_gameState = newState;
 	}
 }

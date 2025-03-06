@@ -10,6 +10,8 @@
 #include "../Input/Mouse.h"
 
 namespace Game {
+	enum class GameState { PLAYING, PAUSED, EDITOR };
+
 	inline std::vector<Player> g_players;
 
 	void Init();
@@ -19,4 +21,7 @@ namespace Game {
 	Player& GetPLayerByIndex(int index);
 
 	void UpdateWeaponPositionByName(std::string weaponName);
+
+	GameState GetGameState();
+	void SetGameState(GameState newState);
 }

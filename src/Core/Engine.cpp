@@ -144,12 +144,28 @@ namespace Engine {
 		const int FPS_SMOOTHING_SAMPLES = 50; // Number of frames to average
 		double fpsBuffer[FPS_SMOOTHING_SAMPLES] = { 0 };
 		int fpsIndex = 0;
+		float gamma = 2.2f;
 
 		// IMGUI
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
 		ImGui::StyleColorsDark();
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec4* colors = style.Colors;
+
+		colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);          // Background
+		colors[ImGuiCol_TitleBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);            // Title Bar
+		colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);      // Active Title
+		colors[ImGuiCol_Button] = ImVec4(0.0f, 0.5f, 0.8f, 1.0f);             // Buttons
+		colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.6f, 0.9f, 1.0f);      // Button Hover
+		colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.4f, 0.7f, 1.0f);       // Button Click
+		colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);         // Input Box Background
+		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);     // Input Hover
+		colors[ImGuiCol_Border] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);             // Panel Borders
+
 		ImGui_ImplGlfw_InitForOpenGL(Window::window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
 
@@ -175,20 +191,45 @@ namespace Engine {
 				fps = fpsSum / FPS_SMOOTHING_SAMPLES;
 			}
 
+			if (Keyboard::KeyJustPressed(GLFW_KEY_F1)) {
+				if (Game::GetGameState() == Game::GameState::EDITOR) {
+					Game::SetGameState(Game::GameState::PLAYING);
+				}
+				else {
+					Game::SetGameState(Game::GameState::EDITOR);
+				}
+			}
 
-
+			Window::ProcessInput(deltaTime);
 			Physics::Simulate(deltaTime);
 
-			player.processInput(deltaTime);
-			Window::ProcessInput(deltaTime);
+			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
+			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
+
+			if (Game::GetGameState() == Game::GameState::PLAYING) {
+				player.processInput(deltaTime);
+				Game::Update(deltaTime);
+
+			    AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
+			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
+			}
+
+			if (Game::GetGameState() == Game::GameState::PLAYING) {
+				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+			else {
+				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+
 			if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 				_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
 				_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
 				_shaders.animShader.load("animated.vert", "animated.frag");
 				_shaders.lampShader.load("lamp.vert", "lamp.frag");
 				_shaders.weaponShader.load("weapon.vert", "weapon.frag");
-			
+
 			}
+
 			Window::PrepareFrame();
 
 			// IMGUI
@@ -196,9 +237,10 @@ namespace Engine {
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::Begin("Debug Window"); // Window title
+			ImGui::Begin("Game Settings");
 			ImGui::Text("FPS: %d", fps);
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
+			ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f");
 			ImGui::End();
 			
 			/*p90Animator.UpdateAnimation(deltaTime);*/
@@ -208,14 +250,6 @@ namespace Engine {
 
 			view = player.camera.getViewMatrix();
 			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
-
-			Game::Update(deltaTime);
-
-			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
-			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
-
-			AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
-			AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
 
 			// ------ 1. SHADOW PASS (Render to Depth Map) ------
 			glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -243,7 +277,7 @@ namespace Engine {
 			_shaders.weaponShader.setMat4("projection", projection);
 			_shaders.weaponShader.setMat4("lightProjection", lightProjection);
 			_shaders.weaponShader.setInt("noPointLights", sceneLights.size());
-			
+			_shaders.weaponShader.setFloat("gamma", gamma);
 			for (int i = 0; i < sceneLights.size(); i++) {
 				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -264,6 +298,7 @@ namespace Engine {
 			_shaders.animShader.activate();
 			_shaders.animShader.setMat4("view", view);
 			_shaders.animShader.setMat4("projection", projection);
+			_shaders.animShader.setFloat("gamma", gamma);
 			auto p90Transforms = p90Animator->GetFinalBoneMatrices();
 			for (int i = 0; i < p90Transforms.size(); ++i)
 				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
@@ -276,6 +311,7 @@ namespace Engine {
 			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
 			_shaders.texturedObjectShader.setInt("shadowMap", 3);
+			_shaders.texturedObjectShader.setFloat("gamma", gamma);
 			for (int i = 0; i < sceneLights.size(); i++) {
 				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -299,6 +335,7 @@ namespace Engine {
 			_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 			_shaders.texturedObjectShader.setInt("noPointLights", sceneLights.size());
 			_shaders.texturedObjectShader.setInt("shadowMap", 3);
+			_shaders.texturedObjectShader.setFloat("gamma", gamma);
 			for (int i = 0; i < sceneLights.size(); i++) {
 				std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 

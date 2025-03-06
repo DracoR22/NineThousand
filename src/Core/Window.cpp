@@ -87,7 +87,7 @@ namespace Window {
 		}
 
 		// move camera
-		if (Keyboard::KeyPressed(GLFW_KEY_W)) {
+	/*	if (Keyboard::KeyPressed(GLFW_KEY_W)) {
 			Camera::defaultCamera.updateCameraPos(CameraDirection::FORWARD, dt);
 		}
 		if (Keyboard::KeyPressed(GLFW_KEY_S)) {
@@ -110,7 +110,7 @@ namespace Window {
 		float sensitivity = 0.1f;
 		if (dx != 0 || dy != 0) {
 			Camera::defaultCamera.updateCameraDirection(dx * sensitivity, dy * sensitivity);
-		}
+		}*/
 	}
 
 }
