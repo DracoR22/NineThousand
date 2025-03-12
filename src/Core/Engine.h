@@ -18,6 +18,7 @@
 #include "../API/OpenGL/Shader.h"
 #include "../API/OpenGL/Cubemap.h"
 #include "../API/OpenGL/ShadowMap.h"
+#include "../API/OpenGL/FrameBuffer.hpp"
 
 #include "../Input/Camera.h"
 #include "../Input/Keyboard.h"

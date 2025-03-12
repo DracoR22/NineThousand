@@ -36,13 +36,5 @@ namespace Scene {
 		mainPointLight.specular = glm::vec3(1.0f);*/
 	}
 
-	PrimitiveModel* GetPrimitiveModelByName(const std::string& name) {
-		for (auto& primitiveGameObject : g_primitiveGameObjects) {
-			if (primitiveGameObject.GetName() == name) {
-				return &primitiveGameObject;
-			}
-		}
-		std::cout << "No Model found: " << name << std::endl;
-		return nullptr;
-	}
+	
 }

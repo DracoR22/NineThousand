@@ -52,7 +52,7 @@ endif()
 file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
 
 # Link all files inside /src
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 
 # Create the executable
 add_executable(NineThousand ${SOURCES})

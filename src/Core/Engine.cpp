@@ -9,6 +9,8 @@ namespace Engine {
 		Shader lampShader;
 		Shader shadowMapShader;
 		Shader weaponShader;
+		Shader frameBufferShader;
+		Shader postProcessShader;
 	} _shaders;
 
 	struct PointLight {
@@ -22,6 +24,13 @@ namespace Engine {
 		glm::vec3 diffuse;
 		glm::vec3 specular;
 	};
+
+	enum class PostProcessMode {
+		NONE,
+		SHARPEN
+	};
+
+	PostProcessMode g_currentMode = PostProcessMode::NONE;
 
 
 	void Run() {
@@ -44,6 +53,8 @@ namespace Engine {
 		_shaders.lampShader.load("lamp.vert", "lamp.frag");
 		_shaders.shadowMapShader.load("shadow_map.vert", "shadow_map.frag");
 		_shaders.weaponShader.load("weapon.vert", "weapon.frag");
+		_shaders.frameBufferShader.load("frame_buffer.vert", "frame_buffer.frag");
+		_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 
 		// load skybox
 		CubeMap cubemap;
@@ -91,12 +102,39 @@ namespace Engine {
 			glm::mat4(1.0f)
 		};
 
+		float quadVertices[] = {
+			// positions   // texCoords
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			 1.0f, -1.0f,  1.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f, 1.0f
+		};
+
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
 		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
+
+		// Quad For FrameBuffer
+		unsigned int quadVAO, quadVBO;
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+		glBindVertexArray(0);
 
 		std::vector<PointLight> sceneLights;
 
@@ -110,6 +148,11 @@ namespace Engine {
 		cubeLampLight.specular = glm::vec3(1.0f);
 
 		sceneLights.push_back(cubeLampLight);
+
+		// Create frame buffers
+		FrameBuffer frameBuffer;
+		frameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		frameBuffer.CreateAttachment();
 
 		// Load shadow map
 		ShadowMap shadowMap;
@@ -227,6 +270,7 @@ namespace Engine {
 				_shaders.animShader.load("animated.vert", "animated.frag");
 				_shaders.lampShader.load("lamp.vert", "lamp.frag");
 				_shaders.weaponShader.load("weapon.vert", "weapon.frag");
+				_shaders.frameBufferShader.load("frame_buffer.vert", "frame_buffer.frag");
 
 			}
 
@@ -241,6 +285,17 @@ namespace Engine {
 			ImGui::Text("FPS: %d", fps);
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 			ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f");
+
+			if (ImGui::BeginCombo("Post Processing Mode", g_currentMode == PostProcessMode::NONE ? "None" : "Sharpen")) {
+				if (ImGui::Selectable("None", g_currentMode == PostProcessMode::NONE)) {
+					g_currentMode = PostProcessMode::NONE;
+				}
+				if (ImGui::Selectable("Sharpen", g_currentMode == PostProcessMode::SHARPEN)) {
+					g_currentMode = PostProcessMode::SHARPEN;
+				}
+				ImGui::EndCombo();
+			}
+
 			ImGui::End();
 			
 			/*p90Animator.UpdateAnimation(deltaTime);*/
@@ -251,7 +306,7 @@ namespace Engine {
 			view = player.camera.getViewMatrix();
 			projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
 
-			// ------ 1. SHADOW PASS (Render to Depth Map) ------
+			// ------ SHADOW PASS (Render to Depth Map) ------
 			glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 			glm::mat4 lightView = glm::lookAt(sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
 			glm::mat4 lightProjection = orthogonalProjection * lightView;
@@ -270,8 +325,16 @@ namespace Engine {
 			glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+			// ------ BIND FRAME BUFFERS -------
+			if (frameBuffer.GetWidth() != Window::currentWidth || frameBuffer.GetHeight() != Window::currentHeight) {
+				frameBuffer.Resize(Window::currentWidth, Window::currentHeight);
+			}
 
-			// ------ 2. RENDER PASS ------
+			frameBuffer.Bind();
+			glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// ------ RENDER PASS ------
 			_shaders.weaponShader.activate();
 			_shaders.weaponShader.setMat4("view", view);
 			_shaders.weaponShader.setMat4("projection", projection);
@@ -361,6 +424,37 @@ namespace Engine {
 
 			cubemap.render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
+
+			// ------ FRAME BUFFER PASS -----------
+
+			/*glActiveTexture(GL_TEXTURE0);*/
+			frameBuffer.Unbind();
+			
+			switch (g_currentMode)
+			{
+			case Engine::PostProcessMode::NONE:
+				_shaders.postProcessShader.activate();
+				_shaders.postProcessShader.setInt("screenTexture", 0);
+				break;
+			case Engine::PostProcessMode::SHARPEN:
+				_shaders.frameBufferShader.activate();
+				_shaders.frameBufferShader.setInt("screenTexture", 0);
+				break;
+			default:
+				_shaders.postProcessShader.activate();
+				_shaders.postProcessShader.setInt("screenTexture", 0);
+				break;
+			}
+
+			glBindVertexArray(quadVAO);
+			glDisable(GL_DEPTH_TEST);
+
+			glActiveTexture(GL_TEXTURE0);
+			frameBuffer.BindTexture();
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -374,6 +468,7 @@ namespace Engine {
 		shadowMap.Cleanup();
 		AssetManager::CleanupModels();
 		cubemap.cleanup();
+		frameBuffer.Cleanup();
 		/*Scene::GetPrimitiveModelByName("Plane")->cleanup();*/
 
 		Physics::CleanupPhysX();
