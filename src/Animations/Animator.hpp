@@ -54,6 +54,19 @@ public:
 		return m_AnimationFinished;
 	}
 
+	void Reset()
+	{
+		m_CurrentTime = 0.0f;
+		m_AnimationFinished = false;
+		m_AnimationSpeed = 1.0f;
+		m_CurrentAnimation = nullptr; 
+
+		// Reset the bone matrices to identity
+		for (auto& matrix : m_FinalBoneMatrices) {
+			matrix = glm::mat4(1.0f);
+		}
+	}
+
 	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
 	{
 		std::string nodeName = node->name;

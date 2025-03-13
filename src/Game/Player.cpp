@@ -94,6 +94,8 @@ void Player::EquipWeapon(std::string weaponName) {
     WeaponInfo* weapon = WeaponManager::GetWeaponInfoByName(weaponName);
     m_equippedWeapon = weapon;
     std::cout << "Equipped weapon: " << weapon->name << std::endl;
+
+
 }
 
 WeaponInfo* Player::GetEquipedWeaponInfo() {

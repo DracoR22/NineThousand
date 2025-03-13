@@ -22,18 +22,18 @@
 #include "../../Core/Window.h"
 #include "../../Core/AssetManager.h"
 
+#include "../../Common/RendererCommon.h"
+
 
 namespace OpenGLRenderer {
-	inline float g_deltaTime = 0.0f;
-	inline float g_lastFrame = 0.0f;
-
-	inline int g_fps = 0;
-
-	inline float g_gamma = 2.2f;
-
-	inline std::vector<PointLight> g_sceneLights = {};
-
-
 	void Init();
 	void RenderFrame();
+
+	RendererCommon::PostProcessMode GetPostProcessMode();
+	void ChangePostProcessMode(RendererCommon::PostProcessMode mode);
+
+	float GetGammaValue();
+	void ChangeGammaValue(float value);
+
+	void Cleanup();
 }

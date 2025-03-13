@@ -16,6 +16,7 @@ namespace Game {
 		Animation* glockIdleAnimation = AssetManager::GetAnimationByName("Glock_Idle");
 		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("Glock_Walk");
 		Animation* glockFire0Animation = AssetManager::GetAnimationByName("Glock_Fire0");
+		Animation* glockDrawAnimation = AssetManager::GetAnimationByName("Glock_Draw");
 
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
 
@@ -23,16 +24,42 @@ namespace Game {
 		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90_Idle");
 		Animation* p90WalkAnimation = AssetManager::GetAnimationByName("P90_Walk");
 		Animation* p90Fire0Animation = AssetManager::GetAnimationByName("P90_Fire0");
+		Animation* p90DrawAnimation = AssetManager::GetAnimationByName("P90_Draw");
 
 		WeaponInfo* equipedWeapon = g_players[0].GetEquipedWeaponInfo();
 
+		static std::string previousWeapon = equipedWeapon->name;
+		static float drawAnimationFinishTime = 0.0f;
+		static bool isDrawing = false;
+
+		//if (equipedWeapon->name != previousWeapon) {
+		//	if (equipedWeapon->name == "Glock") {
+		//		glockAnimator->PlayAnimation(glockDrawAnimation);
+		//	}
+		//	else if (equipedWeapon->name == "P90") {
+		//		p90Animator->PlayAnimation(p90DrawAnimation);
+		//	}
+		//	previousWeapon = equipedWeapon->name; 
+		//	drawAnimationFinishTime = 0.0f;
+		//	isDrawing = true;
+
+		//	/*glockAnimator->Reset();
+  //         p90Animator->Reset();*/
+		//}
+
 		if (!equipedWeapon) {
-			std::cerr << "ERROR: No equipped weapon!" << std::endl;
+			std::cout << "ERROR: No equipped weapon!" << std::endl;
 		}
 
 		if (equipedWeapon->name == "Glock") {
 			if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
 				glockAnimator->PlayAnimation(glockReloadAnimation);
+			}
+
+			if (Keyboard::KeyJustPressed(GLFW_KEY_F)) {
+				glockAnimator->PlayAnimation(glockDrawAnimation);
+				drawAnimationFinishTime = 0.0f;
+				isDrawing = true;
 			}
 
 			if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
@@ -43,7 +70,18 @@ namespace Game {
 				glockAnimator->PlayAnimation(glockFire0Animation);
 			}
 
-			if (glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
+			if (isDrawing) {
+				drawAnimationFinishTime += deltaTime;
+
+				
+				if (drawAnimationFinishTime >= 0.65f) {
+					glockAnimator->PlayAnimation(glockIdleAnimation);
+					isDrawing = false;  
+				}
+			}
+
+
+			if (!isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockIdleAnimation);
 			}
 
@@ -63,7 +101,18 @@ namespace Game {
 				p90Animator->PlayAnimation(p90Fire0Animation, 2.0f);
 			}
 
-			if (p90Animator->IsAnimationFinished() && p90Animator->GetCurrentAnimation() != p90IdleAnimation) {
+			if (isDrawing) {
+				drawAnimationFinishTime += deltaTime;
+
+			
+				if (drawAnimationFinishTime >= 0.85f) {
+					p90Animator->PlayAnimation(p90IdleAnimation);
+					isDrawing = false;  
+				}
+			}
+
+
+			if (!isDrawing && p90Animator->IsAnimationFinished() && p90Animator->GetCurrentAnimation() != p90IdleAnimation) {
 				p90Animator->PlayAnimation(p90IdleAnimation);
 			}
 
@@ -72,9 +121,17 @@ namespace Game {
 
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("P90");
+			p90Animator->PlayAnimation(p90DrawAnimation);
+			previousWeapon = equipedWeapon->name;
+			drawAnimationFinishTime = 0.0f;
+			isDrawing = true;
 		}
 		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("Glock");
+			glockAnimator->PlayAnimation(glockDrawAnimation);
+			previousWeapon = equipedWeapon->name;
+			drawAnimationFinishTime = 0.0f;
+			isDrawing = true;
 		}
 
 		// Weapons Position
