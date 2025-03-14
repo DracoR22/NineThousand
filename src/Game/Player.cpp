@@ -101,3 +101,13 @@ void Player::EquipWeapon(std::string weaponName) {
 WeaponInfo* Player::GetEquipedWeaponInfo() {
     return m_equippedWeapon;
 }
+
+void Player::ReloadWeapon() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+    Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
+
+    if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+        currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload));
+    }
+}

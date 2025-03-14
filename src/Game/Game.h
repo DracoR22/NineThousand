@@ -6,8 +6,11 @@
 #include "WeaponManager.h"
 
 #include "../Core/AssetManager.h"
+
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
+
+#include "../Physics/Physics.h"
 
 namespace Game {
 	enum class GameState { PLAYING, PAUSED, EDITOR };

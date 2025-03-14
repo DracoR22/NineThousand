@@ -81,6 +81,26 @@ namespace Physics {
         return capsuleActor;
     }
 
+    PxRigidDynamic* FireBullet(const PxVec3& position, const PxVec3& direction, float speed, float mass) {
+        PxTransform transform(position);
+        PxRigidDynamic* bullet = _gPhysics->createRigidDynamic(transform);
+
+        PxShape* shape = _gPhysics->createShape(PxSphereGeometry(0.1f), *_gMaterial);
+        bullet->attachShape(*shape);
+        shape->release();
+
+        PxRigidBodyExt::updateMassAndInertia(*bullet, 5.0f); // Bullet mass
+
+        _gScene->addActor(*bullet);
+
+        // Apply an impulse for strong force
+        bullet->addForce(direction * speed * bullet->getMass(), PxForceMode::eIMPULSE);
+
+        std::cout << "Bullet fired with impulse" << std::endl;
+
+        return bullet;
+    }
+
     void InitializeCharacterController() {
         PxControllerManager* manager = PxCreateControllerManager(*_gScene);
 

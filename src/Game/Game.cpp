@@ -12,7 +12,7 @@ namespace Game {
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
-		Animation* glockReloadAnimation = AssetManager::GetAnimationByName("Glock_Reload");
+		Animation* glockReloadAnimation = AssetManager::GetAnimationByName("Glock_ReloadEmpty");
 		Animation* glockIdleAnimation = AssetManager::GetAnimationByName("Glock_Idle");
 		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("Glock_Walk");
 		Animation* glockFire0Animation = AssetManager::GetAnimationByName("Glock_Fire0");
@@ -47,14 +47,17 @@ namespace Game {
   //         p90Animator->Reset();*/
 		//}
 
+		g_players[0].ReloadWeapon();
+
+	
 		if (!equipedWeapon) {
 			std::cout << "ERROR: No equipped weapon!" << std::endl;
 		}
 
 		if (equipedWeapon->name == "Glock") {
-			if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+			/*if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
 				glockAnimator->PlayAnimation(glockReloadAnimation);
-			}
+			}*/
 
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F)) {
 				glockAnimator->PlayAnimation(glockDrawAnimation);
@@ -68,6 +71,16 @@ namespace Game {
 
 			if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
 				glockAnimator->PlayAnimation(glockFire0Animation);
+
+				// Get player position and forward direction
+				glm::vec3 playerPos = g_players[0].getPosition();
+				physx::PxVec3 physxPlayerPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
+
+				glm::vec3 cameraFront = g_players[0].camera.cameraFront; // Assuming player has a camera
+				physx::PxVec3 forwardDirection = physx::PxVec3(cameraFront.x, cameraFront.y, cameraFront.z);
+
+				// Fire the bullet
+				Physics::FireBullet(physxPlayerPos + forwardDirection * 2.0f, forwardDirection, 50.0f, 50.0f);
 			}
 
 			if (isDrawing) {
@@ -122,6 +135,7 @@ namespace Game {
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("P90");
 			p90Animator->PlayAnimation(p90DrawAnimation);
+			glockAnimator->Reset();
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
@@ -129,6 +143,7 @@ namespace Game {
 		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("Glock");
 			glockAnimator->PlayAnimation(glockDrawAnimation);
+			p90Animator->Reset();
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;

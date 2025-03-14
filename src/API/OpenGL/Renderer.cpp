@@ -21,7 +21,7 @@ namespace OpenGLRenderer {
 		Shader lampShader;
 		Shader shadowMapShader;
 		Shader weaponShader;
-		Shader frameBufferShader;
+		Shader sharpenShader;
 		Shader postProcessShader;
 	} _shaders;
 
@@ -48,7 +48,7 @@ namespace OpenGLRenderer {
 		_shaders.lampShader.load("lamp.vert", "lamp.frag");
 		_shaders.shadowMapShader.load("shadow_map.vert", "shadow_map.frag");
 		_shaders.weaponShader.load("weapon.vert", "weapon.frag");
-		_shaders.frameBufferShader.load("frame_buffer.vert", "frame_buffer.frag");
+		_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 		_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 
 		// load skybox
@@ -147,6 +147,7 @@ namespace OpenGLRenderer {
 		// load animations
 		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ReloadEmpty", "resources/animations/Glock_ReloadEmpty.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Walk", "resources/animations/Glock_Walk.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Fire0", "resources/animations/Glock_Fire0.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Draw", "resources/animations/Glock_Draw.fbx", glockModel);
@@ -169,7 +170,7 @@ namespace OpenGLRenderer {
 			_shaders.animShader.load("animated.vert", "animated.frag");
 			_shaders.lampShader.load("lamp.vert", "lamp.frag");
 			_shaders.weaponShader.load("weapon.vert", "weapon.frag");
-			_shaders.frameBufferShader.load("frame_buffer.vert", "frame_buffer.frag");
+			_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 
 		}
 
@@ -323,8 +324,8 @@ namespace OpenGLRenderer {
 			_shaders.postProcessShader.setInt("screenTexture", 0);
 			break;
 		case RendererCommon::PostProcessMode::SHARPEN:
-			_shaders.frameBufferShader.activate();
-			_shaders.frameBufferShader.setInt("screenTexture", 0);
+			_shaders.sharpenShader.activate();
+			_shaders.sharpenShader.setInt("screenTexture", 0);
 			break;
 		default:
 			_shaders.postProcessShader.activate();

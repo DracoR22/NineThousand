@@ -21,6 +21,8 @@ namespace Physics {
 
     PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents);
 
+    PxRigidDynamic* FireBullet(const PxVec3& position, const PxVec3& direction, float speed, float mass = 0.1f);
+
     PhysicsTransformData GetTransformFromPhysics(const physx::PxRigidActor* actor);
 
     /* Character Controller */
