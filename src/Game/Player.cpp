@@ -47,7 +47,7 @@ void Player::processInput(double deltaTime) {
      
     }*/
 
-    if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && isOnGround) {
+    if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && m_isOnGround) {
         Physics::CharacterActorJump();
     }
 
@@ -77,7 +77,7 @@ void Player::processInput(double deltaTime) {
     camera.setPosition(adjustedCameraPosition);
 
     if (actorPosition.y <= 0.5f) {
-        isOnGround = true;
+        m_isOnGround = true;
     }
     
 }
@@ -109,5 +109,49 @@ void Player::ReloadWeapon() {
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
         currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload));
+    }
+}
+
+void Player::FireWeapon() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+   
+    Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
+
+    Animation* weaponReloadAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.reload);
+    Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
+
+    if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && currentWeaponAnimator->GetCurrentAnimation() != weaponReloadAnimation) {
+        currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+
+        glm::vec3 playerPos = camera.cameraPos;
+        glm::vec3 cameraDir = glm::normalize(camera.cameraFront);
+
+        physx::PxVec3 origin(playerPos.x, playerPos.y, playerPos.z);
+        physx::PxVec3 direction(cameraDir.x, cameraDir.y, cameraDir.z);
+
+        // Raycast parameters
+        float maxDistance = 1000.0f;  // Maximum bullet range
+        physx::PxRaycastBuffer hitBuffer; // Stores raycast result
+
+        bool hit = Physics::GetScene()->raycast(origin, direction, maxDistance, hitBuffer);
+
+        if (hit) {
+            const physx::PxRaycastHit& hitInfo = hitBuffer.block;
+
+            std::cout << "Hit object at: "
+                << hitInfo.position.x << ", "
+                << hitInfo.position.y << ", "
+                << hitInfo.position.z << std::endl;
+
+            physx::PxRigidDynamic* dynamicActor = hitInfo.actor->is<physx::PxRigidDynamic>();
+
+            if (dynamicActor) {
+                physx::PxVec3 impulseDirection = direction.getNormalized();
+                float impulseStrength = 500.0f;  // bullet force
+                dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
+            }
+
+        }
     }
 }

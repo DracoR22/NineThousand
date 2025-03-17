@@ -17,7 +17,7 @@ struct PlayerState {
 
 class Player {
 public:
-	bool isOnGround = true;
+	bool m_isOnGround = true;
 
 private:
 	bool m_isMoving = false;
@@ -28,6 +28,9 @@ private:
 	float verticalVelocity = 0.0f;
 
 	WeaponInfo* m_equippedWeapon = nullptr;
+
+public:
+	std::vector<BulletInfo> spawnedBullets = {};
 public:
 	Player(glm::vec3 position, float height, float mass);
 
@@ -46,4 +49,5 @@ public:
 	WeaponInfo* GetEquipedWeaponInfo();
 
 	void ReloadWeapon();
+	void FireWeapon();
 };

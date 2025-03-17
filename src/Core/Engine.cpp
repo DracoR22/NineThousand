@@ -93,6 +93,71 @@ namespace Engine {
 			    AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
 			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
 
+
+				//if (Keyboard::KeyJustPressed(GLFW_KEY_X)) {
+				//	glm::vec3 playerPos = player.getPosition();
+				//	glm::vec3 cameraDir = glm::normalize(player.camera.cameraFront);
+
+				//	physx::PxVec3 bulletPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
+				//	physx::PxVec3 bulletDir = physx::PxVec3(cameraDir.x, cameraDir.y, cameraDir.z);
+
+				//	physx::PxRigidDynamic* bulletActor = Physics::CreateDynamicCapsule(bulletPos + bulletDir * 2.0f, 0.0f, 0.5f, 1.0f);
+
+				//	PhysicsTransformData bulletTransformData = Physics::GetTransformFromPhysics(bulletActor);
+				//	glm::mat4 bulletRotationMatrix = glm::mat4_cast(bulletTransformData.rotation);
+
+				//	Model* newBullet = AssetManager::GetModelByName("Bullet");
+
+				//   /* AssetManager::GetModelByName("Bullet")->setPosition(bulletTransformData.position);
+			 //       AssetManager::GetModelByName("Bullet")->setRotation(bulletRotationMatrix);*/
+
+				//	bulletActor->addForce(bulletDir * 800.0f, physx::PxForceMode::eIMPULSE);
+
+				//	player.spawnedBullets.push_back({ newBullet, bulletActor });
+				//}
+
+				if (Keyboard::KeyJustPressed(GLFW_KEY_X)) {
+					glm::vec3 playerPos = player.getPosition();
+					glm::vec3 cameraDir = glm::normalize(player.camera.cameraFront);
+
+					physx::PxVec3 origin(playerPos.x, playerPos.y, playerPos.z);
+					physx::PxVec3 direction(cameraDir.x, cameraDir.y, cameraDir.z);
+
+					// Raycast parameters
+					float maxDistance = 1000.0f;  // Maximum bullet range
+					physx::PxRaycastBuffer hitBuffer; // Stores raycast result
+
+					bool hit = Physics::GetScene()->raycast(origin, direction, maxDistance, hitBuffer);
+
+					if (hit) {
+						const physx::PxRaycastHit& hitInfo = hitBuffer.block;
+
+						std::cout << "Hit object at: "
+							<< hitInfo.position.x << ", "
+							<< hitInfo.position.y << ", "
+							<< hitInfo.position.z << std::endl;
+
+						physx::PxRigidDynamic* dynamicActor = hitInfo.actor->is<physx::PxRigidDynamic>();
+
+						if (dynamicActor) {
+							physx::PxVec3 impulseDirection = direction.getNormalized();
+							float impulseStrength = 500.0f;  // bullet force
+							dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
+						}
+
+					}
+				}
+
+
+				for (BulletInfo& bullet : player.spawnedBullets) {
+				//	// Get updated transform from PhysX
+					PhysicsTransformData bulletTransformData = Physics::GetTransformFromPhysics(bullet.actor);
+
+				// Sync model position and rotation with physics
+					bullet.model->setPosition(bulletTransformData.position);
+					bullet.model->setRotation(glm::mat4_cast(bulletTransformData.rotation));
+				}
+
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else {

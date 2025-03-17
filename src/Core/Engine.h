@@ -33,6 +33,7 @@
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
 #include "../Game/Game.h"
+#include "../Game/WeaponManager.h"
 
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>

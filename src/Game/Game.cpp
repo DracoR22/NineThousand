@@ -48,7 +48,7 @@ namespace Game {
 		//}
 
 		g_players[0].ReloadWeapon();
-
+		g_players[0].FireWeapon();
 	
 		if (!equipedWeapon) {
 			std::cout << "ERROR: No equipped weapon!" << std::endl;
@@ -69,19 +69,19 @@ namespace Game {
 				glockAnimator->PlayAnimation(glockWalkAnimation);
 			}
 
-			if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
-				glockAnimator->PlayAnimation(glockFire0Animation);
+			//if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
+			//	glockAnimator->PlayAnimation(glockFire0Animation);
 
-				// Get player position and forward direction
-				glm::vec3 playerPos = g_players[0].getPosition();
-				physx::PxVec3 physxPlayerPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
+			//	//// Get player position and forward direction
+			//	//glm::vec3 playerPos = g_players[0].getPosition();
+			//	//physx::PxVec3 physxPlayerPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
 
-				glm::vec3 cameraFront = g_players[0].camera.cameraFront; // Assuming player has a camera
-				physx::PxVec3 forwardDirection = physx::PxVec3(cameraFront.x, cameraFront.y, cameraFront.z);
+			//	//glm::vec3 cameraFront = g_players[0].camera.cameraFront; // Assuming player has a camera
+			//	//physx::PxVec3 forwardDirection = physx::PxVec3(cameraFront.x, cameraFront.y, cameraFront.z);
 
-				// Fire the bullet
-				Physics::FireBullet(physxPlayerPos + forwardDirection * 2.0f, forwardDirection, 50.0f, 50.0f);
-			}
+			//	//// Fire the bullet
+			//	//Physics::FireBullet(physxPlayerPos + forwardDirection * 2.0f, forwardDirection, 50.0f, 50.0f);
+			//}
 
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
@@ -110,9 +110,9 @@ namespace Game {
 			}
 
 
-			if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT) && p90Animator->GetCurrentAnimation() != p90ReloadAnimation && p90Animator->GetCurrentAnimation() != p90Fire0Animation) {
+			/*if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT) && p90Animator->GetCurrentAnimation() != p90ReloadAnimation && p90Animator->GetCurrentAnimation() != p90Fire0Animation) {
 				p90Animator->PlayAnimation(p90Fire0Animation, 2.0f);
-			}
+			}*/
 
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;

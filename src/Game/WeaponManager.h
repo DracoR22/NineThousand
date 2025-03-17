@@ -4,6 +4,14 @@
 #include <vector>
 #include <iostream>
 
+#include "../Core/Model.h"
+#include "../Physics/Physics.h"
+
+struct BulletInfo {
+	Model* model;
+	physx::PxRigidDynamic* actor;
+};
+
 struct WeaponAnimations {
 	std::string idle;
 	std::string walk;

@@ -23,6 +23,7 @@ namespace OpenGLRenderer {
 		Shader weaponShader;
 		Shader sharpenShader;
 		Shader postProcessShader;
+		Shader testShader;
 	} _shaders;
 
 	struct RenderData {
@@ -50,6 +51,7 @@ namespace OpenGLRenderer {
 		_shaders.weaponShader.load("weapon.vert", "weapon.frag");
 		_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 		_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
+		_shaders.testShader.load("test.vert", "test.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -104,6 +106,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
 		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
+		AssetManager::LoadModel("Bullet", ModelType::CUBE, cubeCreateInfo);
 
 		// Quad For FrameBuffer
 		glGenVertexArrays(1, &g_renderData.frameBufferQuadVAO);
@@ -171,6 +174,7 @@ namespace OpenGLRenderer {
 			_shaders.lampShader.load("lamp.vert", "lamp.frag");
 			_shaders.weaponShader.load("weapon.vert", "weapon.frag");
 			_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
+			_shaders.testShader.load("test.vert", "test.frag");
 
 		}
 
@@ -298,7 +302,6 @@ namespace OpenGLRenderer {
 			_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
 			_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
 		}
-		/*Scene::GetPrimitiveModelByName("Cube")->draw(_shaders.texturedObjectShader);*/
 		AssetManager::DrawModel("Cube", _shaders.shadowMapShader);
 
 		_shaders.lampShader.activate();
@@ -309,6 +312,20 @@ namespace OpenGLRenderer {
 		/*Scene::GetPrimitiveModelByName("CubeLamp")->draw(_shaders.lampShader);*/
 		AssetManager::DrawModel("CubeLamp", _shaders.lampShader);
 
+		// ------ BULLET PASS ----------
+		_shaders.testShader.activate();
+		_shaders.testShader.setMat4("view", view);
+		_shaders.testShader.setMat4("projection", projection);
+
+		for (int i = 0; i < 5; i++) {
+			Model* bulletModel = AssetManager::GetModelByName("Bullet");
+
+			bulletModel->setPosition(glm::vec3(i * 2.0f, 1.0f, 0.0f));
+
+			AssetManager::DrawModel("Bullet", _shaders.testShader);
+		}
+
+		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
 

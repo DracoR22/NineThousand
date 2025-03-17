@@ -18,10 +18,7 @@ namespace Physics {
     /* Collision Shapes */
     PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass);
     PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass);
-
     PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents);
-
-    PxRigidDynamic* FireBullet(const PxVec3& position, const PxVec3& direction, float speed, float mass = 0.1f);
 
     PhysicsTransformData GetTransformFromPhysics(const physx::PxRigidActor* actor);
 
@@ -37,6 +34,7 @@ namespace Physics {
     PxTransform GetCharacterActorPosition();
 
     /* Utility Functions */
+    PxScene* GetScene();
     void Simulate(double dt);
     void CleanupPhysX();
 }
