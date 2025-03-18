@@ -100,5 +100,5 @@ unsigned int FrameBuffer::GetHeight() const {
 }
 
 unsigned int FrameBuffer::GetFBO() const {
-	return m_fbo
+	return m_fbo;
 }

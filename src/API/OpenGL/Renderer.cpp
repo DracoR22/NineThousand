@@ -32,16 +32,19 @@ namespace OpenGLRenderer {
 		unsigned int frameBufferQuadVBO = 0;
 
 		std::vector<PointLight> sceneLights = {};
-		std::vector<FrameBuffer> frameBuffers = {};
 		std::vector<CubeMap> cubeMaps = {};
 
 		ShadowMap shadowMap;
-		FrameBuffer msaaFrameBuffer;
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
 		float gamma = 2.2f;
 	} g_renderData;
+
+	struct RenderFrameBuffer {
+		FrameBuffer postProcessingFrameBuffer;
+		FrameBuffer mssaFrameBuffer;
+	} g_renderFrameBuffers;
 
 	void Init() {
 		// load shaders
@@ -138,14 +141,11 @@ namespace OpenGLRenderer {
 		g_renderData.sceneLights.push_back(cubeLampLight);
 
 		// Load frame buffers
-		g_renderData.frameBuffers.clear();
+		g_renderFrameBuffers.postProcessingFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment();
 
-		FrameBuffer& frameBuffer = g_renderData.frameBuffers.emplace_back();
-		frameBuffer.Create(Window::currentWidth, Window::currentHeight);
-		frameBuffer.CreateAttachment();
-
-		g_renderData.msaaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
-		g_renderData.msaaFrameBuffer.CreateMSAAAttachment();
+		g_renderFrameBuffers.mssaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment();
 
 		// Load shadow map
 		g_renderData.shadowMap.Init();
@@ -216,12 +216,11 @@ namespace OpenGLRenderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ------ BIND FRAME BUFFERS -------
-		if (g_renderData.frameBuffers[0].GetWidth() != Window::currentWidth || g_renderData.frameBuffers[0].GetHeight() != Window::currentHeight) {
-			g_renderData.frameBuffers[0].Resize(Window::currentWidth, Window::currentHeight);
+		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() != Window::currentWidth || g_renderFrameBuffers.postProcessingFrameBuffer.GetHeight() != Window::currentHeight) {
+			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
 		}
 
-		g_renderData.msaaFrameBuffer.Bind();
-		/*g_renderData.frameBuffers[0].Bind();*/
+		g_renderFrameBuffers.mssaFrameBuffer.Bind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -256,15 +255,6 @@ namespace OpenGLRenderer {
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, _shaders.weaponShader);
 		}
-
-		/*_shaders.animShader.activate();
-		_shaders.animShader.setMat4("view", view);
-		_shaders.animShader.setMat4("projection", projection);
-		_shaders.animShader.setFloat("gamma", g_renderData.gamma);
-		auto p90Transforms = p90Animator->GetFinalBoneMatrices();
-		for (int i = 0; i < p90Transforms.size(); ++i)
-			_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", p90Transforms[i]);
-		AssetManager::DrawModel("P90", _shaders.animShader);*/
 
 		_shaders.texturedObjectShader.activate();
 		_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -317,11 +307,9 @@ namespace OpenGLRenderer {
 		_shaders.lampShader.setMat4("view", view);
 		_shaders.lampShader.setMat4("projection", projection);
 		_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		/*Scene::GetPrimitiveModelByName("CubeLamp")->draw(_shaders.lampShader);*/
 		AssetManager::DrawModel("CubeLamp", _shaders.lampShader);
 
 		// ------ BULLET PASS ----------
-
 		std::vector<glm::vec3> translations;
 		float offset = 0.8f;
 
@@ -354,8 +342,8 @@ namespace OpenGLRenderer {
 
 
 		// ------ FRAME BUFFER PASS -----------
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderData.msaaFrameBuffer.GetFBO());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderData.frameBuffers[0].GetFBO());
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
 		glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -380,7 +368,7 @@ namespace OpenGLRenderer {
 		glDisable(GL_DEPTH_TEST);
 
 		glActiveTexture(GL_TEXTURE0);
-		g_renderData.frameBuffers[0].BindTexture();
+		g_renderFrameBuffers.postProcessingFrameBuffer.BindTexture();
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
@@ -407,11 +395,7 @@ namespace OpenGLRenderer {
 			cubeMap.cleanup();
 		};
 
-		for (FrameBuffer frameBuffer : g_renderData.frameBuffers) {
-			frameBuffer.Cleanup();
-		}
-
-		g_renderData.msaaFrameBuffer.Cleanup();
-		
+		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
+		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();
 	}
 }

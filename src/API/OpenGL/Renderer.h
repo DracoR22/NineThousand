@@ -5,7 +5,7 @@
 #include "Cubemap.h"
 #include "ShadowMap.h"
 
-#include "./FrameBuffer.hpp"
+#include "./FrameBuffer.h"
 
 #include "../../Input/Camera.h"
 #include "../../Input/Keyboard.h"

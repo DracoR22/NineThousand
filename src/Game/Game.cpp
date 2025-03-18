@@ -55,10 +55,6 @@ namespace Game {
 		}
 
 		if (equipedWeapon->name == "Glock") {
-			/*if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
-				glockAnimator->PlayAnimation(glockReloadAnimation);
-			}*/
-
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F)) {
 				glockAnimator->PlayAnimation(glockDrawAnimation);
 				drawAnimationFinishTime = 0.0f;
@@ -68,20 +64,6 @@ namespace Game {
 			if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockWalkAnimation);
 			}
-
-			//if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && glockAnimator->GetCurrentAnimation() != glockReloadAnimation) {
-			//	glockAnimator->PlayAnimation(glockFire0Animation);
-
-			//	//// Get player position and forward direction
-			//	//glm::vec3 playerPos = g_players[0].getPosition();
-			//	//physx::PxVec3 physxPlayerPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
-
-			//	//glm::vec3 cameraFront = g_players[0].camera.cameraFront; // Assuming player has a camera
-			//	//physx::PxVec3 forwardDirection = physx::PxVec3(cameraFront.x, cameraFront.y, cameraFront.z);
-
-			//	//// Fire the bullet
-			//	//Physics::FireBullet(physxPlayerPos + forwardDirection * 2.0f, forwardDirection, 50.0f, 50.0f);
-			//}
 
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
@@ -109,10 +91,6 @@ namespace Game {
 				p90Animator->PlayAnimation(p90WalkAnimation);
 			}
 
-
-			/*if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT) && p90Animator->GetCurrentAnimation() != p90ReloadAnimation && p90Animator->GetCurrentAnimation() != p90Fire0Animation) {
-				p90Animator->PlayAnimation(p90Fire0Animation, 2.0f);
-			}*/
 
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
