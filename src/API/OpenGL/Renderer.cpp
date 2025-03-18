@@ -24,6 +24,7 @@ namespace OpenGLRenderer {
 		Shader sharpenShader;
 		Shader postProcessShader;
 		Shader testShader;
+		Shader instancedShader;
 	} _shaders;
 
 	struct RenderData {
@@ -52,6 +53,7 @@ namespace OpenGLRenderer {
 		_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 		_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 		_shaders.testShader.load("test.vert", "test.frag");
+		_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -175,6 +177,7 @@ namespace OpenGLRenderer {
 			_shaders.weaponShader.load("weapon.vert", "weapon.frag");
 			_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 			_shaders.testShader.load("test.vert", "test.frag");
+			_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 
 		}
 
@@ -313,17 +316,33 @@ namespace OpenGLRenderer {
 		AssetManager::DrawModel("CubeLamp", _shaders.lampShader);
 
 		// ------ BULLET PASS ----------
-		_shaders.testShader.activate();
-		_shaders.testShader.setMat4("view", view);
-		_shaders.testShader.setMat4("projection", projection);
 
-		for (int i = 0; i < 5; i++) {
+		std::vector<glm::vec3> translations;
+		float offset = 0.8f;
+
+		for (int y = -10; y < 10; y += 2) {
+			for (int x = -10; x < 10; x += 2) {
+				translations.emplace_back(x * offset, 10.0f, translations.size() * offset);
+			}
+		}
+
+		_shaders.instancedShader.activate();
+		_shaders.instancedShader.setMat4("view", view);
+		_shaders.instancedShader.setMat4("projection", projection);
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			_shaders.instancedShader.setVec3("offsets[" + std::to_string(i) + "]", translations[i]);
+		}
+
+		AssetManager::DrawModelInstanced("Bullet", _shaders.instancedShader, 10);
+
+		/*for (int i = 0; i < 5; i++) {
 			Model* bulletModel = AssetManager::GetModelByName("Bullet");
 
 			bulletModel->setPosition(glm::vec3(i * 2.0f, 1.0f, 0.0f));
 
 			AssetManager::DrawModel("Bullet", _shaders.testShader);
-		}
+		}*/
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);

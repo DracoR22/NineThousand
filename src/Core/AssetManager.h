@@ -29,6 +29,7 @@ namespace AssetManager {
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo);
 
 	void DrawModel(const std::string& name, Shader& shader);
+	void DrawModelInstanced(const std::string& name, Shader& shader, unsigned int instances);
 
     Model* GetModelByName(const std::string& name);
 

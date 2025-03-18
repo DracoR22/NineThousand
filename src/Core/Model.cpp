@@ -18,6 +18,19 @@ void Model::draw(Shader& shader) {
 		meshes[i].draw(shader);
 }
 
+void Model::DrawInstanced(Shader& shader, unsigned int instances) {
+	glm::mat4 model = glm::mat4(1.0f);
+
+	model = glm::translate(model, pos);
+	model = glm::scale(model, size);
+	model *= rotation;
+
+	shader.setMat4("model", model);
+
+	for (unsigned int i = 0; i < meshes.size(); i++)
+		meshes[i].draw(shader, instances);
+}
+
 void Model::setPosition(const glm::vec3& newPos) {
 	pos = newPos;
 }

@@ -33,6 +33,17 @@ namespace AssetManager {
 		existingModel->draw(shader);
 	}
 
+	void DrawModelInstanced(const std::string& name, Shader& shader, unsigned int instances) {
+		Model* existingModel = AssetManager::GetModelByName(name);
+
+		if (!existingModel) {
+			std::cout << "AssetManager::DrawModel() failed because '" << name << "' does not exist!\n";
+			return;
+		}
+
+		existingModel->DrawInstanced(shader, instances);
+	}
+
 	Model* GetModelByName(const std::string& name) {
 		auto it = g_modelIndexMap.find(name);
 		if (it != g_modelIndexMap.end()) {

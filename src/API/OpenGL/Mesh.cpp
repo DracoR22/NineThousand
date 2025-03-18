@@ -88,6 +88,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 
 void Mesh::setupMesh() {
 	glGenVertexArrays(1, &VAO);
+
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
@@ -98,6 +99,12 @@ void Mesh::setupMesh() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+	// Instances
+	//glGenBuffers(1, &instanceVBO);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	//glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 
 	// Vertex Positions
 	glEnableVertexAttribArray(0);
@@ -123,10 +130,16 @@ void Mesh::setupMesh() {
 	glEnableVertexAttribArray(5);
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
 
+	// Instances
+	/*glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribDivisor(6, 1);*/
+
+
 	glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader& shader) {
+void Mesh::draw(Shader& shader, unsigned int instances) {
 	unsigned int diffuseNr = 0;
 	unsigned int specularNr = 0;
 	unsigned int normalNr = 0;
@@ -157,7 +170,12 @@ void Mesh::draw(Shader& shader) {
 
 	// draw mesh
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	if (instances > 0) {
+		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instances);
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	}
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
