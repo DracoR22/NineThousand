@@ -36,6 +36,7 @@ namespace OpenGLRenderer {
 		std::vector<CubeMap> cubeMaps = {};
 
 		ShadowMap shadowMap;
+		FrameBuffer msaaFrameBuffer;
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
@@ -143,6 +144,9 @@ namespace OpenGLRenderer {
 		frameBuffer.Create(Window::currentWidth, Window::currentHeight);
 		frameBuffer.CreateAttachment();
 
+		g_renderData.msaaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderData.msaaFrameBuffer.CreateMSAAAttachment();
+
 		// Load shadow map
 		g_renderData.shadowMap.Init();
 
@@ -216,7 +220,8 @@ namespace OpenGLRenderer {
 			g_renderData.frameBuffers[0].Resize(Window::currentWidth, Window::currentHeight);
 		}
 
-		g_renderData.frameBuffers[0].Bind();
+		g_renderData.msaaFrameBuffer.Bind();
+		/*g_renderData.frameBuffers[0].Bind();*/
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -349,9 +354,11 @@ namespace OpenGLRenderer {
 
 
 		// ------ FRAME BUFFER PASS -----------
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderData.msaaFrameBuffer.GetFBO());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderData.frameBuffers[0].GetFBO());
+		glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-		/*glActiveTexture(GL_TEXTURE0);*/
-		g_renderData.frameBuffers[0].Unbind();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		switch (g_renderData.currentMode)
 		{
@@ -403,6 +410,8 @@ namespace OpenGLRenderer {
 		for (FrameBuffer frameBuffer : g_renderData.frameBuffers) {
 			frameBuffer.Cleanup();
 		}
+
+		g_renderData.msaaFrameBuffer.Cleanup();
 		
 	}
 }

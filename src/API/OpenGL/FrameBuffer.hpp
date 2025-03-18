@@ -8,9 +8,13 @@ struct FrameBuffer {
 private:
 	unsigned int m_fbo = 0;
 	unsigned int m_rbo = 0;
+
 	unsigned int m_texture = 0;
 	unsigned int m_width = 0;
 	unsigned int m_height = 0;
+
+	// 2, 4, 8 16, 32 TODO: let user choose this
+	unsigned int m_msaaSamples = 4;
 
 public:
 	void Create(unsigned int width, unsigned int height) {
@@ -43,6 +47,30 @@ public:
 
 	}
 
+	void CreateMSAAAttachment() {
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+		glGenTextures(1, &m_texture);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texture);
+
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_msaaSamples, GL_RGB, m_width, m_height, GL_TRUE);
+
+		/*glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_texture, 0);
+
+		glGenRenderbuffers(1, &m_rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_msaaSamples, GL_DEPTH24_STENCIL8, m_width, m_height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "ERROR::FRAMEBUFFER:: MSAA Framebuffer is not complete!" << std::endl;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
 	void Bind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 	}
@@ -63,8 +91,9 @@ public:
 
 	unsigned int GetHeight() const { return m_height; }
 
+	unsigned int GetFBO() const { return m_fbo; }
+
 	void Resize(unsigned int width, unsigned int height) {
-		// Store new width and height
 		this->m_width = width;
 		this->m_height = height;
 
