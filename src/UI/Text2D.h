@@ -8,6 +8,9 @@
 
 #include <glm/glm.hpp>
 
+#include "../API/OpenGL/Shader.h"
+#include "../API/OpenGL/Texture.h"
+
 struct Character {
     unsigned int id;
     float x, y;
@@ -20,5 +23,5 @@ namespace Text2D {
    inline std::unordered_map<unsigned int, Character> m_characters;
 
     void LoadFont(const std::string& path);
-    void RenderFont(const std::string& text, float x, float y, float scale, glm::vec3 color, unsigned int shader);
+    void RenderFont(const std::string& text, float x, float y, float scale, glm::vec3 color, Shader& shader);
 }

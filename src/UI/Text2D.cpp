@@ -53,7 +53,12 @@ namespace Text2D {
         std::cout << "Loaded " << m_characters.size() << " characters.\n";
     }
 
-    void RenderFont(const std::string& text, float x, float y, float scale, glm::vec3 color, unsigned int shader) {
+    void RenderFont(const std::string& text, float x, float y, float scale, glm::vec3 color, Shader& shader) {
+        Texture fontTexture("resources/fonts", "sans.png", aiTextureType_DIFFUSE);
+        fontTexture.bind();
 
+        shader.setVec3("textColor", color);
+
+      
     }
 }

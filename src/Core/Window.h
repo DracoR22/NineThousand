@@ -20,6 +20,7 @@ namespace Window {
  extern	int currentHeight;
 
  extern	GLFWwindow* window;
+
 	void Init();
 	void PrepareFrame();
 
@@ -28,6 +29,11 @@ namespace Window {
 
 	void ProcessEvents();
 	void ProcessInput(double dt);
+
+	void UpdateDeltaTime();
+	float GetDeltaTime();
+	void UpdateFPSCount();
+	int GetFPSCount();
 
 	void ShutDown();
 

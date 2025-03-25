@@ -25,6 +25,7 @@ namespace OpenGLRenderer {
 		Shader postProcessShader;
 		Shader testShader;
 		Shader instancedShader;
+		Shader uiShader;
 	} _shaders;
 
 	ModelCreateInfo bulletCreateInfo{
@@ -48,6 +49,7 @@ namespace OpenGLRenderer {
 		std::vector<CubeMap> cubeMaps = {};
 
 		ShadowMap shadowMap;
+		Mesh2D textMesh;
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
@@ -83,6 +85,7 @@ namespace OpenGLRenderer {
 		_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 		_shaders.testShader.load("test.vert", "test.frag");
 		_shaders.instancedShader.load("instanced.vert", "instanced.frag");
+		_shaders.uiShader.load("ui.vert", "ui.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -98,6 +101,9 @@ namespace OpenGLRenderer {
 		};
 		daySky.loadTextures(daySkyFaces);
 		daySky.init();
+
+		// load text
+		g_renderData.textMesh.Create();
 
 
 		// load models
@@ -351,10 +357,23 @@ namespace OpenGLRenderer {
 			bulletModel->setPosition(glm::vec3(i * 2.0f, 1.0f, 0.0f));
 
 			AssetManager::DrawModel("Bullet", _shaders.testShader);
-		}*/
+		}*/		
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
+
+		// ------ UI PASS -------------
+		glDisable(GL_DEPTH_TEST);
+		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::currentWidth, (float)Window::currentHeight, 0.0f);
+		_shaders.uiShader.activate();
+		_shaders.uiShader.setMat4("projection", UiProjection);
+
+		float textX = 10.0f;  // Small offset from the left side
+		float textY = 30.0f;  
+		float fontSize = 0.2f;  
+
+		g_renderData.textMesh.RenderUI("FPS: " + std::to_string(Window::GetFPSCount()), textX, textY, fontSize, glm::vec3(1.0f, 1.0f, 1.0f), _shaders.uiShader);
+		glEnable(GL_DEPTH_TEST);
 
 
 		// ------ FRAME BUFFER PASS -----------

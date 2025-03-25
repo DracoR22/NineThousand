@@ -9,6 +9,14 @@ namespace Window {
 
 	GLFWwindow* window = nullptr;
 
+	float m_deltaTime = 0.0;
+	float m_lastFrame = 0.0f;
+
+	int m_fps = 0;
+	const int m_FPS_SMOOTHING_SAMPLES = 50; // Number of frames to average
+	double m_fpsBuffer[m_FPS_SMOOTHING_SAMPLES] = { 0 };
+	int m_fpsIndex = 0;
+
 	void Init() {
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -47,6 +55,10 @@ namespace Window {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 
+		// enble blending
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		// enable gamma correction
 		/*glEnable(GL_FRAMEBUFFER_SRGB);*/
 	}
@@ -59,6 +71,36 @@ namespace Window {
 	void ProcessEvents() {
 		glfwSwapBuffers(Window::window);
 		glfwPollEvents();
+	}
+
+	void UpdateDeltaTime() {
+		double currentTime = glfwGetTime();
+		m_deltaTime = currentTime - m_lastFrame;
+		m_lastFrame = currentTime;
+	}
+
+	float GetDeltaTime() {
+		return m_deltaTime;
+	}
+
+	void UpdateFPSCount() {
+		if (m_deltaTime > 0.0) {
+			double currentFPS = 1.0 / m_deltaTime;
+
+			// Store FPS in the buffer
+			m_fpsBuffer[m_fpsIndex] = currentFPS;
+			m_fpsIndex = (m_fpsIndex + 1) % m_FPS_SMOOTHING_SAMPLES;
+
+			double fpsSum = 0.0;
+			for (int i = 0; i < m_FPS_SMOOTHING_SAMPLES; i++) {
+				fpsSum += m_fpsBuffer[i];
+			}
+			m_fps = fpsSum / m_FPS_SMOOTHING_SAMPLES;
+		}
+	}
+
+	int GetFPSCount() {
+		return m_fps;
 	}
 
 	bool WindowShouldClose() {

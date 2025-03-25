@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Cubemap.h"
 #include "ShadowMap.h"
+#include "Mesh2D.hpp"
 
 #include "./FrameBuffer.h"
 

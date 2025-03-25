@@ -25,15 +25,6 @@ namespace Engine {
 		OpenGLRenderer::Init();
 
 	
-		float deltaTime = 0.0f;
-		float lastFrame = 0.0f;
-
-		double lastTime = glfwGetTime();
-		
-		int fps = 0;
-		const int FPS_SMOOTHING_SAMPLES = 50; // Number of frames to average
-		double fpsBuffer[FPS_SMOOTHING_SAMPLES] = { 0 };
-		int fpsIndex = 0;
 
 		// IMGUI
 		IMGUI_CHECKVERSION();
@@ -59,26 +50,8 @@ namespace Engine {
 		ImGui_ImplOpenGL3_Init("#version 330");
 
 		while (!Window::WindowShouldClose()) {
-			double currentTime = glfwGetTime();
-			deltaTime = currentTime - lastFrame;
-			lastFrame = currentTime;
-
-			/*deltaTime = glm::min(deltaTime, 0.05f);*/
-
-			if (deltaTime > 0.0) {
-				double currentFPS = 1.0 / deltaTime;
-
-				// Store FPS in the buffer
-				fpsBuffer[fpsIndex] = currentFPS;
-				fpsIndex = (fpsIndex + 1) % FPS_SMOOTHING_SAMPLES;
-
-				// Compute the moving average FPS
-				double fpsSum = 0.0;
-				for (int i = 0; i < FPS_SMOOTHING_SAMPLES; i++) {
-					fpsSum += fpsBuffer[i];
-				}
-				fps = fpsSum / FPS_SMOOTHING_SAMPLES;
-			}
+			Window::UpdateDeltaTime();
+			Window::UpdateFPSCount();
 
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F1)) {
 				if (Game::GetGameState() == Game::GameState::EDITOR) {
@@ -89,15 +62,15 @@ namespace Engine {
 				}
 			}
 
-			Window::ProcessInput(deltaTime);
-			Physics::Simulate(deltaTime);
+			Window::ProcessInput(Window::GetDeltaTime());
+			Physics::Simulate(Window::GetDeltaTime());
 
 			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			if (Game::GetGameState() == Game::GameState::PLAYING) {
-				player.processInput(deltaTime);
-				Game::Update(deltaTime);
+				player.processInput(Window::GetDeltaTime());
+				Game::Update(Window::GetDeltaTime());
 
 			    AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
 			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
@@ -184,7 +157,7 @@ namespace Engine {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Game Settings");
-			ImGui::Text("FPS: %d", fps);
+			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
 			if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
