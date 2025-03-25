@@ -34,20 +34,22 @@ public:
 	glm::vec3 pos;
 	glm::vec3 size;
 	glm::mat4 rotation = glm::mat4(1.0f);
+
+	std::vector<Mesh> meshes;
 public:
 	Model(const std::string& name, const ModelCreateInfo& createInfo);
 
 	void draw(Shader& shader);
-	void DrawInstanced(Shader& shader, unsigned int instances);
+	void DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets);
 
 	void setPosition(const glm::vec3& newPos);
 	void setRotation(const glm::mat4& newRotation);
 	void setSize(const glm::vec3& newSize);
 
-	std::vector<Mesh> meshes;
-
 	void loadAssimpModel(std::string path);
-	void LoadModel(ModelType type);
+	void LoadModel(ModelType type, ModelCreateInfo& createInfo);
+
+	void CreateInstanceBuffers();
 
 	void cleanup();
 
@@ -74,4 +76,6 @@ private:
 	void SetVertexBoneDataToDefault(Vertex& vertex);
 	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
 	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+
+	unsigned int instanceOffsetVBO;
 };

@@ -37,8 +37,8 @@ target_include_directories(imgui PUBLIC
 # assimp
 add_library(assimp SHARED IMPORTED)
 set_target_properties(assimp PROPERTIES 
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/assimp-vc143-mtd.dll
-    IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/lib/assimp-vc143-mtd.lib
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/assimp-vc143-mt.dll
+    IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/lib/assimp-vc143-mt.lib
 )
 target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/include)
 
@@ -48,6 +48,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
     file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/release/*.lib")
 endif()
+
 
 file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
 

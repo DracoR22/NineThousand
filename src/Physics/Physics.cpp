@@ -98,8 +98,22 @@ namespace Physics {
     }
 
     void MovePlayerController(const glm::vec3& direction, float deltaTime) {
-        physx::PxVec3 displacement(direction.x, direction.y, direction.z);
-        _gController->move(displacement * deltaTime, 0.0f, deltaTime, nullptr);
+        static float verticalVelocity = 0.0f; 
+
+        PxControllerState state;
+        _gController->getState(state);
+        bool isOnGround = state.touchedActor != nullptr;
+
+        // Preserve vertical velocity for gravity
+        if (!isOnGround) {
+            verticalVelocity -= 9.81f * deltaTime; // Apply gravity
+        }
+        else {
+            verticalVelocity = 0.0f; // Reset gravity when grounded
+        }
+
+        physx::PxVec3 displacement(direction.x, verticalVelocity, direction.z);
+        _gController->move(displacement, 0.0f, deltaTime, nullptr);
     }
 
     PxExtendedVec3 GetPlayerControllerPosition() {

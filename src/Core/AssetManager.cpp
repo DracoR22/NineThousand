@@ -8,7 +8,7 @@ namespace AssetManager {
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
 		Model model(name, createInfo);
-		model.LoadModel(type);
+		model.LoadModel(type, createInfo);
 
 		g_models.push_back(model);
 		g_modelIndexMap[name] = g_models.size() - 1;
@@ -33,7 +33,7 @@ namespace AssetManager {
 		existingModel->draw(shader);
 	}
 
-	void DrawModelInstanced(const std::string& name, Shader& shader, unsigned int instances) {
+	void DrawModelInstanced(const std::string& name, Shader& shader, std::vector<glm::vec3> offsets) {
 		Model* existingModel = AssetManager::GetModelByName(name);
 
 		if (!existingModel) {
@@ -41,7 +41,7 @@ namespace AssetManager {
 			return;
 		}
 
-		existingModel->DrawInstanced(shader, instances);
+		existingModel->DrawInstanced(shader, offsets);
 	}
 
 	Model* GetModelByName(const std::string& name) {

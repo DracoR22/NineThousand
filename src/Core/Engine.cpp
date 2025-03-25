@@ -9,9 +9,18 @@ namespace Engine {
 		Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);;
+		std::cout << "Assimp version: " << aiGetVersionMajor() << "." << aiGetVersionMinor() << std::endl;
 
 		physx::PxRigidStatic* planeActor = Physics::CreateStaticBox(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
+
+		Text2D::LoadFont("resources/fonts/sans.fnt");
+
+		for (const auto& [id, ch] : Text2D::m_characters) {
+			std::cout << "Character " << (char)id
+				<< " - UV: (" << ch.x << ", " << ch.y << "), Size: ("
+				<< ch.width << ", " << ch.height << ")\n";
+		}
 
 		OpenGLRenderer::Init();
 

@@ -86,6 +86,16 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	setupMesh();
 }
 
+	void Mesh::SetupInstance() {
+		glBindVertexArray(VAO);
+
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+	}
+
 void Mesh::setupMesh() {
 	glGenVertexArrays(1, &VAO);
 
@@ -99,12 +109,6 @@ void Mesh::setupMesh() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-
-	// Instances
-	//glGenBuffers(1, &instanceVBO);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	//glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 
 	// Vertex Positions
 	glEnableVertexAttribArray(0);
@@ -129,12 +133,6 @@ void Mesh::setupMesh() {
 	// Bone Weights
 	glEnableVertexAttribArray(5);
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
-
-	// Instances
-	/*glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glVertexAttribDivisor(6, 1);*/
-
 
 	glBindVertexArray(0);
 }
@@ -171,6 +169,7 @@ void Mesh::draw(Shader& shader, unsigned int instances) {
 	// draw mesh
 	glBindVertexArray(VAO);
 	if (instances > 0) {
+		
 		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instances);
 	}
 	else {

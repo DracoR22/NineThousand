@@ -27,6 +27,19 @@ namespace OpenGLRenderer {
 		Shader instancedShader;
 	} _shaders;
 
+	ModelCreateInfo bulletCreateInfo{
+			glm::vec3(0.0f, 5.0f, 1.0f),
+			glm::vec3(0.75f),
+			glm::mat4(1.0f),
+			{                                     // instanceOffsets (hardcoded)
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(2.0f, 0.0f, 0.0f),
+		glm::vec3(-2.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 2.0f, 0.0f),
+		glm::vec3(0.0f, -2.0f, 0.0f)
+	}
+	};
+
 	struct RenderData {
 		unsigned int frameBufferQuadVAO = 0;
 		unsigned int frameBufferQuadVBO = 0;
@@ -46,7 +59,19 @@ namespace OpenGLRenderer {
 		FrameBuffer mssaFrameBuffer;
 	} g_renderFrameBuffers;
 
+	std::vector<glm::vec3> generateGridOffsets(const glm::vec3& basePosition, int rows, int cols, float spacing) {
+		std::vector<glm::vec3> offsets;
+		for (int y = 0; y < rows; ++y) {
+			for (int x = 0; x < cols; ++x) {
+				glm::vec3 offset = glm::vec3(x * spacing, 0.0f, y * spacing);
+				offsets.push_back(basePosition + offset);
+			}
+		}
+		return offsets;
+	}
+
 	void Init() {
+
 		// load shaders
 		_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
 		_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
@@ -106,13 +131,17 @@ namespace OpenGLRenderer {
 			glm::mat4(1.0f)
 		};
 
+		
+
+		/*bulletCreateInfo.instanceOffsets = generateGridOffsets(bulletCreateInfo.position, 5, 5, 1.5f);*/
+
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
 		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
-		AssetManager::LoadModel("Bullet", ModelType::CUBE, cubeCreateInfo);
+		AssetManager::LoadModel("Bullet", ModelType::CUBE, bulletCreateInfo);
 
 		// Quad For FrameBuffer
 		glGenVertexArrays(1, &g_renderData.frameBufferQuadVAO);
@@ -193,7 +222,7 @@ namespace OpenGLRenderer {
 		glm::mat4 projection = glm::mat4(1.0f);
 
 		view = player.camera.getViewMatrix();
-		projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 500.0f);
 
 		// ------ SHADOW PASS (Render to Depth Map) ------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -310,24 +339,11 @@ namespace OpenGLRenderer {
 		AssetManager::DrawModel("CubeLamp", _shaders.lampShader);
 
 		// ------ BULLET PASS ----------
-		std::vector<glm::vec3> translations;
-		float offset = 0.8f;
-
-		for (int y = -10; y < 10; y += 2) {
-			for (int x = -10; x < 10; x += 2) {
-				translations.emplace_back(x * offset, 10.0f, translations.size() * offset);
-			}
-		}
-
 		_shaders.instancedShader.activate();
 		_shaders.instancedShader.setMat4("view", view);
 		_shaders.instancedShader.setMat4("projection", projection);
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			_shaders.instancedShader.setVec3("offsets[" + std::to_string(i) + "]", translations[i]);
-		}
 
-		AssetManager::DrawModelInstanced("Bullet", _shaders.instancedShader, 10);
+		AssetManager::DrawModelInstanced("Bullet", _shaders.instancedShader, bulletCreateInfo.instanceOffsets);
 
 		/*for (int i = 0; i < 5; i++) {
 			Model* bulletModel = AssetManager::GetModelByName("Bullet");

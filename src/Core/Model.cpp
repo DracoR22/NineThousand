@@ -18,7 +18,7 @@ void Model::draw(Shader& shader) {
 		meshes[i].draw(shader);
 }
 
-void Model::DrawInstanced(Shader& shader, unsigned int instances) {
+void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
 	glm::mat4 model = glm::mat4(1.0f);
 
 	model = glm::translate(model, pos);
@@ -27,8 +27,13 @@ void Model::DrawInstanced(Shader& shader, unsigned int instances) {
 
 	shader.setMat4("model", model);
 
+	int fixedOffsets = std::min(UPPER_BOUND, (int)offsets.size());
+
+	glBindBuffer(GL_ARRAY_BUFFER, instanceOffsetVBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, fixedOffsets * sizeof(glm::vec3), &offsets[0]);
+
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, instances);
+		meshes[i].draw(shader, offsets.size());
 }
 
 void Model::setPosition(const glm::vec3& newPos) {
@@ -47,7 +52,12 @@ const std::string& Model::GetName() {
 	return m_name;
 }
 
-void Model::LoadModel(ModelType type) {
+void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
+
+	if (createInfo.instanceOffsets.size() > UPPER_BOUND) {
+		std::cerr << "Warning: instanceOffsets size exceeds UPPER_BOUND. Some instances may not be rendered." << std::endl;
+	}
+
 	if (type == ModelType::CUBE) {
 		int noVertices = 36;
 
@@ -130,6 +140,13 @@ void Model::LoadModel(ModelType type) {
 		cubeMesh.textures.push_back(specular);  
 		cubeMesh.textures.push_back(normal);  
 
+		if (createInfo.instanceOffsets.size() > 0) {
+			CreateInstanceBuffers();
+
+			cubeMesh.instanceOffsets = createInfo.instanceOffsets;
+			cubeMesh.SetupInstance();
+		}
+
 		meshes.push_back(cubeMesh);
 	}
 	else if (type == ModelType::PLANE) {
@@ -179,8 +196,8 @@ void Model::LoadModel(ModelType type) {
 		Vertex::CalcTanVectors(vertexlist, indices);
 
 		Mesh planeMesh(vertexlist, indices);
-		planeMesh.textures.push_back(diffuse);    // Add diffuse texture
-		planeMesh.textures.push_back(specular);   // Add specular texture
+		planeMesh.textures.push_back(diffuse);  
+		planeMesh.textures.push_back(specular); 
 		planeMesh.textures.push_back(normal);
 
 		meshes.push_back(planeMesh);
@@ -195,12 +212,20 @@ void Model::loadAssimpModel(std::string path) {
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+		
 		return;
 	}
 	/* directory = path.substr(0, path.find_last_of('/'));*/
 	directory = "resources/textures";
 
 	processNode(scene->mRootNode, scene);
+}
+
+void Model::CreateInstanceBuffers() {
+	glGenBuffers(1, &instanceOffsetVBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, instanceOffsetVBO);
+	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene) {

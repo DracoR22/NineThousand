@@ -113,7 +113,7 @@ namespace Game {
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("P90");
 			p90Animator->PlayAnimation(p90DrawAnimation);
-			glockAnimator->Reset();
+		/*	glockAnimator->Reset();*/
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
@@ -121,7 +121,7 @@ namespace Game {
 		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("Glock");
 			glockAnimator->PlayAnimation(glockDrawAnimation);
-			p90Animator->Reset();
+			/*p90Animator->Reset();*/
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;

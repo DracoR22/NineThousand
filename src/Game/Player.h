@@ -29,6 +29,8 @@ private:
 
 	WeaponInfo* m_equippedWeapon = nullptr;
 
+	glm::vec3 cameraTargetPosition;
+
 public:
 	std::vector<BulletInfo> spawnedBullets = {};
 public:

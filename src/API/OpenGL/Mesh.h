@@ -9,6 +9,7 @@
 #include <vector>
 
 #define MAX_BONE_INFLUENCE 4
+#define UPPER_BOUND 100
 
 struct Vertex {
 	glm::vec3 Position;
@@ -30,16 +31,15 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
-
+	std::vector<glm::vec3> instanceOffsets;
+public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures = {});
 
 	void draw(Shader& shader, unsigned int instances = 0);
-
 	void cleanup();
+	void SetupInstance();
+	void setupMesh();
 private:
 	unsigned int VAO, VBO, EBO;
-	unsigned int instanceVBO;
-
-	void setupMesh();
 };
 

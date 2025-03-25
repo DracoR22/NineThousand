@@ -1,12 +1,13 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: velocity(0.0f), speed(9.0f), camera(position), height(height) {
+	: velocity(0.0f), speed(0.05f), camera(position), height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
 	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
 
     Physics::CreateCharacterActor(position, height, mass);
+    Physics::InitializeCharacterController();
 }
 
 void Player::processInput(double deltaTime) {
@@ -30,22 +31,6 @@ void Player::processInput(double deltaTime) {
     if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
         moveDirection -= camera.cameraUp;
     }
- /*   if (Keyboard::key(GLFW_KEY_W)) {
-        camera.updateCameraPos(CameraDirection::FORWARD, deltaTime);
-       
-    }
-    if (Keyboard::key(GLFW_KEY_S)) {
-        camera.updateCameraPos(CameraDirection::BACKWARD, deltaTime);
-    }
-    if (Keyboard::key(GLFW_KEY_D)) {
-        camera.updateCameraPos(CameraDirection::RIGHTWARD, deltaTime);
-    }
-    if (Keyboard::key(GLFW_KEY_A)) {
-        camera.updateCameraPos(CameraDirection::LEFTWARD, deltaTime);
-    }
-    if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
-     
-    }*/
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && m_isOnGround) {
         Physics::CharacterActorJump();
@@ -56,21 +41,38 @@ void Player::processInput(double deltaTime) {
         moveDirection = glm::normalize(moveDirection);
     }
 
-     glm::vec3 targetVelocity = moveDirection * moveSpeed;
-
      m_isMoving = glm::length(moveDirection) > 0.0f;
 
-     Physics::MoveCharacterActor(targetVelocity);
+     Physics::MovePlayerController(moveDirection * speed, deltaTime);
+
+     //Physics::MoveCharacterActor(targetVelocity);
 
      // Handle mouse input for camera rotation
-    double dx = Mouse::getDX(), dy = Mouse::getDY();
-    float sensitivity = 0.05f;
-    if (dx != 0 || dy != 0) {
-        camera.updateCameraDirection(dx * sensitivity, dy * sensitivity);
-    }
+     static glm::vec2 smoothedDelta = glm::vec2(0.0f);
+     const float smoothingFactor = 0.55f; // Lower = smoother, but more latency
+
+     double dx = Mouse::getDX();
+     double dy = Mouse::getDY();
+
+     // Smooth mouse input
+     smoothedDelta.x += (dx - smoothedDelta.x) * smoothingFactor;
+     smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
+
+     float sensitivity = 0.01f;
+     camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
+
+     physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
+     glm::vec3 targetPosition(playerPos.x, playerPos.y + (height * 0.8f), playerPos.z);
+     const float cameraLag = 0.05f;
+     camera.setPosition(targetPosition);
+
+     // Smooth camera movement (dampening)
+     //glm::vec3 targetPosition = camera.cameraPos + moveDirection * moveSpeed * static_cast<float>(deltaTime);
+     //const float cameraLag = 0.1f; // Lower value = more lag
+     //camera.cameraPos += (targetPosition - camera.cameraPos) * cameraLag;
 
     // Update camera position, TODO: Update Player itself instead
-    physx::PxTransform actorTransform = Physics::GetCharacterActorPosition();
+  /*  physx::PxTransform actorTransform = Physics::GetCharacterActorPosition();
     glm::vec3 actorPosition(actorTransform.p.x, actorTransform.p.y, actorTransform.p.z);
     float eyeHeightOffset = height * 0.8f;
     glm::vec3 adjustedCameraPosition = actorPosition + glm::vec3(0.0f, eyeHeightOffset, 0.0f);
@@ -78,7 +80,7 @@ void Player::processInput(double deltaTime) {
 
     if (actorPosition.y <= 0.5f) {
         m_isOnGround = true;
-    }
+    }*/
     
 }
 

@@ -11,6 +11,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "../UI/Text2D.h"
+
 #include "../Core/Window.h"
 #include "../Core/AssetManager.h"
 
@@ -35,10 +37,12 @@
 #include "../Game/Game.h"
 #include "../Game/WeaponManager.h"
 
+
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
 #include <stb_image.h>
+#include <assimp/version.h>
 
 namespace Engine {
 	void Run();

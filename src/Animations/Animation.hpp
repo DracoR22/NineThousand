@@ -39,16 +39,12 @@ public:
 	{
 	}
 
-	Bone* FindBone(const std::string& name)
+	std::shared_ptr<Bone> FindBone(const std::string& name)
 	{
-		auto iter = std::find_if(m_Bones.begin(), m_Bones.end(),
-			[&](const Bone& Bone)
-			{
-				return Bone.GetBoneName() == name;
-			}
-		);
-		if (iter == m_Bones.end()) return nullptr;
-		else return &(*iter);
+		auto iter = m_Bones.find(name);
+		if (iter == m_Bones.end())
+			return nullptr;
+		return iter->second;  
 	}
 
 
@@ -65,10 +61,9 @@ private:
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = model.GetBoneInfoMap();//getting m_BoneInfoMap from Model class
-		int& boneCount = model.GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& boneInfoMap = model.GetBoneInfoMap(); 
+		int& boneCount = model.GetBoneCount();    
 
-		//reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
 		{
 			auto channel = animation->mChannels[i];
@@ -76,15 +71,20 @@ private:
 
 			if (boneInfoMap.find(boneName) == boneInfoMap.end())
 			{
-				boneInfoMap[boneName].id = boneCount;
+				boneInfoMap[boneName] = BoneInfo{ boneCount, glm::mat4(1.0f) }; 
 				boneCount++;
 			}
-			m_Bones.push_back(Bone(channel->mNodeName.data,
-				boneInfoMap[channel->mNodeName.data].id, channel));
+
+			m_Bones[boneName] = std::make_shared<Bone>(
+				boneName,
+				boneInfoMap[boneName].id,
+				channel
+			);
 		}
 
 		m_BoneInfoMap = boneInfoMap;
 	}
+
 
 	void ReadHierarchyData(AssimpNodeData& dest, const aiNode* src)
 	{
@@ -103,7 +103,7 @@ private:
 	}
 	float m_Duration;
 	int m_TicksPerSecond;
-	std::vector<Bone> m_Bones;
+	std::map<std::string, std::shared_ptr<Bone>> m_Bones;
 	AssimpNodeData m_RootNode;
 	std::map<std::string, BoneInfo> m_BoneInfoMap;
 };
