@@ -8,46 +8,15 @@ namespace Engine {
 		Game::Init();
 		Game::CreatePlayers();
 
-		Player& player = Game::GetPLayerByIndex(0);;
-		std::cout << "Assimp version: " << aiGetVersionMajor() << "." << aiGetVersionMinor() << std::endl;
+		Player& player = Game::GetPLayerByIndex(0);
 
 		physx::PxRigidStatic* planeActor = Physics::CreateStaticBox(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		Text2D::LoadFont("resources/fonts/sans.fnt");
 
-		for (const auto& [id, ch] : Text2D::m_characters) {
-			std::cout << "Character " << (char)id
-				<< " - UV: (" << ch.x << ", " << ch.y << "), Size: ("
-				<< ch.width << ", " << ch.height << ")\n";
-		}
-
 		OpenGLRenderer::Init();
-
-	
-
-		// IMGUI
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-		ImGui::StyleColorsDark();
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImVec4* colors = style.Colors;
-
-		colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);          // Background
-		colors[ImGuiCol_TitleBg] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);            // Title Bar
-		colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);      // Active Title
-		colors[ImGuiCol_Button] = ImVec4(0.0f, 0.5f, 0.8f, 1.0f);             // Buttons
-		colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.6f, 0.9f, 1.0f);      // Button Hover
-		colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.4f, 0.7f, 1.0f);       // Button Click
-		colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);         // Input Box Background
-		colors[ImGuiCol_FrameBgHovered] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);     // Input Hover
-		colors[ImGuiCol_Border] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);             // Panel Borders
-
-		ImGui_ImplGlfw_InitForOpenGL(Window::window, true);
-		ImGui_ImplOpenGL3_Init("#version 330");
+		EditorUI::Init();
 
 		while (!Window::WindowShouldClose()) {
 			Window::UpdateDeltaTime();
@@ -76,70 +45,6 @@ namespace Engine {
 			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
 
 
-				//if (Keyboard::KeyJustPressed(GLFW_KEY_X)) {
-				//	glm::vec3 playerPos = player.getPosition();
-				//	glm::vec3 cameraDir = glm::normalize(player.camera.cameraFront);
-
-				//	physx::PxVec3 bulletPos = physx::PxVec3(playerPos.x, playerPos.y, playerPos.z);
-				//	physx::PxVec3 bulletDir = physx::PxVec3(cameraDir.x, cameraDir.y, cameraDir.z);
-
-				//	physx::PxRigidDynamic* bulletActor = Physics::CreateDynamicCapsule(bulletPos + bulletDir * 2.0f, 0.0f, 0.5f, 1.0f);
-
-				//	PhysicsTransformData bulletTransformData = Physics::GetTransformFromPhysics(bulletActor);
-				//	glm::mat4 bulletRotationMatrix = glm::mat4_cast(bulletTransformData.rotation);
-
-				//	Model* newBullet = AssetManager::GetModelByName("Bullet");
-
-				//   /* AssetManager::GetModelByName("Bullet")->setPosition(bulletTransformData.position);
-			 //       AssetManager::GetModelByName("Bullet")->setRotation(bulletRotationMatrix);*/
-
-				//	bulletActor->addForce(bulletDir * 800.0f, physx::PxForceMode::eIMPULSE);
-
-				//	player.spawnedBullets.push_back({ newBullet, bulletActor });
-				//}
-
-				if (Keyboard::KeyJustPressed(GLFW_KEY_X)) {
-					glm::vec3 playerPos = player.getPosition();
-					glm::vec3 cameraDir = glm::normalize(player.camera.cameraFront);
-
-					physx::PxVec3 origin(playerPos.x, playerPos.y, playerPos.z);
-					physx::PxVec3 direction(cameraDir.x, cameraDir.y, cameraDir.z);
-
-					// Raycast parameters
-					float maxDistance = 1000.0f;  // Maximum bullet range
-					physx::PxRaycastBuffer hitBuffer; // Stores raycast result
-
-					bool hit = Physics::GetScene()->raycast(origin, direction, maxDistance, hitBuffer);
-
-					if (hit) {
-						const physx::PxRaycastHit& hitInfo = hitBuffer.block;
-
-						std::cout << "Hit object at: "
-							<< hitInfo.position.x << ", "
-							<< hitInfo.position.y << ", "
-							<< hitInfo.position.z << std::endl;
-
-						physx::PxRigidDynamic* dynamicActor = hitInfo.actor->is<physx::PxRigidDynamic>();
-
-						if (dynamicActor) {
-							physx::PxVec3 impulseDirection = direction.getNormalized();
-							float impulseStrength = 500.0f;  // bullet force
-							dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
-						}
-
-					}
-				}
-
-
-				for (BulletInfo& bullet : player.spawnedBullets) {
-				//	// Get updated transform from PhysX
-					PhysicsTransformData bulletTransformData = Physics::GetTransformFromPhysics(bullet.actor);
-
-				// Sync model position and rotation with physics
-					bullet.model->setPosition(bulletTransformData.position);
-					bullet.model->setRotation(glm::mat4_cast(bulletTransformData.rotation));
-				}
-
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else {
@@ -147,52 +52,16 @@ namespace Engine {
 			}
 
 			Window::PrepareFrame();
-
-			// IMGUI
-			float gamma = OpenGLRenderer::GetGammaValue();
-			RendererCommon::PostProcessMode postProcessMode = OpenGLRenderer::GetPostProcessMode();
-
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-
-			ImGui::Begin("Game Settings");
-			ImGui::Text("FPS: %d", Window::GetFPSCount());
-			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
-
-			if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
-				OpenGLRenderer::ChangeGammaValue(gamma);
-			}
-
-			if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
-				if (ImGui::Selectable("None", postProcessMode == RendererCommon::PostProcessMode::NONE)) {
-					OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::NONE);
-				}
-				if (ImGui::Selectable("Sharpen", postProcessMode == RendererCommon::PostProcessMode::SHARPEN)) {
-					OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::SHARPEN);
-				}
-				ImGui::EndCombo();
-			}
-
-			ImGui::End();
-
+			EditorUI::Update();
 			OpenGLRenderer::RenderFrame();
-
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+			EditorUI::Render();
 			Window::ProcessEvents();
 		}
 
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
-
+		EditorUI::Cleanup();
 		AssetManager::CleanupModels();
 		OpenGLRenderer::Cleanup();
-
 		Physics::CleanupPhysX();
-
 		Window::ShutDown();
 	}
 }

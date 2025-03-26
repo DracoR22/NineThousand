@@ -437,6 +437,7 @@ namespace OpenGLRenderer {
 
 	void Cleanup() {
 		g_renderData.shadowMap.Cleanup();
+		g_renderData.textMesh.Cleanup();
 
 		for (CubeMap cubeMap : g_renderData.cubeMaps) {
 			cubeMap.cleanup();

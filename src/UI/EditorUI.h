@@ -4,6 +4,14 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-namespace EditorUI {
+#include "../Core/Window.h"
+#include "../Common/RendererCommon.h"
+#include "../API/OpenGL/Renderer.h"
+#include "../Game/Player.h"
 
+namespace EditorUI {
+	void Init();
+	void Update();
+	void Render();
+	void Cleanup();
 }

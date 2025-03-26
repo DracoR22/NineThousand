@@ -1,7 +1,5 @@
 #pragma once 
 
-
-
 #include "Shader.h"
 #include "Texture.h"
 #include "../../UI/Text2D.h"
@@ -118,5 +116,10 @@ public:
 
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void Cleanup() {
+        glDeleteVertexArrays(1, &m_VAO);
+        glDeleteBuffers(1, &m_VBO);
     }
 };

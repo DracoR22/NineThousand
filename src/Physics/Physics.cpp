@@ -182,6 +182,7 @@ namespace Physics {
 
     void CleanupPhysX() {
         _cubeActor->release();
+        _gController->release();
         _gScene->release();
         _gDispatcher->release();
         _gMaterial->release();
