@@ -368,11 +368,23 @@ namespace OpenGLRenderer {
 		_shaders.uiShader.activate();
 		_shaders.uiShader.setMat4("projection", UiProjection);
 
-		float textX = 10.0f;  // Small offset from the left side
-		float textY = 30.0f;  
-		float fontSize = 0.2f;  
+		float fpsTextX = 10.0f;  // Small offset from the left side
+		float fpsTextY = 30.0f;
+		float debugFontSize = 0.2f;  
 
-		g_renderData.textMesh.RenderUI("FPS: " + std::to_string(Window::GetFPSCount()), textX, textY, fontSize, glm::vec3(1.0f, 1.0f, 1.0f), _shaders.uiShader);
+		float posTextX = 10.0f;
+		float posTextY = 50.0f;
+
+		g_renderData.textMesh.RenderUI("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), _shaders.uiShader);
+
+		std::string playerPosText = "Player Position: (" +
+			std::to_string(player.getPosition().x) + ", " +
+			std::to_string(player.getPosition().y) + ", " +
+			std::to_string(player.getPosition().z) + ")";
+
+		g_renderData.textMesh.RenderUI(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), _shaders.uiShader);
+
+
 		glEnable(GL_DEPTH_TEST);
 
 

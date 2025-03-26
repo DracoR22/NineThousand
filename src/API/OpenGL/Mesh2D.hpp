@@ -66,7 +66,6 @@ public:
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_fontTextureID);
 
-        // Activate shader and set uniforms
         shader.activate();
         shader.setVec3("textColor", color);
 
@@ -78,8 +77,9 @@ public:
         // Iterate through each character in the string
         float startX = x;
 
+        std::vector<float> vertices;
+
         for (char c : text) {
-            // Retrieve the character info
             if (Text2D::m_characters.find(c) == Text2D::m_characters.end()) continue;
 
             const Character& ch = Text2D::m_characters[c];
@@ -87,8 +87,6 @@ public:
             float texWidth = 512;
             float texHeight = 512;
 
-
-            // Calculate position and size of the quad
             float xpos = startX + ch.xOffset * scale;
             float ypos = y + (ch.yOffset * scale);
             float w = ch.width * scale;
@@ -110,14 +108,11 @@ public:
                 { xpos + w, ypos + h, (ch.x + ch.width) / texWidth, (ch.y + ch.height) / texHeight }
             };
 
-            // Update the VBO with character quad data
             glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
-            // Render the character
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            // Advance the position for the next character
             startX += (ch.xAdvance * scale);
         }
 

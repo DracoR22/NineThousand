@@ -20,8 +20,7 @@ struct Character {
 };
 
 namespace Text2D {
-   inline std::unordered_map<unsigned int, Character> m_characters;
+    inline std::unordered_map<unsigned int, Character> m_characters;
 
     void LoadFont(const std::string& path);
-    void RenderFont(const std::string& text, float x, float y, float scale, glm::vec3 color, Shader& shader);
 }
