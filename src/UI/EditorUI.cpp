@@ -27,7 +27,10 @@ namespace EditorUI {
 
 	void Update() {
 		Player& player = Game::GetPLayerByIndex(0);
+
 		float gamma = OpenGLRenderer::GetGammaValue();
+		float exposure = OpenGLRenderer::GetExposure();
+
 		RendererCommon::PostProcessMode postProcessMode = OpenGLRenderer::GetPostProcessMode();
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -40,6 +43,10 @@ namespace EditorUI {
 
 		if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
 			OpenGLRenderer::ChangeGammaValue(gamma);
+		}
+
+		if (ImGui::SliderFloat("Exposure", &exposure, 0.01f, 10.0f, "%.3f")) {
+			OpenGLRenderer::SetExposureValue(exposure);
 		}
 
 		if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {

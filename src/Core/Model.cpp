@@ -243,6 +243,8 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+	/*std::string meshName = mesh->mName.C_Str();
+	std::cout << "Mesh " << " is named: " << meshName << std::endl;*/
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
@@ -306,6 +308,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 		//	return Mesh(br, vertices, indices, diff, spec);
 		//}
+
+		// ----------------- custom texture per mesh --------------------------
+	/*	if (std::string(mesh->mName.C_Str()) == "Glock") {
+			Texture armsDiffuse(directory, "Glock_ALB.png", aiTextureType_DIFFUSE);
+			armsDiffuse.load(true);
+			textures.push_back(armsDiffuse);		
+
+			Texture armsNormal(directory, "Glock_NRM.png", aiTextureType_DIFFUSE);
+			armsNormal.load(true);
+			textures.push_back(armsNormal);
+		}
+
+		Texture defaultDiffuse(directory, "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
+		defaultDiffuse.load(true);
+		textures.push_back(defaultDiffuse);*/
 
 		// diffuse maps
 		std::vector<Texture> diffuseMaps = loadTextures(material, aiTextureType_DIFFUSE);

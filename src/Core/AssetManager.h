@@ -36,7 +36,7 @@ namespace AssetManager {
 	void CleanupModels();
 
 	// textures
-	std::vector<Texture> LoadTextures(aiMaterial* mat, aiTextureType type);
+	void LoadTexture(const std::string& name, aiTextureType type);
 
 	// animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model);

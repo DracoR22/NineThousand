@@ -25,10 +25,25 @@ public:
 
 	void UpdateAnimation(float dt)
 	{
-		if (!m_CurrentAnimation) return;
+		if (!m_CurrentAnimation) {
+			std::cerr << "Error: No animation set in Animator!" << std::endl;
+			return;
+		}
 
 		m_DeltaTime = dt;
 		float prevTime = m_CurrentTime;
+
+		float ticksPerSecond = m_CurrentAnimation->GetTicksPerSecond();
+		float duration = m_CurrentAnimation->GetDuration();
+
+		if (ticksPerSecond <= 0) {
+			std::cerr << "Error: Invalid ticksPerSecond = " << ticksPerSecond << std::endl;
+			return;
+		}
+		if (duration <= 0) {
+			std::cerr << "Error: Invalid animation duration = " << duration << std::endl;
+			return;
+		}
 
 		// Advance time
 		m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt * m_AnimationSpeed;
@@ -36,7 +51,7 @@ public:
 		// Detect loop (animation finished)
 		if (m_CurrentTime >= m_CurrentAnimation->GetDuration() - 0.0001f) {
 			m_AnimationFinished = true;
-			m_CurrentTime = 0.0f; // Reset for next cycle
+			m_CurrentTime = 0.0f; 
 		}
 
 		CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));

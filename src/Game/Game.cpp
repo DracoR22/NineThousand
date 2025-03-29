@@ -19,6 +19,7 @@ namespace Game {
 		Animation* glockDrawAnimation = AssetManager::GetAnimationByName("Glock_Draw");
 
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
+		
 
 		Animation* p90ReloadAnimation = AssetManager::GetAnimationByName("P90_Reload");
 		Animation* p90IdleAnimation = AssetManager::GetAnimationByName("P90_Idle");
@@ -26,26 +27,17 @@ namespace Game {
 		Animation* p90Fire0Animation = AssetManager::GetAnimationByName("P90_Fire0");
 		Animation* p90DrawAnimation = AssetManager::GetAnimationByName("P90_Draw");
 
+		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
+
+		Animation* aks74uIdleAnimation = AssetManager::GetAnimationByName("AKS74U_Idle");
+		Animation* aks74uDrawAnimation = AssetManager::GetAnimationByName("AKS74U_Draw");
+		Animation* aks74uWalkAnimation = AssetManager::GetAnimationByName("AKS74U_Walk");
+
 		WeaponInfo* equipedWeapon = g_players[0].GetEquipedWeaponInfo();
 
 		static std::string previousWeapon = equipedWeapon->name;
 		static float drawAnimationFinishTime = 0.0f;
 		static bool isDrawing = false;
-
-		//if (equipedWeapon->name != previousWeapon) {
-		//	if (equipedWeapon->name == "Glock") {
-		//		glockAnimator->PlayAnimation(glockDrawAnimation);
-		//	}
-		//	else if (equipedWeapon->name == "P90") {
-		//		p90Animator->PlayAnimation(p90DrawAnimation);
-		//	}
-		//	previousWeapon = equipedWeapon->name; 
-		//	drawAnimationFinishTime = 0.0f;
-		//	isDrawing = true;
-
-		//	/*glockAnimator->Reset();
-  //         p90Animator->Reset();*/
-		//}
 
 		g_players[0].ReloadWeapon();
 		g_players[0].FireWeapon();
@@ -82,6 +74,28 @@ namespace Game {
 
 			glockAnimator->UpdateAnimation(deltaTime);
 		}
+		else if (equipedWeapon->name == "AKS74U") {
+			if (g_players[0].IsMoving() && aks74uAnimator->GetCurrentAnimation() == aks74uIdleAnimation) {
+				aks74uAnimator->PlayAnimation(aks74uWalkAnimation, 0.5f);
+			}
+
+			if (isDrawing) {
+				drawAnimationFinishTime += deltaTime;
+
+
+				if (drawAnimationFinishTime >= 0.65f) {
+					aks74uAnimator->PlayAnimation(aks74uIdleAnimation);
+					isDrawing = false;
+				}
+			}
+
+			if (!isDrawing && aks74uAnimator->IsAnimationFinished() && aks74uAnimator->GetCurrentAnimation() != aks74uIdleAnimation) {
+				aks74uAnimator->PlayAnimation(aks74uIdleAnimation);
+			}
+
+
+			aks74uAnimator->UpdateAnimation(deltaTime);
+		}
 		else if (equipedWeapon->name == "P90") {
 			if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
 				p90Animator->PlayAnimation(p90ReloadAnimation);
@@ -111,9 +125,17 @@ namespace Game {
 		}
 
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
+			g_players[0].EquipWeapon("AKS74U");
+			aks74uAnimator->PlayAnimation(aks74uDrawAnimation, 1.5);
+		/*	glockAnimator->Reset();*/
+			previousWeapon = equipedWeapon->name;
+			drawAnimationFinishTime = 0.0f;
+			isDrawing = true;
+		}
+		else if (equipedWeapon->name == "AKS74U" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			g_players[0].EquipWeapon("P90");
 			p90Animator->PlayAnimation(p90DrawAnimation);
-		/*	glockAnimator->Reset();*/
+			/*p90Animator->Reset();*/
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
@@ -149,9 +171,14 @@ namespace Game {
 	void UpdateWeaponPositionByName(std::string name) {
 		Model* weaponModel = AssetManager::GetModelByName(name);
 
+
 		glm::vec3 gunPosition = g_players[0].getPosition() +
 			(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
 			(g_players[0].camera.cameraUp * -3.85f);    // Offset downward
+
+		if (name == "AKS74U") {
+			gunPosition += g_players[0].camera.cameraUp * -0.3f; 
+		}
 
 		// Calculate gun rotation to align with the camera
 		glm::mat4 gunRotation = glm::mat4(1.0f);

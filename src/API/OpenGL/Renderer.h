@@ -33,6 +33,9 @@ namespace OpenGLRenderer {
 	RendererCommon::PostProcessMode GetPostProcessMode();
 	void ChangePostProcessMode(RendererCommon::PostProcessMode mode);
 
+	float GetExposure();
+	void SetExposureValue(float value);
+
 	float GetGammaValue();
 	void ChangeGammaValue(float value);
 

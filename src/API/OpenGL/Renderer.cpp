@@ -54,6 +54,7 @@ namespace OpenGLRenderer {
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
 		float gamma = 2.2f;
+		float exposure = 1.0f;
 	} g_renderData;
 
 	struct RenderFrameBuffer {
@@ -119,6 +120,12 @@ namespace OpenGLRenderer {
 		 glm::mat4(1.0f)
 		};
 
+		ModelCreateInfo aks74uCreateInfo{
+		 glm::vec3(0.0f, 5.0f, 0.0f),
+		 glm::vec3(0.05f),
+		 glm::mat4(1.0f)
+		};
+
 		ModelCreateInfo cubeCreateInfo{
 			glm::vec3(0.0f, 5.0f, 1.0f),
 			glm::vec3(0.75f),
@@ -143,6 +150,7 @@ namespace OpenGLRenderer {
 
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
+		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74UBfbx.fbx", aks74uCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
@@ -187,8 +195,15 @@ namespace OpenGLRenderer {
 
 		Model* glockModel = AssetManager::GetModelByName("Glock");
 		Model* p90Model = AssetManager::GetModelByName("P90");
+		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
 
 		// load animations
+		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_Walk", "resources/animations/AKS74U_Walk.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_Fire0", "resources/animations/AKS74U_Fire0.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_Draw", "resources/animations/AKS74U_Draw.fbx", aks74uModel);
+
 		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ReloadEmpty", "resources/animations/Glock_ReloadEmpty.fbx", glockModel);
@@ -202,8 +217,11 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("P90_Fire0", "resources/animations/P90_Fire0.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Draw", "resources/animations/P90_Draw.fbx", p90Model);
 
+		
+
 		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
+		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
 	}
 
 	void RenderFrame() {
@@ -217,12 +235,16 @@ namespace OpenGLRenderer {
 			_shaders.sharpenShader.load("sharpen.vert", "sharpen.frag");
 			_shaders.testShader.load("test.vert", "test.frag");
 			_shaders.instancedShader.load("instanced.vert", "instanced.frag");
+			_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 
 		}
 
 		Player& player = Game::GetPLayerByIndex(0);
+
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
+		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
+		
 
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -265,7 +287,6 @@ namespace OpenGLRenderer {
 		_shaders.weaponShader.setMat4("projection", projection);
 		_shaders.weaponShader.setMat4("lightProjection", lightProjection);
 		_shaders.weaponShader.setInt("noPointLights", g_renderData.sceneLights.size());
-		_shaders.weaponShader.setFloat("gamma", g_renderData.gamma);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -282,14 +303,62 @@ namespace OpenGLRenderer {
 			auto transforms = glockAnimator->GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, _shaders.weaponShader);
+			AssetManager::DrawModel("Glock", _shaders.weaponShader);
 		}
-		else {
+		/*else if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
+			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
+			for (int i = 0; i < transforms.size(); ++i) {
+				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			}
+
+			AssetManager::DrawModel("AKS74U", _shaders.weaponShader);
+		}*/
+		
+		else if (player.GetEquipedWeaponInfo()->name == "P90") {
 			auto transforms = p90Animator->GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i)
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, _shaders.weaponShader);
+			AssetManager::DrawModel("P90", _shaders.weaponShader);
 		}
+
+		_shaders.animShader.activate();
+		_shaders.animShader.setMat4("view", view);
+		_shaders.animShader.setMat4("projection", projection);
+		if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
+			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
+			for (int i = 0; i < transforms.size(); ++i) {
+				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			}
+
+			AssetManager::DrawModel("AKS74U", _shaders.animShader);
+		}
+
+		/*_shaders.weaponShader.activate();
+		_shaders.weaponShader.setMat4("view", view);
+		_shaders.weaponShader.setMat4("projection", projection);
+		_shaders.weaponShader.setMat4("lightProjection", lightProjection);
+		_shaders.weaponShader.setInt("noPointLights", g_renderData.sceneLights.size());
+		_shaders.weaponShader.setFloat("gamma", g_renderData.gamma);
+		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+			std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
+
+			_shaders.weaponShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
+			_shaders.weaponShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
+			_shaders.weaponShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
+			_shaders.weaponShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
+
+			_shaders.weaponShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
+			_shaders.weaponShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
+			_shaders.weaponShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
+		}
+		
+			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
+			
+			for (int i = 0; i < transforms.size(); ++i)
+				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			AssetManager::DrawModel("AKS74U", _shaders.weaponShader);*/
+
+		
 
 		_shaders.texturedObjectShader.activate();
 		_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -298,7 +367,6 @@ namespace OpenGLRenderer {
 		_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 		_shaders.texturedObjectShader.setInt("noPointLights", g_renderData.sceneLights.size());
 		_shaders.texturedObjectShader.setInt("shadowMap", 3);
-		_shaders.texturedObjectShader.setFloat("gamma", g_renderData.gamma);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -314,6 +382,8 @@ namespace OpenGLRenderer {
 
 		/*Scene::GetPrimitiveModelByName("Plane")->draw(_shaders.texturedObjectShader);*/
 		AssetManager::DrawModel("Plane", _shaders.texturedObjectShader);
+		
+
 
 		_shaders.texturedObjectShader.activate();
 		_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
@@ -322,7 +392,6 @@ namespace OpenGLRenderer {
 		_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
 		_shaders.texturedObjectShader.setInt("noPointLights", g_renderData.sceneLights.size());
 		_shaders.texturedObjectShader.setInt("shadowMap", 3);
-		_shaders.texturedObjectShader.setFloat("gamma", g_renderData.gamma);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "pointLights[" + std::to_string(i) + "]";
 
@@ -400,6 +469,8 @@ namespace OpenGLRenderer {
 		case RendererCommon::PostProcessMode::NONE:
 			_shaders.postProcessShader.activate();
 			_shaders.postProcessShader.setInt("screenTexture", 0);
+			_shaders.postProcessShader.setFloat("gamma", g_renderData.gamma);
+			_shaders.postProcessShader.setFloat("exposure", g_renderData.exposure);
 			break;
 		case RendererCommon::PostProcessMode::SHARPEN:
 			_shaders.sharpenShader.activate();
@@ -420,12 +491,21 @@ namespace OpenGLRenderer {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+
 	RendererCommon::PostProcessMode GetPostProcessMode() {
 		return g_renderData.currentMode;
 	}
 
 	void ChangePostProcessMode(RendererCommon::PostProcessMode mode) {
 		g_renderData.currentMode = mode;
+	}
+
+	float GetExposure() {
+		return g_renderData.exposure;
+	}
+
+	void SetExposureValue(float value) {
+		g_renderData.exposure = value;
 	}
 
 	float GetGammaValue() {

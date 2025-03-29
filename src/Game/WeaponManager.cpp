@@ -26,6 +26,16 @@ namespace WeaponManager {
 		p90.animations.reloadEmpty = "P90_ReloadEmpty";
 		p90.animations.fire.push_back("P90_Fire0");
 		p90.animations.fire.push_back("P90_Fire1");
+
+		WeaponInfo& aks74u = g_weapons.emplace_back();
+		aks74u.name = "AKS74U";
+		aks74u.modelName = "AKS74U";
+		aks74u.animations.idle = "AKS74U_Idle";
+		aks74u.animations.walk = "AKS74U_Walk";
+		aks74u.animations.reload = "AKS74U_Reload";
+		aks74u.animations.reloadEmpty = "AKS74U_ReloadEmpty";
+		aks74u.animations.fire.push_back("AKS74U_Fire0");
+		aks74u.animations.fire.push_back("AKS74U_Fire1");
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string name) {

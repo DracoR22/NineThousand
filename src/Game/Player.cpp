@@ -109,8 +109,14 @@ void Player::ReloadWeapon() {
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
     Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
 
+    float animationSpeed = 1.0f;
+
+    if (weaponInfo->name == "AKS74U") {
+        animationSpeed = 0.5f;
+    }
+
     if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
-        currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload));
+        currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
     }
 }
 
@@ -133,7 +139,7 @@ void Player::FireWeapon() {
         physx::PxVec3 direction(cameraDir.x, cameraDir.y, cameraDir.z);
 
         // Raycast parameters
-        float maxDistance = 1000.0f;  // Maximum bullet range
+        float maxDistance = 100000.0f;  // Maximum bullet range
         physx::PxRaycastBuffer hitBuffer; // Stores raycast result
 
         bool hit = Physics::GetScene()->raycast(origin, direction, maxDistance, hitBuffer);

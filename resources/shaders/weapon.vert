@@ -39,14 +39,13 @@ void main() {
             totalTangent = aTangent;
             break;
         }
-        vec4 localPosition = finalBonesMatrices[aBoneIds[i]] * vec4(aPos,1.0f);
-        totalPosition += localPosition * aWeights[i];
 
-        vec3 localNormal = mat3(finalBonesMatrices[aBoneIds[i]]) * aNorm;
-        totalNormal += localNormal * aWeights[i];
+        mat4 boneTransform = finalBonesMatrices[aBoneIds[i]];
+        mat3 boneRotation = mat3(boneTransform);
 
-        vec3 localTangent = mat3(finalBonesMatrices[aBoneIds[i]]) * aTangent;
-        totalTangent += localTangent * aWeights[i];
+        totalPosition += (boneTransform * vec4(aPos, 1.0)) * aWeights[i];
+        totalNormal += (boneRotation * aNorm) * aWeights[i];
+        totalTangent += (boneRotation * aTangent) * aWeights[i];
    }
 
     FragPos = vec3(model * totalPosition);

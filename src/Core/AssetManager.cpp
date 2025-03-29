@@ -4,6 +4,7 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_modelIndexMap;
 	std::unordered_map<std::string, int> g_animationIndexMap;
 	std::unordered_map<std::string, int> g_animatorIndexMap;
+	std::unordered_map<std::string, int> g_textureIndexMap;
 
 	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
@@ -65,41 +66,15 @@ namespace AssetManager {
 	}
 
 	// ---------------------------------------------------------// TEXTURES //---------------------------------------------------------------------------//
-	std::vector<Texture> LoadTextures(aiMaterial* mat, aiTextureType type) {
-		std::vector<Texture> textures;
-		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-		{
-			aiString str;
-			mat->GetTexture(type, i, &str);
-			std::string fullPath = str.C_Str();
-			std::string fileName = fullPath.substr(fullPath.find_last_of("/\\") + 1);
-			std::cout << "textures: " << fileName << std::endl;
-
-			// prevent duplicate loading
-			bool skip = false;
-			for (const auto& loadedTex : g_textures) {
-				if (loadedTex.path == fileName) { // Compare file names
-					textures.push_back(loadedTex);
-					skip = true;
-					break;
-				}
-			}
-
-			if (!skip) {
-				Texture tex("resources/textures", fileName, type);
-				tex.load(false);
-				textures.push_back(tex);
-				g_textures.push_back(tex);
-			}
-		}
-		return textures;
+	void LoadTexture(const std::string& name, aiTextureType type) {
+		Texture texture();
 	}
 
 // ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
 		static bool reserved = false;
 		if (!reserved) {
-			g_animations.reserve(10);  
+			g_animations.reserve(20);  
 			reserved = true;
 		}
 
@@ -122,7 +97,7 @@ namespace AssetManager {
 	void LoadAnimator(const std::string& name, Animation* animation) {
 		static bool reserved = false;
 		if (!reserved) {
-			g_animators.reserve(10);
+			g_animators.reserve(20);
 			reserved = true;
 		}
 
