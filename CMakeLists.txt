@@ -6,51 +6,55 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # glfw
 add_library(glfw STATIC IMPORTED)
-set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/lib/glfw3.lib)
-target_include_directories(glfw INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/include)
+set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/lib/glfw3.lib)
+target_include_directories(glfw INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/include)
 
 # glad
-add_library(glad ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c)
-target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glad/include)
+add_library(glad ${PROJECT_SOURCE_DIR}/vendor/glad/src/glad.c)
+target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/include)
 
 # glm
 add_library(glm INTERFACE)
-target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm)
+target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glm)
 
 # stb_image
-add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image/stb_image.cpp)
-target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image)
+add_library(stb_image STATIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image/stb_image.cpp)
+target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb_image)
+
+# nlohmann JSON
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/nlohmann_json/single_include/nlohmann)
 
 # imGui
 file(GLOB IMGUI_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends/imgui_impl_glfw.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/backends/imgui_impl_glfw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/backends/imgui_impl_opengl3.cpp
 )
 add_library(imgui STATIC ${IMGUI_SOURCES})
 target_include_directories(imgui PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/backends
-    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/backends
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/include
 )
 
 # assimp
 add_library(assimp SHARED IMPORTED)
 set_target_properties(assimp PROPERTIES 
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/assimp-vc143-mt.dll
-    IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/lib/assimp-vc143-mt.lib
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/dll/assimp-vc143-mt.dll
+    IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/vendor/assimp/lib/assimp-vc143-mt.lib
 )
-target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/assimp/include)
+target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/assimp/include)
 
 # physx
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/debug/*.lib")
+    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/lib/debug/*.lib")
 else()
-    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/lib/release/*.lib")
+    file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/lib/release/*.lib")
 endif()
 
 
-file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/dll/*.dll")
+file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/dll/*.dll")
 
 # Link all files inside /src
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
@@ -59,7 +63,7 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRE
 add_executable(NineThousand ${SOURCES})
 
 # Set include directories and libraries after the target is created
-target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/physx/include)
+target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/include)
 target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp ${PHYSX_LIBS})
 
 # Include resources to output folder

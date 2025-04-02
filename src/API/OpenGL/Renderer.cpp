@@ -26,6 +26,7 @@ namespace OpenGLRenderer {
 		Shader testShader;
 		Shader instancedShader;
 		Shader uiShader;
+		Shader blurShader;
 	} _shaders;
 
 	ModelCreateInfo bulletCreateInfo{
@@ -60,6 +61,8 @@ namespace OpenGLRenderer {
 	struct RenderFrameBuffer {
 		FrameBuffer postProcessingFrameBuffer;
 		FrameBuffer mssaFrameBuffer;
+
+		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
 	} g_renderFrameBuffers;
 
 	std::vector<glm::vec3> generateGridOffsets(const glm::vec3& basePosition, int rows, int cols, float spacing) {
@@ -87,6 +90,7 @@ namespace OpenGLRenderer {
 		_shaders.testShader.load("test.vert", "test.frag");
 		_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 		_shaders.uiShader.load("ui.vert", "ui.frag");
+		_shaders.blurShader.load("blur.vert", "blur.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -177,7 +181,7 @@ namespace OpenGLRenderer {
 		cubeLampLight.constant = 1.0f;
 		cubeLampLight.linear = 0.0014f;
 		cubeLampLight.quadratic = 0.000007f;
-		cubeLampLight.ambient = glm::vec3(0.02f);
+		cubeLampLight.ambient = glm::vec3(0.002f);
 		cubeLampLight.diffuse = glm::vec3(0.8f);
 		cubeLampLight.specular = glm::vec3(1.0f);
 
@@ -185,10 +189,26 @@ namespace OpenGLRenderer {
 
 		// Load frame buffers
 		g_renderFrameBuffers.postProcessingFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
-		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment();
+		g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
+		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment("hdrAttachment");
+		g_renderFrameBuffers.postProcessingFrameBuffer.CreateDepthAttachment();
+		g_renderFrameBuffers.postProcessingFrameBuffer.DrawBuffer();
+		g_renderFrameBuffers.postProcessingFrameBuffer.Unbind();
 
 		g_renderFrameBuffers.mssaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
-		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment();
+		g_renderFrameBuffers.mssaFrameBuffer.Bind();
+		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment("msaaAttachment");
+		g_renderFrameBuffers.mssaFrameBuffer.DrawBuffer();
+		g_renderFrameBuffers.mssaFrameBuffer.Unbind();
+
+		/*g_renderFrameBuffers.pingPongFrameBuffers.resize(2);
+		for (int i = 0; i < 2; i++) {
+			g_renderFrameBuffers.pingPongFrameBuffers[i].Create(Window::currentWidth, Window::currentHeight);
+			g_renderFrameBuffers.pingPongFrameBuffers[i].Bind();
+			g_renderFrameBuffers.pingPongFrameBuffers[i].CreateAttachment(("pingPong" + std::to_string(i)).c_str());
+			g_renderFrameBuffers.pingPongFrameBuffers[i].DrawBuffer();
+			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
+		}*/
 
 		// Load shadow map
 		g_renderData.shadowMap.Init();
@@ -236,6 +256,7 @@ namespace OpenGLRenderer {
 			_shaders.testShader.load("test.vert", "test.frag");
 			_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 			_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
+			_shaders.blurShader.load("blur.vert", "blur.frag");
 
 		}
 
@@ -254,8 +275,14 @@ namespace OpenGLRenderer {
 
 		// ------ SHADOW PASS (Render to Depth Map) ------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		glm::mat4 lightView;
 
-		glm::mat4 lightView = glm::lookAt(g_renderData.sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
+		if (g_renderData.sceneLights.empty()) {
+			lightView = glm::mat4(1.0f);
+		}
+		else {
+			lightView = glm::lookAt(g_renderData.sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
+		}
 		glm::mat4 lightProjection = orthogonalProjection * lightView;
 
 		g_renderData.shadowMap.Clear();
@@ -464,13 +491,41 @@ namespace OpenGLRenderer {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		/*GLuint bloomTexture = g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(1);*/
+	/*	bool horizontal = true;
+		int blurIterations = 10;
+
+		_shaders.blurShader.activate(); 
+		_shaders.blurShader.setInt("image", 0);
+		glActiveTexture(GL_TEXTURE0);
+		for (int i = 0; i < blurIterations; i++) {
+			g_renderFrameBuffers.pingPongFrameBuffers[horizontal].Bind();
+			
+			
+			_shaders.blurShader.setBool("horizontal", horizontal);
+
+			glBindTexture(GL_TEXTURE_2D, i == 0 ? bloomTexture : g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));
+
+			glBindVertexArray(g_renderData.frameBufferQuadVAO);
+			glDisable(GL_DEPTH_TEST);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			g_renderFrameBuffers.pingPongFrameBuffers[horizontal].Unbind();
+
+			horizontal = !horizontal;
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
 		switch (g_renderData.currentMode)
 		{
 		case RendererCommon::PostProcessMode::NONE:
 			_shaders.postProcessShader.activate();
 			_shaders.postProcessShader.setInt("screenTexture", 0);
+			_shaders.postProcessShader.setInt("bloomTexture", 1);
 			_shaders.postProcessShader.setFloat("gamma", g_renderData.gamma);
 			_shaders.postProcessShader.setFloat("exposure", g_renderData.exposure);
+
 			break;
 		case RendererCommon::PostProcessMode::SHARPEN:
 			_shaders.sharpenShader.activate();
@@ -479,14 +534,19 @@ namespace OpenGLRenderer {
 		default:
 			_shaders.postProcessShader.activate();
 			_shaders.postProcessShader.setInt("screenTexture", 0);
+			_shaders.postProcessShader.setInt("bloomTexture", 1);
 			break;
 		}
 
 		glBindVertexArray(g_renderData.frameBufferQuadVAO);
 		glDisable(GL_DEPTH_TEST);
 
+		
 		glActiveTexture(GL_TEXTURE0);
-		g_renderFrameBuffers.postProcessingFrameBuffer.BindTexture();
+		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
+		/*glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));*/
+		/*g_renderFrameBuffers.postProcessingFrameBuffer.BindTextures();*/
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
