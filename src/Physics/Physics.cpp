@@ -16,6 +16,8 @@ namespace Physics {
     PxRigidDynamic* _cubeActor = nullptr;
     PxRigidDynamic* _playerActor = nullptr;
 
+    float g_ControllerVerticalVelocity = 0.0f;
+
     void InitPhysx() {
         _gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gAllocator, _gErrorCallback);
         _gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *_gFoundation, PxTolerancesScale(), true);
@@ -98,22 +100,27 @@ namespace Physics {
     }
 
     void MovePlayerController(const glm::vec3& direction, float deltaTime) {
-        static float verticalVelocity = 0.0f; 
+       
 
-        PxControllerState state;
+         PxControllerState state;
         _gController->getState(state);
         bool isOnGround = state.touchedActor != nullptr;
 
         // Preserve vertical velocity for gravity
         if (!isOnGround) {
-            verticalVelocity -= 9.81f * deltaTime; // Apply gravity
+            g_ControllerVerticalVelocity -= 9.81f * deltaTime; // Apply gravity
         }
         else {
-            verticalVelocity = 0.0f; // Reset gravity when grounded
+            g_ControllerVerticalVelocity = 0.0f; // Reset gravity when grounded
         }
 
-        physx::PxVec3 displacement(direction.x, verticalVelocity, direction.z);
+        physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
         _gController->move(displacement, 0.0f, deltaTime, nullptr);
+    }
+
+    void UpdatePlayerControllerVerticalVelocity() {
+        float jumpVelocity = 0.9f; 
+        g_ControllerVerticalVelocity = jumpVelocity;
     }
 
     PxExtendedVec3 GetPlayerControllerPosition() {

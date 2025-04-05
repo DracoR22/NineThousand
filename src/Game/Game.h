@@ -23,7 +23,7 @@ namespace Game {
 	void CreatePlayers();
 	Player& GetPLayerByIndex(int index);
 
-	void UpdateWeaponPositionByName(std::string weaponName);
+	void UpdateWeaponPositionByName(std::string weaponName, bool flipRotation = false);
 
 	GameState GetGameState();
 	void SetGameState(GameState newState);

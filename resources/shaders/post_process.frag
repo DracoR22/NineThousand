@@ -19,6 +19,6 @@ void main()
     vec3 toneMapped = vec3(1.0) - exp(-fragment * exposure);
     toneMapped = pow(toneMapped, vec3(1.0 / gamma));
 
-     FragColor = vec4(fragment, 1.0);
+     FragColor = vec4(toneMapped, 1.0);
      //FragColor = texture(bloomTexture, TexCoords); 
 }

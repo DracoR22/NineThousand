@@ -1,8 +1,8 @@
 #include "Window.h"
 
 namespace Window {
-	const int SCR_WIDTH = 1920;
-	const int SCR_HEIGHT = 1080;
+	const int SCR_WIDTH = 1280;
+	const int SCR_HEIGHT = 720;
 
 	int currentWidth = SCR_WIDTH;
 	int currentHeight = SCR_HEIGHT;

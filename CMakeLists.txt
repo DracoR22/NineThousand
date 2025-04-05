@@ -4,6 +4,10 @@ project(NineThousand)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# enable visual studio hot-reload
+set(CMAKE_CXX_FLAGS_DEBUG "/MDd /ZI /Ob0 /Od /RTC1")
+
+
 # glfw
 add_library(glfw STATIC IMPORTED)
 set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/lib/glfw3.lib)
@@ -62,7 +66,7 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRE
 # Create the executable
 add_executable(NineThousand ${SOURCES})
 
-# Set include directories and libraries after the target is created
+# Link all libraries
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/include)
 target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp ${PHYSX_LIBS})
 

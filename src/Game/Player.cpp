@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: velocity(0.0f), speed(0.05f), camera(position), height(height) {
+	: m_velocity(0.0f), m_speed(9.5f), camera(position), m_height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
 	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
@@ -11,7 +11,7 @@ Player::Player(glm::vec3 position, float height, float mass)
 }
 
 void Player::processInput(double deltaTime) {
-    float moveSpeed = speed;
+    float moveSpeed = m_speed;
 
     // Calculate direction based on keyboard input
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
@@ -33,7 +33,8 @@ void Player::processInput(double deltaTime) {
     }
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && m_isOnGround) {
-        Physics::CharacterActorJump();
+        /*Physics::CharacterActorJump();*/
+        Physics::UpdatePlayerControllerVerticalVelocity();
     }
 
     // Normalize move direction to avoid faster diagonal movement
@@ -43,7 +44,7 @@ void Player::processInput(double deltaTime) {
 
      m_isMoving = glm::length(moveDirection) > 0.0f;
 
-     Physics::MovePlayerController(moveDirection * speed, deltaTime);
+     Physics::MovePlayerController(moveDirection * m_speed * static_cast<float>(deltaTime), deltaTime);
 
      //Physics::MoveCharacterActor(targetVelocity);
 
@@ -62,7 +63,7 @@ void Player::processInput(double deltaTime) {
      camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
      physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
-     glm::vec3 targetPosition(playerPos.x, playerPos.y + (height * 0.8f), playerPos.z);
+     glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
      const float cameraLag = 0.05f;
      camera.setPosition(targetPosition);
 

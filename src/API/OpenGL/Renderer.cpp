@@ -230,6 +230,11 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("Glock_Walk", "resources/animations/Glock_Walk.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Fire0", "resources/animations/Glock_Fire0.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Draw", "resources/animations/Glock_Draw.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_In", "resources/animations/Glock_ADS_In.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_Out", "resources/animations/Glock_ADS_Out.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_Fire1", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_Fire1", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
 
 		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);

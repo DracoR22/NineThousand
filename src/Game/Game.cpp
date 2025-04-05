@@ -17,6 +17,10 @@ namespace Game {
 		Animation* glockWalkAnimation = AssetManager::GetAnimationByName("Glock_Walk");
 		Animation* glockFire0Animation = AssetManager::GetAnimationByName("Glock_Fire0");
 		Animation* glockDrawAnimation = AssetManager::GetAnimationByName("Glock_Draw");
+		Animation* glockADSInAnimation = AssetManager::GetAnimationByName("Glock_ADS_In");
+		Animation* glockADSOutAnimation = AssetManager::GetAnimationByName("Glock_ADS_Out");
+		Animation* glockADSIdleAnimation = AssetManager::GetAnimationByName("Glock_ADS_Idle");
+		Animation* glockADSFire1Animation = AssetManager::GetAnimationByName("Glock_ADS_Fire1");
 
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
 		
@@ -37,7 +41,11 @@ namespace Game {
 
 		static std::string previousWeapon = equipedWeapon->name;
 		static float drawAnimationFinishTime = 0.0f;
+		static float ADSInAnimationFinishTime = 0.0f;
+		static float ADSOutAnimationFinishTime = 0.0f;
+
 		static bool isDrawing = false;
+		static bool isInADS = false;
 
 		g_players[0].ReloadWeapon();
 		g_players[0].FireWeapon();
@@ -53,6 +61,13 @@ namespace Game {
 				isDrawing = true;
 			}
 
+			if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+				glockAnimator->PlayAnimation(glockADSInAnimation);
+				ADSInAnimationFinishTime = 0.0f;
+				isInADS = true;
+			}
+
+
 			if (g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockWalkAnimation);
 			}
@@ -67,8 +82,31 @@ namespace Game {
 				}
 			}
 
+			if (isInADS && Mouse::button(GLFW_MOUSE_BUTTON_RIGHT) && glockAnimator->GetCurrentAnimation() != glockADSFire1Animation) {
+				ADSInAnimationFinishTime += deltaTime;
+				if (ADSInAnimationFinishTime >= 0.45f) {
+					glockAnimator->PlayAnimation(glockADSIdleAnimation);
+				}
+			}
 
-			if (!isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
+			if (isInADS && Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT)) {
+				std::cout << "FUNCTION TRIGGERRRED!!!" << std::endl;
+				glockAnimator->PlayAnimation(glockADSFire1Animation);
+			}
+
+			if (isInADS && Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
+				glockAnimator->PlayAnimation(glockADSOutAnimation);
+				ADSOutAnimationFinishTime = 0.0f;
+				isInADS = false;
+		
+			}
+
+			if (!isDrawing && !isInADS && glockAnimator->GetCurrentAnimation() == glockADSOutAnimation) {
+				ADSOutAnimationFinishTime += deltaTime;
+				if (ADSOutAnimationFinishTime >= 0.202) {
+					glockAnimator->PlayAnimation(glockIdleAnimation);
+				}
+			} else if (!isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockIdleAnimation);
 			}
 
@@ -150,7 +188,15 @@ namespace Game {
 		}
 
 		// Weapons Position
-		UpdateWeaponPositionByName(equipedWeapon->name);
+		if (glockAnimator->GetCurrentAnimation() == glockADSInAnimation ||
+			glockAnimator->GetCurrentAnimation() == glockADSIdleAnimation ||
+			glockAnimator->GetCurrentAnimation() == glockADSOutAnimation || 
+			glockAnimator->GetCurrentAnimation() == glockADSFire1Animation) {
+			UpdateWeaponPositionByName(equipedWeapon->name, true);
+		}
+		else {
+			UpdateWeaponPositionByName(equipedWeapon->name);
+		}
 		
 	}
 
@@ -168,16 +214,25 @@ namespace Game {
 		return g_players[index];
 	}
 
-	void UpdateWeaponPositionByName(std::string name) {
+	void UpdateWeaponPositionByName(std::string name, bool flipRotation) {
 		Model* weaponModel = AssetManager::GetModelByName(name);
 
 
-		glm::vec3 gunPosition = g_players[0].getPosition() +
-			(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-			(g_players[0].camera.cameraUp * -3.85f);    // Offset downward
+		glm::vec3 gunPosition;
 
-		if (name == "AKS74U") {
-			gunPosition += g_players[0].camera.cameraUp * -0.3f; 
+		if (name == "Glock") {
+			gunPosition = g_players[0].getPosition() +
+				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].camera.cameraUp * -4.10f);    // Offset downward
+		} else if (name == "AKS74U") {
+			gunPosition = g_players[0].getPosition() +
+				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].camera.cameraUp * -4.2f);    // Offset downward
+		}
+		else {
+			gunPosition = g_players[0].getPosition() +
+				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].camera.cameraUp * -3.8f);    // Offset downward
 		}
 
 		// Calculate gun rotation to align with the camera
@@ -196,7 +251,7 @@ namespace Game {
 		// Apply local rotation adjustment to align gun's forward direction
 		glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Adjust for left-facing gun
 		localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); // Slight upward pitch adjustment
-		if (name == "P90") {
+		if (name == "P90" || flipRotation) {
 			localRotationFix = glm::rotate(localRotationFix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		gunRotation = gunRotation * localRotationFix;

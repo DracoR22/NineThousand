@@ -25,6 +25,7 @@ namespace Physics {
     /* Character Controller */
     void InitializeCharacterController();
     void MovePlayerController(const glm::vec3& direction, float deltaTime);
+    void UpdatePlayerControllerVerticalVelocity();
     PxExtendedVec3 GetPlayerControllerPosition();
 
     /* Charcter Actors */

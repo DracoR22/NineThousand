@@ -16,27 +16,22 @@ struct PlayerState {
 };
 
 class Player {
-public:
-	bool m_isOnGround = true;
-
 private:
+	bool m_isOnGround = true;
 	bool m_isMoving = false;
+	bool m_isAimingWeapon = false;
 
-	glm::vec3 velocity;
-	float speed;
-	float height;
-	float verticalVelocity = 0.0f;
+	glm::vec3 m_velocity;
+
+	float m_speed = 0.0f;
+	float m_height = 0.0f;
 
 	WeaponInfo* m_equippedWeapon = nullptr;
-
-	glm::vec3 cameraTargetPosition;
-
-public:
-	std::vector<BulletInfo> spawnedBullets = {};
 public:
 	Player(glm::vec3 position, float height, float mass);
 
 	void Update(float deltaTime);
+	void MoveCharacterController(double deltaTime);
 
     void processInput(double deltaTime);
 
@@ -52,4 +47,7 @@ public:
 
 	void ReloadWeapon();
 	void FireWeapon();
+	void EnterADS();
+	void LeaveADS();
+	void IsInADS();
 };
