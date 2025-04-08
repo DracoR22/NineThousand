@@ -234,7 +234,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("Glock_ADS_Out", "resources/animations/Glock_ADS_Out.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Fire1", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_Fire1", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_ADS_Walk", "resources/animations/Glock_ADS_Walk.fbx", glockModel);
 
 		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);
@@ -337,14 +337,14 @@ namespace OpenGLRenderer {
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("Glock", _shaders.weaponShader);
 		}
-		/*else if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
+		else if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
 			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); ++i) {
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			}
 
 			AssetManager::DrawModel("AKS74U", _shaders.weaponShader);
-		}*/
+		}
 		
 		else if (player.GetEquipedWeaponInfo()->name == "P90") {
 			auto transforms = p90Animator->GetFinalBoneMatrices();
@@ -353,7 +353,7 @@ namespace OpenGLRenderer {
 			AssetManager::DrawModel("P90", _shaders.weaponShader);
 		}
 
-		_shaders.animShader.activate();
+		/*_shaders.animShader.activate();
 		_shaders.animShader.setMat4("view", view);
 		_shaders.animShader.setMat4("projection", projection);
 		if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
@@ -363,7 +363,7 @@ namespace OpenGLRenderer {
 			}
 
 			AssetManager::DrawModel("AKS74U", _shaders.animShader);
-		}
+		}*/
 
 		/*_shaders.weaponShader.activate();
 		_shaders.weaponShader.setMat4("view", view);

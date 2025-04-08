@@ -7,9 +7,12 @@
 #include "../Core/Model.h"
 #include "../Physics/Physics.h"
 
-struct BulletInfo {
-	Model* model;
-	physx::PxRigidDynamic* actor;
+enum class WeaponAction {
+	IDLE,
+	ADS_IN,
+	ADS_OUT,
+	ADS_IDLE,
+	ADS_FIRE,
 };
 
 struct WeaponAnimations {
@@ -19,6 +22,11 @@ struct WeaponAnimations {
 	std::string reloadEmpty;
 	std::string draw;
 	std::vector<std::string> fire;
+	std::string ADSIdle;
+	std::string ADSIn;
+	std::string ADSOut;
+	std::string ADSWalk;
+	std::vector<std::string> ADSFire;
 };
 
 struct WeaponInfo {

@@ -233,6 +233,17 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		std::string meshName = mesh->mName.C_Str();
+
+		// skip certain meshes
+		if (meshName == "ArmsFemale") {
+			continue;
+		}
+
+		if (meshName.find("AKS74U_Scope") != std::string::npos || meshName == "AKS74U_Lens") {
+			continue;
+		}
+
 		meshes.push_back(processMesh(mesh, scene));
 	}
 	// then do the same for each of its children

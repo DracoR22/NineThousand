@@ -16,11 +16,14 @@ struct PlayerState {
 };
 
 class Player {
+public: 
+	float m_ADSFireAnimationFinishTime = 0.0f;
 private:
+	WeaponAction m_weaponAction = WeaponAction::IDLE;
 	bool m_isOnGround = true;
 	bool m_isMoving = false;
 	bool m_isAimingWeapon = false;
-
+	
 	glm::vec3 m_velocity;
 
 	float m_speed = 0.0f;
@@ -39,15 +42,19 @@ public:
 
 	glm::vec3 getPosition();
 
-	bool CanReload();
 	bool IsMoving();
+
+	bool CanReload();
+	bool IsDrawingWeapon();
 
 	void EquipWeapon(std::string weaponName);
 	WeaponInfo* GetEquipedWeaponInfo();
+
+	bool PressingADS();
+	bool PressedADS();
 
 	void ReloadWeapon();
 	void FireWeapon();
 	void EnterADS();
 	void LeaveADS();
-	void IsInADS();
 };

@@ -15,6 +15,11 @@ namespace WeaponManager {
 		glock.animations.reloadEmpty = "Glock_ReloadEmpty";
 		glock.animations.fire.push_back("Glock_Fire0");
 		glock.animations.fire.push_back("Glock_Fire1");
+		glock.animations.ADSIdle = "Glock_ADS_Idle";
+		glock.animations.ADSIn = "Glock_ADS_In";
+		glock.animations.ADSOut = "Glock_ADS_Out";
+		glock.animations.ADSWalk = "Glock_ADS_Walk";
+		glock.animations.ADSFire.push_back("Glock_ADS_Fire1");
 
 
 		WeaponInfo& p90 = g_weapons.emplace_back();

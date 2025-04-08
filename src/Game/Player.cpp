@@ -105,16 +105,30 @@ WeaponInfo* Player::GetEquipedWeaponInfo() {
     return m_equippedWeapon;
 }
 
+bool Player::PressingADS() {
+    if (Mouse::button(GLFW_MOUSE_BUTTON_RIGHT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Player::PressedADS() {
+    if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 void Player::ReloadWeapon() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
     Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
 
     float animationSpeed = 1.0f;
-
-    if (weaponInfo->name == "AKS74U") {
-        animationSpeed = 0.5f;
-    }
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
         currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
@@ -129,9 +143,16 @@ void Player::FireWeapon() {
 
     Animation* weaponReloadAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.reload);
     Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
+    Animation* glockADSFire1Animation = AssetManager::GetAnimationByName("Glock_ADS_Fire1");
 
     if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && currentWeaponAnimator->GetCurrentAnimation() != weaponReloadAnimation) {
-        currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+        if (PressingADS()) {
+            currentWeaponAnimator->PlayAnimation(glockADSFire1Animation);
+            m_ADSFireAnimationFinishTime = 0.0f;
+        }
+        else {
+            currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+        }
 
         glm::vec3 playerPos = camera.cameraPos;
         glm::vec3 cameraDir = glm::normalize(camera.cameraFront);

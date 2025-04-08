@@ -37,6 +37,8 @@ void main() {
 	  normal = normal * 2.0 - 1.0;   
       normal = normalize(TBN * normal);
 
+      //vec3 normal = normalize(Normal);
+
      vec3 viewDir = normalize(viewPos - FragPos);
 
      vec3 diffuseColor = texture(diffuse0, TexCoords).rgb;
