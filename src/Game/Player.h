@@ -10,16 +10,12 @@
 
 #include "../Core/AssetManager.h"
 
-struct PlayerState {
-	bool isDrawingWeapon = false;
-	bool isReloadingWeapon = false;
-};
-
 class Player {
 public: 
+	// animation timers
 	float m_ADSFireAnimationFinishTime = 0.0f;
+	float m_ADSInAnimationFinishTime = 0.0f;
 private:
-	WeaponAction m_weaponAction = WeaponAction::IDLE;
 	bool m_isOnGround = true;
 	bool m_isMoving = false;
 	bool m_isAimingWeapon = false;
@@ -30,6 +26,7 @@ private:
 	float m_height = 0.0f;
 
 	WeaponInfo* m_equippedWeapon = nullptr;
+	WeaponAction m_weaponAction = WeaponAction::IDLE;
 public:
 	Player(glm::vec3 position, float height, float mass);
 
@@ -47,14 +44,18 @@ public:
 	bool CanReload();
 	bool IsDrawingWeapon();
 
-	void EquipWeapon(std::string weaponName);
 	WeaponInfo* GetEquipedWeaponInfo();
+	WeaponAction GetWeaponAction();
 
 	bool PressingADS();
 	bool PressedADS();
+	bool ReleasedADS();
 
 	void ReloadWeapon();
 	void FireWeapon();
 	void EnterADS();
 	void LeaveADS();
+	void EquipWeapon(std::string weaponName);
+
+	void SetWeaponAction(WeaponAction action);
 };

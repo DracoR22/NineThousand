@@ -105,6 +105,10 @@ WeaponInfo* Player::GetEquipedWeaponInfo() {
     return m_equippedWeapon;
 }
 
+WeaponAction Player::GetWeaponAction() {
+    return m_weaponAction;
+}
+
 bool Player::PressingADS() {
     if (Mouse::button(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
@@ -116,6 +120,15 @@ bool Player::PressingADS() {
 
 bool Player::PressedADS() {
     if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Player::ReleasedADS() {
+    if (Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
     }
     else {
@@ -184,4 +197,20 @@ void Player::FireWeapon() {
 
         }
     }
+}
+
+void Player::EnterADS() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+    Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
+
+    if (PressedADS) {
+        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
+        m_ADSInAnimationFinishTime = 0.0f;
+        SetWeaponAction(WeaponAction::ADS_IN);
+    }
+}
+
+void Player::SetWeaponAction(WeaponAction action) {
+    m_weaponAction = action;
 }

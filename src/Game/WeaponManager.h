@@ -9,6 +9,7 @@
 
 enum class WeaponAction {
 	IDLE,
+	DRAW,
 	ADS_IN,
 	ADS_OUT,
 	ADS_IDLE,

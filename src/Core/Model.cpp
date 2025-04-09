@@ -14,8 +14,9 @@ void Model::draw(Shader& shader) {
 
 	shader.setMat4("model", model);
 
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (unsigned int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
+	}
 }
 
 void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
@@ -135,7 +136,7 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
 
-		Mesh cubeMesh(vertexlist, indices);
+		Mesh cubeMesh("Cube_Primitive_Mesh", vertexlist, indices);
 		cubeMesh.textures.push_back(diffuse);    
 		cubeMesh.textures.push_back(specular);  
 		cubeMesh.textures.push_back(normal);  
@@ -195,7 +196,7 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
 
-		Mesh planeMesh(vertexlist, indices);
+		Mesh planeMesh("Plane_Primitive_Mesh", vertexlist, indices);
 		planeMesh.textures.push_back(diffuse);  
 		planeMesh.textures.push_back(specular); 
 		planeMesh.textures.push_back(normal);
@@ -235,12 +236,12 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		std::string meshName = mesh->mName.C_Str();
 
-		// skip certain meshes
+		// skip certain meshes for now
 		if (meshName == "ArmsFemale") {
 			continue;
 		}
 
-		if (meshName.find("AKS74U_Scope") != std::string::npos || meshName == "AKS74U_Lens") {
+		if (meshName.find("AKS74U_Scope") != std::string::npos || meshName == "AKS74U_Lens" || meshName == "AKS74U_RedDot") {
 			continue;
 		}
 
@@ -350,7 +351,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 	ExtractBoneWeightForVertices(vertices, mesh, scene);
 
-	return Mesh(vertices, indices, textures);
+	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
 }
 
 std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {

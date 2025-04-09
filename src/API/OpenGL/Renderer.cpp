@@ -223,6 +223,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("AKS74U_Walk", "resources/animations/AKS74U_Walk.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Fire0", "resources/animations/AKS74U_Fire0.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Draw", "resources/animations/AKS74U_Draw.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_ADS_In", "resources/animations/AKS74U_ADS_In.fbx", aks74uModel);
 
 		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);

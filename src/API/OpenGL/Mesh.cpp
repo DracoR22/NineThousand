@@ -78,7 +78,8 @@ void AverageVectors(glm::vec3& baseVec, glm::vec3 addition, unsigned char existi
 }
 
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
+Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
+	this->m_Name = name;
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
