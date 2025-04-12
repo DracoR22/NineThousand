@@ -204,7 +204,7 @@ void Player::EnterADS() {
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
     Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
 
-    if (PressedADS) {
+    if (PressedADS()) {
         currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
         m_ADSInAnimationFinishTime = 0.0f;
         SetWeaponAction(WeaponAction::ADS_IN);

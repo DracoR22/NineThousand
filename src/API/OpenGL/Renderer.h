@@ -25,6 +25,12 @@
 
 #include "../../Common/RendererCommon.h"
 
+#define GLCheckError() \
+{ \
+    GLenum err; \
+    while ((err = glGetError()) != GL_NO_ERROR) \
+        std::cerr << "OpenGL Error: " << err << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
+}
 
 namespace OpenGLRenderer {
 	void Init();

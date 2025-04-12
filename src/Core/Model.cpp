@@ -231,6 +231,7 @@ void Model::CreateInstanceBuffers() {
 
 void Model::processNode(aiNode* node, const aiScene* scene) {
 	// process all the node's meshes (if any)
+	
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];

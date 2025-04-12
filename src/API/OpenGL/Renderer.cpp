@@ -281,7 +281,7 @@ namespace OpenGLRenderer {
 
 		// ------ SHADOW PASS (Render to Depth Map) ------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-		glm::mat4 lightView;
+		glm::mat4 lightView = glm::mat4(1.0f);
 
 		if (g_renderData.sceneLights.empty()) {
 			lightView = glm::mat4(1.0f);
@@ -315,7 +315,7 @@ namespace OpenGLRenderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ------ RENDER PASS ------
-		_shaders.weaponShader.activate();
+		_shaders.weaponShader.activate(); GLCheckError();
 		_shaders.weaponShader.setMat4("view", view);
 		_shaders.weaponShader.setMat4("projection", projection);
 		_shaders.weaponShader.setMat4("lightProjection", lightProjection);
@@ -333,9 +333,12 @@ namespace OpenGLRenderer {
 			_shaders.weaponShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
 		}
 		if (player.GetEquipedWeaponInfo()->name == "Glock") {
-			auto transforms = glockAnimator->GetFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); ++i)
+			auto& transforms = glockAnimator->GetFinalBoneMatrices();
+			
+			for (int i = 0; i < transforms.size(); ++i) {
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+			}
+
 			AssetManager::DrawModel("Glock", _shaders.weaponShader);
 		}
 		else if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
@@ -353,6 +356,10 @@ namespace OpenGLRenderer {
 				_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("P90", _shaders.weaponShader);
 		}
+		/*GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR) {
+			std::cerr << "OpenGL Error: " << err << std::endl;
+		}*/
 
 		/*_shaders.animShader.activate();
 		_shaders.animShader.setMat4("view", view);

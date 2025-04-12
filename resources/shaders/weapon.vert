@@ -23,7 +23,14 @@ const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 finalBonesMatrices[MAX_BONES];
 
+void forceBoneUse() {
+    for (int i = 0; i < MAX_BONES; ++i)
+        if (finalBonesMatrices[i][0][0] == 123.456) // do nothing
+            gl_Position.x += 0.0;
+}
+
 void main() {
+ forceBoneUse();
   vec4 totalPosition = vec4(0.0f);
   vec3 totalNormal = vec3(0.0f);
   vec3 totalTangent = vec3(0.0);
