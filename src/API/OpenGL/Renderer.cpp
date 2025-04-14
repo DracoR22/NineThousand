@@ -224,6 +224,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("AKS74U_Fire0", "resources/animations/AKS74U_Fire0.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Draw", "resources/animations/AKS74U_Draw.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_ADS_In", "resources/animations/AKS74U_ADS_In.fbx", aks74uModel);
+		AssetManager::LoadAnimation("AKS74U_ADS_Idle", "resources/animations/AKS74U_ADS_Idle.fbx", aks74uModel);
 
 		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);
@@ -331,6 +332,13 @@ namespace OpenGLRenderer {
 			_shaders.weaponShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
 			_shaders.weaponShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
 			_shaders.weaponShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
+		}
+		_shaders.weaponShader.set3Float("viewPos", player.getPosition());
+		if (player.PressingADS() || player.GetWeaponAction() == WeaponAction::ADS_OUT) { // little hack because ads light was getting rotated
+			_shaders.weaponShader.setBool("u_flipLights", true);
+		}
+		else {
+			_shaders.weaponShader.setBool("u_flipLights", false);
 		}
 		if (player.GetEquipedWeaponInfo()->name == "Glock") {
 			auto& transforms = glockAnimator->GetFinalBoneMatrices();

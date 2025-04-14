@@ -30,6 +30,26 @@ enum class ModelType {
 };
 
 class Model {
+private:
+	std::string m_directory;
+	std::vector<Texture> m_textures_loaded;
+
+	void processNode(aiNode* node, const aiScene* scene);
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+
+	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
+
+	std::string m_name;
+
+	// animations
+	std::map<std::string, BoneInfo> m_BoneInfoMap;
+	int m_BoneCounter = 0;
+
+	void SetVertexBoneDataToDefault(Vertex& vertex);
+	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+
+	unsigned int m_instanceOffsetVBO;
 public:
 	glm::vec3 pos;
 	glm::vec3 size;
@@ -57,25 +77,4 @@ public:
 	int& GetBoneCount();
 
 	const std::string& GetName();
-
-private:
-	std::string directory;
-	std::vector<Texture> textures_loaded;
-
-	void processNode(aiNode* node, const aiScene* scene);
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-
-	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
-
-	std::string m_name;
-
-	// for animations
-	std::map<std::string, BoneInfo> m_BoneInfoMap;
-	int m_BoneCounter = 0;
-
-	void SetVertexBoneDataToDefault(Vertex& vertex);
-	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
-	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
-
-	unsigned int instanceOffsetVBO;
 };

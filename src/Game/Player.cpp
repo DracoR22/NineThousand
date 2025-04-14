@@ -32,7 +32,7 @@ void Player::processInput(double deltaTime) {
         moveDirection -= camera.cameraUp;
     }
 
-    if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE) && m_isOnGround) {
+    if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE)) {
         /*Physics::CharacterActorJump();*/
         Physics::UpdatePlayerControllerVerticalVelocity();
     }

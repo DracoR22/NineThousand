@@ -100,26 +100,20 @@ namespace Physics {
     }
 
     void MovePlayerController(const glm::vec3& direction, float deltaTime) {
-       
 
-         PxControllerState state;
-        _gController->getState(state);
-        bool isOnGround = state.touchedActor != nullptr;
-
-        // Preserve vertical velocity for gravity
-        if (!isOnGround) {
-            g_ControllerVerticalVelocity -= 9.81f * deltaTime; // Apply gravity
-        }
-        else {
-            g_ControllerVerticalVelocity = 0.0f; // Reset gravity when grounded
-        }
+        g_ControllerVerticalVelocity -= 9.81f * deltaTime; // Reset gravity when grounded
+        
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-        _gController->move(displacement, 0.0f, deltaTime, nullptr);
+       PxControllerCollisionFlags flags = _gController->move(displacement, 0.0f, deltaTime, nullptr);
+
+       if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
+           g_ControllerVerticalVelocity = 0.0f;
+       }
     }
 
     void UpdatePlayerControllerVerticalVelocity() {
-        float jumpVelocity = 0.9f; 
+        float jumpVelocity = 0.5f; 
         g_ControllerVerticalVelocity = jumpVelocity;
     }
 

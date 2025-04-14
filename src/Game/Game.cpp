@@ -37,6 +37,7 @@ namespace Game {
 		Animation* aks74uIdleAnimation = AssetManager::GetAnimationByName("AKS74U_Idle");
 		Animation* aks74uDrawAnimation = AssetManager::GetAnimationByName("AKS74U_Draw");
 		Animation* aks74uWalkAnimation = AssetManager::GetAnimationByName("AKS74U_Walk");
+		Animation* aks74uADSInAnimation = AssetManager::GetAnimationByName("AKS74U_ADS_In");
 
 		WeaponInfo* equipedWeapon = g_players[0].GetEquipedWeaponInfo();
 
@@ -66,11 +67,13 @@ namespace Game {
 				glockAnimator->PlayAnimation(glockADSInAnimation, 1.5f);
 				ADSInAnimationFinishTime = 0.0f;
 				isInADS = true;
+				g_players[0].SetWeaponAction(WeaponAction::ADS_IN);
 			}
 
 
 			if (!g_players[0].PressingADS() && g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockWalkAnimation);
+				g_players[0].SetWeaponAction(WeaponAction::WALK);
 			}
 
 			if (isDrawing) {
@@ -79,7 +82,8 @@ namespace Game {
 				
 				if (drawAnimationFinishTime >= 0.65f) {
 					glockAnimator->PlayAnimation(glockIdleAnimation);
-					isDrawing = false;  
+					isDrawing = false; 
+					g_players[0].SetWeaponAction(WeaponAction::IDLE);
 				}
 			}
 
@@ -88,6 +92,7 @@ namespace Game {
 				if (ADSInAnimationFinishTime >= 0.24f) {
 					
 					glockAnimator->PlayAnimation(glockADSIdleAnimation);
+					g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
 				}
 			}
 
@@ -96,6 +101,7 @@ namespace Game {
 				
 				if (ADSInAnimationFinishTime >= 0.23f) {
 					glockAnimator->PlayAnimation(glockADSWalkAnimation);
+					g_players[0].SetWeaponAction(WeaponAction::ADS_WALK);
 				}
 			}
 
@@ -104,30 +110,35 @@ namespace Game {
 				if (g_players[0].m_ADSFireAnimationFinishTime >= 0.60f) {
 					
 					glockAnimator->PlayAnimation(glockADSIdleAnimation);
+					g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
 				}
 			}
 
 			if (g_players[0].PressingADS() && g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockADSIdleAnimation) {
 				glockAnimator->PlayAnimation(glockADSWalkAnimation);
+				g_players[0].SetWeaponAction(WeaponAction::ADS_WALK);
 			}
 
 			if (isInADS && Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
 				glockAnimator->PlayAnimation(glockADSOutAnimation);
 				ADSOutAnimationFinishTime = 0.0f;
 				isInADS = false;
-		
+				g_players[0].SetWeaponAction(WeaponAction::ADS_OUT);
 			}
 
 			if (!isDrawing && !isInADS && glockAnimator->GetCurrentAnimation() == glockADSOutAnimation) {
 				ADSOutAnimationFinishTime += deltaTime;
 				if (ADSOutAnimationFinishTime >= 0.25) {
 					glockAnimator->PlayAnimation(glockIdleAnimation);
+					g_players[0].SetWeaponAction(WeaponAction::IDLE);
 				}
 			} else if (!g_players[0].PressingADS() && !isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockIdleAnimation);
+				g_players[0].SetWeaponAction(WeaponAction::IDLE);
 			}
 			else if (!g_players[0].IsMoving() && g_players[0].PressingADS() && !isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
 				glockAnimator->PlayAnimation(glockADSIdleAnimation);
+				g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
 			}
 
 			glockAnimator->UpdateAnimation(deltaTime);
@@ -135,6 +146,12 @@ namespace Game {
 		else if (equipedWeapon->name == "AKS74U") {
 			if (g_players[0].IsMoving() && aks74uAnimator->GetCurrentAnimation() == aks74uIdleAnimation) {
 				aks74uAnimator->PlayAnimation(aks74uWalkAnimation);
+			}
+
+			if (g_players[0].PressedADS()) {
+				aks74uAnimator->PlayAnimation(aks74uADSInAnimation, 1.5f);
+				ADSInAnimationFinishTime = 0.0f;
+				isInADS = true;
 			}
 
 			if (isDrawing) {
@@ -222,7 +239,8 @@ namespace Game {
 			glockAnimator->GetCurrentAnimation() == glockADSIdleAnimation ||
 			glockAnimator->GetCurrentAnimation() == glockADSOutAnimation || 
 			glockAnimator->GetCurrentAnimation() == glockADSWalkAnimation ||
-			glockAnimator->GetCurrentAnimation() == glockADSFire1Animation) {
+			glockAnimator->GetCurrentAnimation() == glockADSFire1Animation ||
+			aks74uAnimator->GetCurrentAnimation() == aks74uADSInAnimation) {
 			UpdateWeaponPositionByName(equipedWeapon->name, true);
 		}
 		else {

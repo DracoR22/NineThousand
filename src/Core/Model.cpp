@@ -30,7 +30,7 @@ void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
 
 	int fixedOffsets = std::min(UPPER_BOUND, (int)offsets.size());
 
-	glBindBuffer(GL_ARRAY_BUFFER, instanceOffsetVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_instanceOffsetVBO);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, fixedOffsets * sizeof(glm::vec3), &offsets[0]);
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
@@ -217,15 +217,15 @@ void Model::loadAssimpModel(std::string path) {
 		return;
 	}
 	/* directory = path.substr(0, path.find_last_of('/'));*/
-	directory = "resources/textures";
+	m_directory = "resources/textures";
 
 	processNode(scene->mRootNode, scene);
 }
 
 void Model::CreateInstanceBuffers() {
-	glGenBuffers(1, &instanceOffsetVBO);
+	glGenBuffers(1, &m_instanceOffsetVBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, instanceOffsetVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_instanceOffsetVBO);
 	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 }
 
@@ -367,7 +367,7 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 
 		// prevent duplicate loading
 		bool skip = false;
-		for (const auto& loadedTex : textures_loaded) {
+		for (const auto& loadedTex : m_textures_loaded) {
 			if (loadedTex.path == fileName) { // Compare file names
 				textures.push_back(loadedTex);
 				skip = true;
@@ -376,10 +376,10 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 		}
 
 		if (!skip) {
-			Texture tex(directory, fileName, type);
+			Texture tex(m_directory, fileName, type);
 			tex.load(false);
 			textures.push_back(tex);
-			textures_loaded.push_back(tex);
+			m_textures_loaded.push_back(tex);
 		}
 	}
 	return textures;

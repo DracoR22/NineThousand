@@ -10,10 +10,12 @@
 enum class WeaponAction {
 	IDLE,
 	DRAW,
+    WALK,
 	ADS_IN,
 	ADS_OUT,
 	ADS_IDLE,
 	ADS_FIRE,
+	ADS_WALK
 };
 
 struct WeaponAnimations {

@@ -30,6 +30,9 @@ uniform sampler2D normal0;
 
 uniform vec3 viewPos;
 
+uniform bool u_flipLights;
+
+vec3 RotateLight(vec3 lightPos, vec3 pivot, float angleRadians);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
 
 void main() {
@@ -54,15 +57,38 @@ void main() {
      FragColor = vec4(color, 1.0);
 }
 
+vec3 RotateLight(vec3 lightPos, vec3 pivot, float angleRadians) {
+    float cosA = cos(angleRadians);
+    float sinA = sin(angleRadians);
+
+    // Translate to origin
+    vec3 pos = lightPos - pivot;
+
+    // Rotate around Y-axis (180°)
+    vec3 rotated;
+    rotated.x = pos.x * cosA - pos.z * sinA;
+    rotated.z = pos.x * sinA + pos.z * cosA;
+    rotated.y = pos.y;
+
+    // Translate back
+    return rotated + pivot;
+}
+
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor) {
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightPos = light.position;
+
+    if (u_flipLights) {
+      lightPos = RotateLight(light.position, fragPos, radians(180.0));
+    }
+
+    vec3 lightDir = normalize(lightPos - fragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
     vec3 reflectDir = reflect(-lightDir, normal);
 
     float diff = max(dot(normal, lightDir), 0.0);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32); // material shininess
 
-    float distance    = length(light.position - fragPos);
+    float distance    = length(lightPos - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
  
     vec3 ambient  = light.ambient  * diffuseColor;
