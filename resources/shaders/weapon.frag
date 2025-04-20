@@ -61,16 +61,13 @@ vec3 RotateLight(vec3 lightPos, vec3 pivot, float angleRadians) {
     float cosA = cos(angleRadians);
     float sinA = sin(angleRadians);
 
-    // Translate to origin
     vec3 pos = lightPos - pivot;
 
-    // Rotate around Y-axis (180°)
     vec3 rotated;
     rotated.x = pos.x * cosA - pos.z * sinA;
     rotated.z = pos.x * sinA + pos.z * cosA;
     rotated.y = pos.y;
 
-    // Translate back
     return rotated + pivot;
 }
 

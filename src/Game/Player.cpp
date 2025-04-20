@@ -6,7 +6,7 @@ Player::Player(glm::vec3 position, float height, float mass)
 
 	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
 
-    Physics::CreateCharacterActor(position, height, mass);
+  /*  Physics::CreateCharacterActor(position, height, mass);*/
     Physics::InitializeCharacterController();
 }
 
@@ -46,8 +46,6 @@ void Player::processInput(double deltaTime) {
 
      Physics::MovePlayerController(moveDirection * m_speed * static_cast<float>(deltaTime), deltaTime);
 
-     //Physics::MoveCharacterActor(targetVelocity);
-
      // Handle mouse input for camera rotation
      static glm::vec2 smoothedDelta = glm::vec2(0.0f);
      const float smoothingFactor = 0.55f; // Lower = smoother, but more latency
@@ -65,24 +63,7 @@ void Player::processInput(double deltaTime) {
      physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
      glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
      const float cameraLag = 0.05f;
-     camera.setPosition(targetPosition);
-
-     // Smooth camera movement (dampening)
-     //glm::vec3 targetPosition = camera.cameraPos + moveDirection * moveSpeed * static_cast<float>(deltaTime);
-     //const float cameraLag = 0.1f; // Lower value = more lag
-     //camera.cameraPos += (targetPosition - camera.cameraPos) * cameraLag;
-
-    // Update camera position, TODO: Update Player itself instead
-  /*  physx::PxTransform actorTransform = Physics::GetCharacterActorPosition();
-    glm::vec3 actorPosition(actorTransform.p.x, actorTransform.p.y, actorTransform.p.z);
-    float eyeHeightOffset = height * 0.8f;
-    glm::vec3 adjustedCameraPosition = actorPosition + glm::vec3(0.0f, eyeHeightOffset, 0.0f);
-    camera.setPosition(adjustedCameraPosition);
-
-    if (actorPosition.y <= 0.5f) {
-        m_isOnGround = true;
-    }*/
-    
+     camera.setPosition(targetPosition); 
 }
 
 glm::vec3 Player::getPosition() {
@@ -97,8 +78,6 @@ void Player::EquipWeapon(std::string weaponName) {
     WeaponInfo* weapon = WeaponManager::GetWeaponInfoByName(weaponName);
     m_equippedWeapon = weapon;
     std::cout << "Equipped weapon: " << weapon->name << std::endl;
-
-
 }
 
 WeaponInfo* Player::GetEquipedWeaponInfo() {
@@ -127,6 +106,15 @@ bool Player::PressedADS() {
     }
 }
 
+bool Player::PressedReload() {
+    if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool Player::ReleasedADS() {
     if (Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
@@ -136,6 +124,14 @@ bool Player::ReleasedADS() {
     }
 }
 
+bool Player::IsInADS() {
+    return (m_weaponAction == WeaponAction::ADS_WALK ||
+        m_weaponAction == WeaponAction::ADS_OUT ||
+        m_weaponAction == WeaponAction::ADS_IN ||
+        m_weaponAction == WeaponAction::ADS_FIRE ||
+        m_weaponAction == WeaponAction::ADS_IDLE);
+}
+
 void Player::ReloadWeapon() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
@@ -143,9 +139,8 @@ void Player::ReloadWeapon() {
 
     float animationSpeed = 1.0f;
 
-    if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
-        currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
-    }
+    currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
+    m_weaponAction = WeaponAction::RELOAD;  
 }
 
 void Player::FireWeapon() {
@@ -156,12 +151,11 @@ void Player::FireWeapon() {
 
     Animation* weaponReloadAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.reload);
     Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
-    Animation* glockADSFire1Animation = AssetManager::GetAnimationByName("Glock_ADS_Fire1");
+    Animation* weaponADSFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSFire[0]);
 
     if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && currentWeaponAnimator->GetCurrentAnimation() != weaponReloadAnimation) {
         if (PressingADS()) {
-            currentWeaponAnimator->PlayAnimation(glockADSFire1Animation);
-            m_ADSFireAnimationFinishTime = 0.0f;
+            currentWeaponAnimator->PlayAnimation(weaponADSFireAnimation);
         }
         else {
             currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
@@ -203,11 +197,96 @@ void Player::EnterADS() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
     Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
+    Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
 
     if (PressedADS()) {
         currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
-        m_ADSInAnimationFinishTime = 0.0f;
         SetWeaponAction(WeaponAction::ADS_IN);
+    }
+
+    if (!IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
+        if (currentWeaponAnimator->IsAnimationFinished()) {
+            currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
+            SetWeaponAction(WeaponAction::ADS_IDLE);
+        }
+    }
+}
+
+void Player::LeaveADS() {
+    if (ReleasedADS()) {
+        WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+        Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+        Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
+
+        currentWeaponAnimator->PlayAnimation(weaponADSOutAnimation);
+        SetWeaponAction(WeaponAction::ADS_OUT);
+    }
+}
+
+void Player::UpdateWeaponLogic() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+
+    Animation* weaponIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.idle);
+    Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
+    Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
+    Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
+    Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
+
+    if (PressedReload()) {
+        ReloadWeapon();
+    }
+
+    // what if player tries to reload while pressing ADS key?
+    if (PressingADS() && m_weaponAction == WeaponAction::RELOAD && currentWeaponAnimator->IsAnimationFinished()) {
+        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
+        SetWeaponAction(WeaponAction::ADS_IN);
+    }
+
+    // regular walk animation
+    if (!PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
+        currentWeaponAnimator->PlayAnimation(weaponWalkAnimation);
+        m_weaponAction = WeaponAction::WALK;
+    }
+
+    // if its moving and ADS is pressed
+    if (IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
+        if (currentWeaponAnimator->IsAnimationFinished()) {
+            currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
+            m_weaponAction = WeaponAction::ADS_WALK;
+        }
+    }
+
+    // if ADS is pressed and then move
+    if (PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSIdleAnimation) {
+        currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
+        m_weaponAction = WeaponAction::ADS_WALK;
+    }
+
+    // go back to idle when getting out ADS
+    if (!PressingADS() && m_weaponAction == WeaponAction::ADS_OUT) {
+        if (currentWeaponAnimator->IsAnimationFinished()) {
+            currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
+            m_weaponAction = WeaponAction::IDLE;
+        }
+    }
+
+    // go back to idle after finishing any non-ads action
+    if (!PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() != weaponIdleAnimation) {
+        currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
+        m_weaponAction = WeaponAction::IDLE;
+    }
+
+    // go back to ads-idle after any ads action
+    if (PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() != weaponIdleAnimation && m_weaponAction != WeaponAction::RELOAD) {
+        currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
+        m_weaponAction = WeaponAction::ADS_IDLE;
+    }
+
+    // loop idle animation
+    if (!PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
+        currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
+        m_weaponAction = WeaponAction::IDLE;
     }
 }
 

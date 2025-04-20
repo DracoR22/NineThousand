@@ -15,6 +15,8 @@
 #include "../Animations/Animation.hpp"
 #include "../Animations/Animator.hpp"
 
+#include "../Common/CreateInfo.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

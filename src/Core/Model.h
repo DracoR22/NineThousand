@@ -13,7 +13,7 @@
 
 #include "../Animations/AssimpGlmHelpers.hpp"
 
-#include "CreateInfo.hpp"
+#include "../Common/CreateInfo.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

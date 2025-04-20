@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Shader.h"
 #include "Cubemap.h"
 #include "ShadowMap.h"

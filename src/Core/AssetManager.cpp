@@ -67,7 +67,10 @@ namespace AssetManager {
 
 	// ---------------------------------------------------------// TEXTURES //---------------------------------------------------------------------------//
 	void LoadTexture(const std::string& name, aiTextureType type) {
-		Texture texture();
+		Texture texture("resources/textures", name, type);
+		
+		g_textures.push_back(texture);
+		g_textureIndexMap[name] = g_textureIndexMap.size() - 1;
 	}
 
 // ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//

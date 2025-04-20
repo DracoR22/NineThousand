@@ -11,6 +11,8 @@ enum class WeaponAction {
 	IDLE,
 	DRAW,
     WALK,
+	RELOAD,
+	RELOAD_EMPTY,
 	ADS_IN,
 	ADS_OUT,
 	ADS_IDLE,

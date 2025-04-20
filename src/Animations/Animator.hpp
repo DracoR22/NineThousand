@@ -34,24 +34,14 @@ public:
 		float prevTime = m_CurrentTime;
 
 		float ticksPerSecond = m_CurrentAnimation->GetTicksPerSecond();
-		float duration = m_CurrentAnimation->GetDuration();
+		float duration = m_CurrentAnimation->GetDuration() / ticksPerSecond;
 
-		if (ticksPerSecond <= 0) {
-			std::cerr << "Error: Invalid ticksPerSecond = " << ticksPerSecond << std::endl;
-			return;
-		}
-		if (duration <= 0) {
-			std::cerr << "Error: Invalid animation duration = " << duration << std::endl;
-			return;
-		}
-
-		// Advance time
-		m_CurrentTime += m_CurrentAnimation->GetTicksPerSecond() * dt * m_AnimationSpeed;
+		m_CurrentTime += dt * m_AnimationSpeed;
 
 		// Detect loop (animation finished)
-		if (m_CurrentTime >= m_CurrentAnimation->GetDuration() - 0.0001f) {
+		if (m_CurrentTime >= duration) {
+			m_CurrentTime = duration; 
 			m_AnimationFinished = true;
-			m_CurrentTime = 0.0f; 
 		}
 
 		CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
@@ -82,6 +72,10 @@ public:
 		}
 	}
 
+	float GetCurrentTime() const {
+		return m_CurrentTime;
+	}
+
 	void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
 	{
 		const std::string& nodeName = node->name;
@@ -91,7 +85,7 @@ public:
 
 		if (Bone)
 		{
-			Bone->Update(m_CurrentTime);
+			Bone->Update(m_CurrentTime * m_CurrentAnimation->GetTicksPerSecond());
 			nodeTransform = Bone->GetLocalTransform();
 		}
 
@@ -108,8 +102,7 @@ public:
 			CalculateBoneTransform(&node->children[i], globalTransformation);
 	}
 
-	std::vector<glm::mat4> GetFinalBoneMatrices()
-	{
+	std::vector<glm::mat4> GetFinalBoneMatrices() {
 		return m_FinalBoneMatrices;
 	}
 
@@ -121,10 +114,7 @@ private:
 	float m_CurrentTime;
 	float m_DeltaTime;
 	float m_AnimationSpeed = 1.0f;
-
 	bool m_AnimationFinished = false;
-
 	std::vector<glm::mat4> m_FinalBoneMatrices;
-private:
 	Animation* m_CurrentAnimation;
 };

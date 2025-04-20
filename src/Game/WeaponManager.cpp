@@ -19,7 +19,7 @@ namespace WeaponManager {
 		glock.animations.ADSIn = "Glock_ADS_In";
 		glock.animations.ADSOut = "Glock_ADS_Out";
 		glock.animations.ADSWalk = "Glock_ADS_Walk";
-		glock.animations.ADSFire.push_back("Glock_ADS_Fire1");
+		glock.animations.ADSFire.push_back("Glock_ADS_Fire");
 
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
@@ -31,6 +31,11 @@ namespace WeaponManager {
 		p90.animations.reloadEmpty = "P90_ReloadEmpty";
 		p90.animations.fire.push_back("P90_Fire0");
 		p90.animations.fire.push_back("P90_Fire1");
+		p90.animations.ADSIdle = "P90_ADS_Idle";
+		p90.animations.ADSIn = "P90_ADS_In";
+		p90.animations.ADSOut = "P90_ADS_Out";
+		p90.animations.ADSWalk = "P90_ADS_Walk";
+		p90.animations.ADSFire.push_back("P90_ADS_Fire");
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -41,6 +46,11 @@ namespace WeaponManager {
 		aks74u.animations.reloadEmpty = "AKS74U_ReloadEmpty";
 		aks74u.animations.fire.push_back("AKS74U_Fire0");
 		aks74u.animations.fire.push_back("AKS74U_Fire1");
+		aks74u.animations.ADSIdle = "AKS74U_ADS_Idle";
+		aks74u.animations.ADSIn = "AKS74U_ADS_In";
+		aks74u.animations.ADSOut = "AKS74U_ADS_Out";
+		aks74u.animations.ADSWalk = "AKS74U_ADS_Walk";
+		aks74u.animations.ADSFire.push_back("AKS74U_ADS_Fire");
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string name) {
