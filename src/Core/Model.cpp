@@ -347,6 +347,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 		// normal maps (.obj files use aiTextureType_HEIGHT) 
 		std::vector<Texture> normalMaps = loadTextures(material, aiTextureType_NORMALS);
+		if (normalMaps.empty()) {
+			normalMaps = loadTextures(material, aiTextureType_HEIGHT);
+		}
 		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
 
@@ -363,7 +366,6 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 		mat->GetTexture(type, i, &str);
 		std::string fullPath = str.C_Str();
 		std::string fileName = fullPath.substr(fullPath.find_last_of("/\\") + 1);
-		std::cout << "textures: " << fileName << std::endl;
 
 		// prevent duplicate loading
 		bool skip = false;
@@ -376,6 +378,7 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 		}
 
 		if (!skip) {
+			std::cout << "textures: " << fileName << std::endl;
 			Texture tex(m_directory, fileName, type);
 			tex.load(false);
 			textures.push_back(tex);

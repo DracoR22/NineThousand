@@ -73,6 +73,17 @@ namespace AssetManager {
 		g_textureIndexMap[name] = g_textureIndexMap.size() - 1;
 	}
 
+	Texture* GetTextureByName(const std::string& name) {
+		auto it = g_textureIndexMap.find(name);
+		if (it != g_textureIndexMap.end()) {
+			int index = it->second;
+			return &g_textures[index];
+		}
+
+		std::cout << "AssetManager::GetTextureByName() failed because '" << name << "' does not exist!\n";
+		return nullptr;
+	}
+
 // ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
 		static bool reserved = false;

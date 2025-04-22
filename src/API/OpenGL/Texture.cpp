@@ -24,7 +24,7 @@ void Texture::load(bool flip) {
 	GLenum internalFormat = GL_RGB; 
 	GLenum format = GL_RGB;
 
-	bool isNormal = (type == aiTextureType_NORMALS);
+	bool isNormal = (type == aiTextureType_NORMALS || type == aiTextureType_HEIGHT);
 
 	switch (nChannels) {
 	case 1:

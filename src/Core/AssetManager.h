@@ -39,6 +39,7 @@ namespace AssetManager {
 
 	// textures
 	void LoadTexture(const std::string& name, aiTextureType type);
+	Texture* GetTextureByName(const std::string& name);
 
 	// animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model);
