@@ -44,5 +44,9 @@ namespace OpenGLRenderer {
 	float GetGammaValue();
 	void ChangeGammaValue(float value);
 
+	std::vector<LightCreateInfo>& GetSceneLights();
+	void UpdateLightStrength(int index, float strength);
+	void UpdateLightRadius(int index, float radius);
+
 	void Cleanup();
 }

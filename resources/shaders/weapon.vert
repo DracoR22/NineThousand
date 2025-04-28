@@ -8,9 +8,9 @@ layout(location = 4) in ivec4 aBoneIds;
 layout(location = 5) in vec4 aWeights;
 
 out vec2 TexCoords;
-out vec3 FragPos;
+out vec3 WorldPos;
 out vec3 Normal;
-out vec4 FragPosLight;
+out vec4 WorldPosLight;
 out mat3 TBN;
 
 uniform mat4 projection;
@@ -55,11 +55,11 @@ void main() {
         totalTangent += (boneRotation * aTangent) * aWeights[i];
    }
 
-    FragPos = vec3(model * totalPosition);
+    WorldPos = vec3(model * totalPosition);
     Normal = normalize(totalNormal);
     TexCoords = aTex;
 
-    FragPosLight = lightProjection * vec4(FragPos, 1.0);
+    WorldPosLight = lightProjection * vec4(WorldPos, 1.0);
 
     vec3 N = Normal;
     vec3 T = normalize(totalTangent);

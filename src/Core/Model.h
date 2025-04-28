@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <unordered_map>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -37,7 +38,8 @@ private:
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
-	std::vector<Texture> loadTextures(aiMaterial* mat, aiTextureType type);
+	std::vector<Texture> LoadDefaultTextures(aiMaterial* mat, aiTextureType type);
+	void LoadRMATextures(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures);
 
 	std::string m_name;
 

@@ -230,7 +230,6 @@ void Player::UpdateWeaponLogic() {
     Animation* weaponIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.idle);
     Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
     Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
-    Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
     Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
 
     if (PressedReload()) {
@@ -251,6 +250,7 @@ void Player::UpdateWeaponLogic() {
 
     // if its moving and ADS is pressed
     if (IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
+        Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
         if (currentWeaponAnimator->IsAnimationFinished()) {
             currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
             m_weaponAction = WeaponAction::ADS_WALK;
@@ -259,6 +259,7 @@ void Player::UpdateWeaponLogic() {
 
     // if ADS is pressed and then move
     if (PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSIdleAnimation) {
+        Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
         currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
         m_weaponAction = WeaponAction::ADS_WALK;
     }

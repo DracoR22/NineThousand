@@ -37,29 +37,55 @@ namespace EditorUI {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::Begin("Game Settings");
-		ImGui::Text("FPS: %d", Window::GetFPSCount());
-		ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
+		if (Game::GetGameState() == Game::GameState::EDITOR) {
+			ImGui::Begin("Game Editor");
+			ImGui::Text("FPS: %d", Window::GetFPSCount());
+			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
-		if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
-			OpenGLRenderer::ChangeGammaValue(gamma);
-		}
+			if (ImGui::CollapsingHeader("Post Process", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
+					OpenGLRenderer::ChangeGammaValue(gamma);
+				}
 
-		if (ImGui::SliderFloat("Exposure", &exposure, 0.01f, 10.0f, "%.3f")) {
-			OpenGLRenderer::SetExposureValue(exposure);
-		}
+				if (ImGui::SliderFloat("Exposure", &exposure, 0.01f, 10.0f, "%.3f")) {
+					OpenGLRenderer::SetExposureValue(exposure);
+				}
 
-		if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
-			if (ImGui::Selectable("None", postProcessMode == RendererCommon::PostProcessMode::NONE)) {
-				OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::NONE);
+				if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
+					if (ImGui::Selectable("None", postProcessMode == RendererCommon::PostProcessMode::NONE)) {
+						OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::NONE);
+					}
+					if (ImGui::Selectable("Sharpen", postProcessMode == RendererCommon::PostProcessMode::SHARPEN)) {
+						OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::SHARPEN);
+					}
+					ImGui::EndCombo();
+				}
+
 			}
-			if (ImGui::Selectable("Sharpen", postProcessMode == RendererCommon::PostProcessMode::SHARPEN)) {
-				OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::SHARPEN);
+
+			if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
+				std::vector<LightCreateInfo>& lights = OpenGLRenderer::GetSceneLights();
+				for (int i = 0; i < lights.size(); ++i) {
+					ImGui::PushID(i);
+
+					ImGui::Text("Light %d", i + 1);
+					if (ImGui::SliderFloat("Strength", &lights[i].strength, 0.0f, 100.0f)) {
+						OpenGLRenderer::UpdateLightStrength(i, lights[i].strength);
+					}
+					if (ImGui::SliderFloat("Radius", &lights[i].radius, 0.0f, 100.0f)) {
+						OpenGLRenderer::UpdateLightRadius(i, lights[i].radius);
+					}
+
+					ImGui::Separator();
+					ImGui::PopID();
+				}
+
+
 			}
-			ImGui::EndCombo();
+
+			ImGui::End();
 		}
 
-		ImGui::End();
 	}
 
 	void Render() {

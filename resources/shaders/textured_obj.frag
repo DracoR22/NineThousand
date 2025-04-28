@@ -3,7 +3,7 @@
 out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 20
-struct PointLight {
+struct Light {
     vec3 position;
     
     float constant;
@@ -21,38 +21,38 @@ in vec3 FragPos;
 in vec4 FragPosLight;
 in mat3 TBN;
 
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform int noPointLights;
+uniform Light lights[MAX_POINT_LIGHTS];
+uniform int noLights;
 
-uniform sampler2D diffuse0;
-uniform sampler2D specular0;
-uniform sampler2D normal0;
+uniform sampler2D albedoMap;
+uniform sampler2D rmaMap;
+uniform sampler2D normalMap;
 
 uniform vec3 viewPos;
 uniform sampler2D shadowMap;
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, PointLight light, vec3 fragPos);
+vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, Light light, vec3 fragPos);
 
 void main() {
     // vec3 normal = normalize(texture(normal1, TexCoord).xyz * 2.0 - 1.0);
       vec3 normal = normalize(Normal);
-      normal = texture(normal0, TexCoord).rgb;
+      normal = texture(normalMap, TexCoord).rgb;
 	  normal = normal * 2.0 - 1.0;   
       normal = normalize(TBN * normal); 
 
      vec3 viewDir = normalize(viewPos - FragPos);
 
-     vec3 diffuseColor = texture(diffuse0, TexCoord).rgb;
-     vec3 specularColor = texture(specular0, TexCoord).rgb;
+     vec3 diffuseColor = texture(albedoMap, TexCoord).rgb;
+     vec3 specularColor = texture(rmaMap, TexCoord).rgb;
 
      vec3 lightingResult = vec3(0.0);
-    for (int i = 0; i < noPointLights; i++) {
-        lightingResult += CalcPointLight(pointLights[i], normal, FragPos, viewDir, diffuseColor, specularColor);
+    for (int i = 0; i < noLights; i++) {
+        lightingResult += CalcPointLight(lights[i], normal, FragPos, viewDir, diffuseColor, specularColor);
     }
 
      // Shadow calculation
-     float shadow = ShadowCalculation(FragPosLight, normal, pointLights[0], FragPos);
+     float shadow = ShadowCalculation(FragPosLight, normal, lights[0], FragPos);
      lightingResult = mix(lightingResult, lightingResult * 0.3, shadow);
 
      vec3 color = lightingResult;
@@ -60,7 +60,7 @@ void main() {
      FragColor = vec4(color, 1.0);
 }
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor) {
+vec3 CalcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor) {
     vec3 lightDir = normalize(light.position - fragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
     vec3 reflectDir = reflect(-lightDir, normal);
@@ -82,7 +82,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     return (ambient + diffuse + specular);
 } 
 
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, PointLight light, vec3 fragPos)
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, Light light, vec3 fragPos)
 {
    vec3 lightDir = normalize(light.position - fragPos);
    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;

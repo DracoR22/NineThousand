@@ -3,97 +3,145 @@
 out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 20
-struct PointLight {
+struct Light {
     vec3 position;
     
     float constant;
     float linear;
     float quadratic;
+    float radius;
+    float strength;
 
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    vec3 color;
+
+    int type;
 };
 
 in vec2 TexCoords;
 in vec3 Normal;
-in vec3 FragPos;
-in vec4 FragPosLight;
+in vec3 WorldPos;
+in vec4 WorldPosLight;
 in mat3 TBN;
 
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform int noPointLights;
+uniform Light lights[MAX_POINT_LIGHTS];
+uniform int noLights;
 
-uniform sampler2D diffuse0;
-uniform sampler2D specular0;
-uniform sampler2D normal0;
+uniform sampler2D albedoMap;
+uniform sampler2D rmaMap;
+uniform sampler2D normalMap;
 
-uniform vec3 viewPos;
+uniform vec3 camPos;
 
-uniform bool u_flipLights;
+uniform bool flipLights;
 
-vec3 RotateLight(vec3 lightPos, vec3 pivot, float angleRadians);
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor);
+
+const float PI = 3.14159265359;
+
+vec3 getNormalFromMap()
+{
+    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    return normalize(TBN * tangentNormal);
+}
+
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+  return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness * roughness;
+    float a2     = a * a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH * NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
 
 void main() {
-      vec3 normal = texture(normal0, TexCoords).rgb;
-	  normal = normal * 2.0 - 1.0;   
-      normal = normalize(TBN * normal);
+ vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+ vec3 rma = texture(rmaMap, TexCoords).rgb;
+ float roughness = rma.r;
+ float metallic  = rma.g;
+ float ao        = rma.b;
 
-      //vec3 normal = normalize(Normal);
+ vec3 N = getNormalFromMap();
+ vec3 V = normalize(camPos - WorldPos);
 
-     vec3 viewDir = normalize(viewPos - FragPos);
+ vec3 Lo = vec3(0.0);
 
-     vec3 diffuseColor = texture(diffuse0, TexCoords).rgb;
-     vec3 specularColor = texture(specular0, TexCoords).rgb;
+ vec3 F0 = vec3(0.04); 
+ F0  = mix(F0, albedo, metallic);
 
-     vec3 lightingResult = vec3(0.0);
-     for (int i = 0; i < noPointLights; i++) {
-        lightingResult += CalcPointLight(pointLights[i], normal, FragPos, viewDir, diffuseColor, specularColor);
-     }
+ for (int i = 0; i < noLights; ++i) {
+   Light light = lights[i];
+   vec3 L;
+   float attenuation = 1.0;
+   vec3 radiance;
 
-     vec3 color = lightingResult;
+  if (light.type == 0) { // Point light
+     L = normalize(light.position - WorldPos);
 
-     FragColor = vec4(color, 1.0);
+     float distance    = length(light.position - WorldPos);
+     attenuation =  smoothstep(light.radius, 0, length(light.position - WorldPos));    
+     radiance = light.color * attenuation * light.strength;
+  } else { // Directional light
+     L = normalize(-vec3(0.0, -1.0, 0.0)); 
+
+     radiance = light.color * light.strength;
+  }
+
+   vec3 H = normalize(V + L);
+
+   vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
+   float NDF = DistributionGGX(N, H, roughness);       
+   float G   = GeometrySmith(N, V, L, roughness);    
+
+   vec3 numerator    = NDF * G * F;
+   float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)  + 0.0001;
+   vec3 specular     = numerator / denominator;  
+
+   vec3 kS = F;
+   vec3 kD = vec3(1.0) - kS;
+  
+   kD *= 1.0 - metallic;
+
+   float NdotL = max(dot(N, L), 0.0);        
+   Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+ }
+
+ vec3 ambient = vec3(0.02) * albedo * ao;
+ vec3 color   = Lo;  
+
+  color = color / (color + vec3(1.0));
+  color = pow(color, vec3(1.0/2.2));
+
+ FragColor = vec4(color, 1.0);
 }
-
-vec3 RotateLight(vec3 lightPos, vec3 pivot, float angleRadians) {
-    float cosA = cos(angleRadians);
-    float sinA = sin(angleRadians);
-
-    vec3 pos = lightPos - pivot;
-
-    vec3 rotated;
-    rotated.x = pos.x * cosA - pos.z * sinA;
-    rotated.z = pos.x * sinA + pos.z * cosA;
-    rotated.y = pos.y;
-
-    return rotated + pivot;
-}
-
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseColor, vec3 specularColor) {
-    vec3 lightPos = light.position;
-
-    if (u_flipLights) {
-      lightPos = RotateLight(light.position, fragPos, radians(180.0));
-    }
-
-    vec3 lightDir = normalize(lightPos - fragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    vec3 reflectDir = reflect(-lightDir, normal);
-
-    float diff = max(dot(normal, lightDir), 0.0);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32); // material shininess
-
-    float distance    = length(lightPos - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
- 
-    vec3 ambient  = light.ambient  * diffuseColor;
-    vec3 diffuse  = light.diffuse  * diff * diffuseColor;
-    vec3 specular = light.specular * spec * specularColor;
-
-    // ambient  *= attenuation;
-    diffuse  *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
-} 

@@ -149,13 +149,13 @@ void Mesh::draw(Shader& shader, unsigned int instances) {
 		std::string name;
 		switch (textures[i].type) {
 		case aiTextureType_DIFFUSE:
-			name = "diffuse" + std::to_string(diffuseNr++);
+			name = "albedoMap";
 			break;
 		case aiTextureType_SPECULAR:
-			name = "specular" + std::to_string(specularNr++);
+			name = "rmaMap";
 			break;
 		case aiTextureType_NORMALS:
-			name = "normal" + std::to_string(normalNr++);
+			name = "normalMap";
 			break;
 		default:
 			continue;

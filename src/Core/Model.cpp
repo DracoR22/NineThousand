@@ -112,13 +112,13 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
+		Texture diffuse("resources/textures", "rustediron2_basecolor.png", aiTextureType_DIFFUSE);
 		diffuse.load(false);
 
-		Texture specular("resources/textures", "brickwall_specular.jpg", aiTextureType_SPECULAR);
+		Texture specular("resources/textures", "rustediron2_metallic.png", aiTextureType_SPECULAR);
 		specular.load(false);
 
-		Texture normal("resources/textures", "brickwall_normal.jpg", aiTextureType_NORMALS);
+		Texture normal("resources/textures", "rustediron2_normal.png", aiTextureType_NORMALS);
 		normal.load(false);
 
 
@@ -170,13 +170,13 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
+		Texture diffuse("resources/textures", "FloorBoards_ALB.png", aiTextureType_DIFFUSE);
 		diffuse.load(false);
 
-		Texture specular("resources/textures", "brickwall_specular.jpg", aiTextureType_SPECULAR);
+		Texture specular("resources/textures", "FloorBoards_RMA.png", aiTextureType_SPECULAR);
 		specular.load(false);
 
-		Texture normal("resources/textures", "brickwall_normal.jpg", aiTextureType_NORMALS);
+		Texture normal("resources/textures", "FloorBoards_NRM.png", aiTextureType_NORMALS);
 		normal.load(false);
 
 		if (diffuse.id) {
@@ -323,34 +323,38 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		//}
 
 		// ----------------- custom texture per mesh --------------------------
-	/*	if (std::string(mesh->mName.C_Str()) == "Glock") {
-			Texture armsDiffuse(directory, "Glock_ALB.png", aiTextureType_DIFFUSE);
-			armsDiffuse.load(true);
-			textures.push_back(armsDiffuse);		
+	
+		
+			// diffuse maps
+			std::vector<Texture> diffuseMaps = LoadDefaultTextures(material, aiTextureType_DIFFUSE);
+			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-			Texture armsNormal(directory, "Glock_NRM.png", aiTextureType_DIFFUSE);
-			armsNormal.load(true);
-			textures.push_back(armsNormal);
-		}
+			// specular maps
+		/*	if (std::string(mesh->mName.C_Str()) == "Glock") {
+				Texture glockRMA(m_directory, "Glock_RMA.png", aiTextureType_SPECULAR);
+				glockRMA.load(false);
+				textures.push_back(glockRMA);
+				m_textures_loaded.push_back(glockRMA);
+			}
+			else if (std::string(mesh->mName.C_Str()) == "ArmsMale") {
+				Texture armsRMA(m_directory, "Hands_RMA.png", aiTextureType_SPECULAR);
+				armsRMA.load(false);
+				textures.push_back(armsRMA);
+				m_textures_loaded.push_back(armsRMA);
+			}
+			else {
+				std::vector<Texture> specularMaps = LoadDefaultTextures(material, aiTextureType_SPECULAR);
+				textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+			}*/
 
-		Texture defaultDiffuse(directory, "brickwall_diffuse.jpg", aiTextureType_DIFFUSE);
-		defaultDiffuse.load(true);
-		textures.push_back(defaultDiffuse);*/
+			LoadRMATextures(mesh->mName.C_Str(), material, textures);
 
-		// diffuse maps
-		std::vector<Texture> diffuseMaps = loadTextures(material, aiTextureType_DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
-		// specular maps
-		std::vector<Texture> specularMaps = loadTextures(material, aiTextureType_SPECULAR);
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-
-		// normal maps (.obj files use aiTextureType_HEIGHT) 
-		std::vector<Texture> normalMaps = loadTextures(material, aiTextureType_NORMALS);
-		if (normalMaps.empty()) {
-			normalMaps = loadTextures(material, aiTextureType_HEIGHT);
-		}
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			// normal maps (.obj files use aiTextureType_HEIGHT) 
+			std::vector<Texture> normalMaps = LoadDefaultTextures(material, aiTextureType_NORMALS);
+			if (normalMaps.empty()) {
+				normalMaps = LoadDefaultTextures(material, aiTextureType_HEIGHT);
+			}
+			textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
 
 	ExtractBoneWeightForVertices(vertices, mesh, scene);
@@ -358,7 +362,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
 }
 
-std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
+std::vector<Texture> Model::LoadDefaultTextures(aiMaterial* mat, aiTextureType type) {
 	std::vector<Texture> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
@@ -370,7 +374,7 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 		// prevent duplicate loading
 		bool skip = false;
 		for (const auto& loadedTex : m_textures_loaded) {
-			if (loadedTex.path == fileName) { // Compare file names
+			if (loadedTex.path == fileName) {
 				textures.push_back(loadedTex);
 				skip = true;
 				break;
@@ -387,6 +391,36 @@ std::vector<Texture> Model::loadTextures(aiMaterial* mat, aiTextureType type) {
 	}
 	return textures;
 }
+
+void Model::LoadRMATextures(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures) {
+	static const std::unordered_map<std::string, std::string> RMAOverrides = {
+		{"Glock",     "Glock_RMA.png"},
+		{"ArmsMale",  "Hands_RMA.png"},
+		{"AKS74UBarrel",  "AKS74U_4_RMA.png"},
+		{"AKS74UBolt",  "AKS74U_1_RMA.png"},
+		{"AKS74UHandGuard",  "AKS74U_0_RMA.png"},
+		{"AKS74UMag",  "AKS74U_3_RMA.png"},
+		{"AKS74UPistolGrip",  "AKS74U_2_RMA.png"},
+		{"AKS74UReceiver",  "AKS74U_1_RMA.png"},
+		{"AKS74U_ScopeSupport",  "AKS74U_ScopeSupport_RMA.png"},
+		{"AKS74U_ScopeMain",  "AKS74U_ScopeMain_RMA.png"},
+		{"AKS74U_ScopeFrontCap",  "AKS74U_ScopeVxor_RMA.png"},
+		{"AKS74U_ScopeBackCap",  "AKS74U_ScopeVxorr_RMA.png"},
+	};
+
+	auto it = RMAOverrides.find(meshName);
+	if (it != RMAOverrides.end()) {
+		Texture tex(m_directory, it->second, aiTextureType_SPECULAR);
+		tex.load(false);
+		textures.push_back(tex);
+		m_textures_loaded.push_back(tex);
+	}
+	else {
+		auto specularMaps = LoadDefaultTextures(material, aiTextureType_SPECULAR);
+		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+	}
+}
+
 
 void Model::cleanup() {
 	for (Mesh mesh : meshes) {
