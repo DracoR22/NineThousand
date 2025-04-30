@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "AssetManager.h"
 
 Model::Model(const std::string& name, const ModelCreateInfo& createInfo)
 	: m_name(name), pos(createInfo.position), size(createInfo.size), rotation(createInfo.rotation) {}
@@ -229,9 +230,7 @@ void Model::CreateInstanceBuffers() {
 	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene) {
-	// process all the node's meshes (if any)
-	
+void Model::processNode(aiNode* node, const aiScene* scene) {	
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -309,50 +308,17 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	// process material
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-		//if (noTex) {
-		//	// diffuse color
-		//	aiColor4D diff(1.0f);
-		//	aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diff);
-
-		//	// specular color
-		//	aiColor4D spec(1.0f);
-		//	aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &spec);
-
-		//	return Mesh(br, vertices, indices, diff, spec);
-		//}
-
-		// ----------------- custom texture per mesh --------------------------
-	
 		
 			// diffuse maps
-			std::vector<Texture> diffuseMaps = LoadDefaultTextures(material, aiTextureType_DIFFUSE);
+			std::vector<Texture> diffuseMaps = LoadDefaultMaterials(material, aiTextureType_DIFFUSE);
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-			// specular maps
-		/*	if (std::string(mesh->mName.C_Str()) == "Glock") {
-				Texture glockRMA(m_directory, "Glock_RMA.png", aiTextureType_SPECULAR);
-				glockRMA.load(false);
-				textures.push_back(glockRMA);
-				m_textures_loaded.push_back(glockRMA);
-			}
-			else if (std::string(mesh->mName.C_Str()) == "ArmsMale") {
-				Texture armsRMA(m_directory, "Hands_RMA.png", aiTextureType_SPECULAR);
-				armsRMA.load(false);
-				textures.push_back(armsRMA);
-				m_textures_loaded.push_back(armsRMA);
-			}
-			else {
-				std::vector<Texture> specularMaps = LoadDefaultTextures(material, aiTextureType_SPECULAR);
-				textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-			}*/
-
-			LoadRMATextures(mesh->mName.C_Str(), material, textures);
+			LoadRMAMaterials(mesh->mName.C_Str(), material, textures);
 
 			// normal maps (.obj files use aiTextureType_HEIGHT) 
-			std::vector<Texture> normalMaps = LoadDefaultTextures(material, aiTextureType_NORMALS);
+			std::vector<Texture> normalMaps = LoadDefaultMaterials(material, aiTextureType_NORMALS);
 			if (normalMaps.empty()) {
-				normalMaps = LoadDefaultTextures(material, aiTextureType_HEIGHT);
+				normalMaps = LoadDefaultMaterials(material, aiTextureType_HEIGHT);
 			}
 			textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	}
@@ -362,7 +328,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
 }
 
-std::vector<Texture> Model::LoadDefaultTextures(aiMaterial* mat, aiTextureType type) {
+std::vector<Texture> Model::LoadDefaultMaterials(aiMaterial* mat, aiTextureType type) {
 	std::vector<Texture> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
@@ -382,17 +348,17 @@ std::vector<Texture> Model::LoadDefaultTextures(aiMaterial* mat, aiTextureType t
 		}
 
 		if (!skip) {
-			std::cout << "textures: " << fileName << std::endl;
-			Texture tex(m_directory, fileName, type);
-			tex.load(false);
-			textures.push_back(tex);
-			m_textures_loaded.push_back(tex);
+			/*Texture tex(m_directory, fileName, type);*/
+			Texture* texture = AssetManager::GetTextureByName(fileName);
+			/*tex.load(false);*/
+			textures.push_back(*texture);
+			m_textures_loaded.push_back(*texture);
 		}
 	}
 	return textures;
 }
 
-void Model::LoadRMATextures(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures) {
+void Model::LoadRMAMaterials(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures) {
 	static const std::unordered_map<std::string, std::string> RMAOverrides = {
 		{"Glock",     "Glock_RMA.png"},
 		{"ArmsMale",  "Hands_RMA.png"},
@@ -410,13 +376,14 @@ void Model::LoadRMATextures(const std::string& meshName, aiMaterial* material, s
 
 	auto it = RMAOverrides.find(meshName);
 	if (it != RMAOverrides.end()) {
-		Texture tex(m_directory, it->second, aiTextureType_SPECULAR);
-		tex.load(false);
-		textures.push_back(tex);
-		m_textures_loaded.push_back(tex);
+		/*Texture tex(m_directory, it->second, aiTextureType_SPECULAR);*/
+		Texture* texture = AssetManager::GetTextureByName(it->second);
+		/*tex.load(false);*/
+		textures.push_back(*texture);
+		m_textures_loaded.push_back(*texture);
 	}
 	else {
-		auto specularMaps = LoadDefaultTextures(material, aiTextureType_SPECULAR);
+		auto specularMaps = LoadDefaultMaterials(material, aiTextureType_SPECULAR);
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 }

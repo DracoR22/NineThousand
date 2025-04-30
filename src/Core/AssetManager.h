@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <filesystem>
+#include <future>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -29,22 +31,22 @@ namespace AssetManager {
 	// models
 	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo);
-
 	void DrawModel(const std::string& name, Shader& shader);
 	void DrawModelInstanced(const std::string& name, Shader& shader, std::vector<glm::vec3> offsets);
-
     Model* GetModelByName(const std::string& name);
-
 	void CleanupModels();
 
 	// textures
+	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type);
 	void LoadTexture(const std::string& name, aiTextureType type);
+	void LoadAllTexturesAsync();
+	aiTextureType GetFileTextureType(const std::string& filename);
+	aiTextureType GetFileTextureType(const std::string& filename);
 	Texture* GetTextureByName(const std::string& name);
 
 	// animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model);
 	Animation* GetAnimationByName(const std::string& name);
-
 	void LoadAnimator(const std::string& name, Animation* animation);
 	Animator* GetAnimatorByName(const std::string& name);
 }

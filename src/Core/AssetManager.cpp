@@ -6,7 +6,7 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_animatorIndexMap;
 	std::unordered_map<std::string, int> g_textureIndexMap;
 
-	// ---------------------------------------------------------// MODELS //---------------------------------------------------------------------------//
+	// Models
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
 		Model model(name, createInfo);
 		model.LoadModel(type, createInfo);
@@ -65,12 +65,90 @@ namespace AssetManager {
 		g_textures.clear();
 	}
 
-	// ---------------------------------------------------------// TEXTURES //---------------------------------------------------------------------------//
+	// Textures
+	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type) {
+		stbi_set_flip_vertically_on_load(false);
+		TextureData texData;
+		texData.name = name;
+		texData.type = type;
+
+		std::string fullPath = dir + "/" + name;
+		unsigned char* data = stbi_load(fullPath.c_str(), &texData.width, &texData.height, &texData.channels, 0);
+
+		if (!data) {
+			std::cout << "AssetManager::DecodeTexture() failed to decode: " << fullPath << std::endl;
+			return texData;
+		}
+		bool isNormal = (type == aiTextureType_NORMALS || type == aiTextureType_HEIGHT);
+
+		switch (texData.channels) {
+		case 1:
+			texData.internalFormat = GL_RED;
+			texData.format = GL_RED;
+			break;
+		case 3:
+			texData.internalFormat = isNormal ? GL_RGB : GL_SRGB;
+			texData.format = GL_RGB;
+			break;
+		case 4:
+			texData.internalFormat = isNormal ? GL_RGBA : GL_SRGB_ALPHA;
+			texData.format = GL_RGBA;
+			break;
+		}
+
+		size_t size = texData.width * texData.height * texData.channels;
+		texData.pixels.assign(data, data + size);
+		stbi_image_free(data);
+		return texData;
+	}
+
 	void LoadTexture(const std::string& name, aiTextureType type) {
+		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
+			return;
+
 		Texture texture("resources/textures", name, type);
+		texture.load(false);
 		
 		g_textures.push_back(texture);
-		g_textureIndexMap[name] = g_textureIndexMap.size() - 1;
+		g_textureIndexMap[name] = g_textures.size() - 1;
+	}
+
+	void LoadAllTexturesAsync() {
+		auto start = std::chrono::high_resolution_clock::now();
+		std::vector<std::future<TextureData>> futures;
+
+		for (const auto& entry : std::filesystem::directory_iterator("resources/textures")) {
+			std::string filename = entry.path().filename().string();
+			aiTextureType type = GetFileTextureType(filename);
+			futures.push_back(std::async(std::launch::async, DecodeTexture, "resources/textures", filename, type));
+		}
+
+		for (auto& f : futures) {
+			TextureData data = f.get();
+			Texture texture("resources/textures", data.name, data.type);
+			texture.AllocateTexture(data);
+
+			std::cout << "loaded texture: " << data.name << std::endl;
+			g_textures.push_back(texture);
+			g_textureIndexMap[data.name] = g_textures.size() - 1;
+		}
+
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> duration = end - start;
+		std::cout << "Loaded " << g_textures.size() << " textures in " << duration.count() << " seconds.\n";
+	}
+
+	aiTextureType GetFileTextureType(const std::string& filename) {
+		if (filename.find("_ALB") != std::string::npos) {
+			return aiTextureType_DIFFUSE;
+		}
+		else if (filename.find("_NRM") != std::string::npos) {
+			return aiTextureType_NORMALS;
+		}
+		else if (filename.find("_RMA") != std::string::npos) {
+			return aiTextureType_SPECULAR; 
+		}
+		return aiTextureType_DIFFUSE; 
 	}
 
 	Texture* GetTextureByName(const std::string& name) {

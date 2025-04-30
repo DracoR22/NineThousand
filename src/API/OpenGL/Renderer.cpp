@@ -302,9 +302,7 @@ namespace OpenGLRenderer {
 			lightView = glm::mat4(1.0f);
 		}
 		else {
-			for (int i = 0; i < g_renderData.sceneLights.size(); ++i) {
-				lightView = glm::lookAt(g_renderData.sceneLights[i].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
-			}
+			lightView = glm::lookAt(g_renderData.sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		glm::mat4 lightProjection = orthogonalProjection * lightView;
 

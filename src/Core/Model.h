@@ -38,8 +38,8 @@ private:
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
-	std::vector<Texture> LoadDefaultTextures(aiMaterial* mat, aiTextureType type);
-	void LoadRMATextures(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures);
+	std::vector<Texture> LoadDefaultMaterials(aiMaterial* mat, aiTextureType type);
+	void LoadRMAMaterials(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures);
 
 	std::string m_name;
 

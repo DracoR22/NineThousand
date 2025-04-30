@@ -7,6 +7,17 @@
 
 #include <assimp/scene.h>
 
+struct TextureData {
+	int width = 0;
+	int height = 0;
+	int channels = 0;
+	GLenum internalFormat = GL_RGB;
+	GLenum format = GL_RGB;
+	std::vector<unsigned char> pixels = {};
+	std::string name = "unedfined";
+	aiTextureType type = aiTextureType_NONE;
+};
+
 class Texture {
 public: 
 	Texture();
@@ -14,6 +25,7 @@ public:
 
 	void generate();
 	void load(bool flip = true);
+	void AllocateTexture(TextureData& texData);
 
 	void bind();
 

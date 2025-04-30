@@ -14,6 +14,7 @@ namespace Engine {
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		Text2D::LoadFont("resources/fonts/sans.fnt");
+		AssetManager::LoadAllTexturesAsync();
 
 		OpenGLRenderer::Init();
 		EditorUI::Init();
