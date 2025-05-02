@@ -3,10 +3,10 @@
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D fontTexture;
-uniform vec3 textColor;
+uniform sampler2D baseTexture;
+uniform vec3 tintColor;
 
 void main() {
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(fontTexture, TexCoord).r);
-    FragColor = vec4(textColor, 1.0) * sampled;
+    vec4 texColor = texture(baseTexture, TexCoord);
+    FragColor = texColor * vec4(tintColor, 1.0);
 }

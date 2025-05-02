@@ -113,7 +113,7 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "rustediron2_basecolor.png", aiTextureType_DIFFUSE);
+		/*Texture diffuse("resources/textures", "rustediron2_basecolor.png", aiTextureType_DIFFUSE);
 		diffuse.load(false);
 
 		Texture specular("resources/textures", "rustediron2_metallic.png", aiTextureType_SPECULAR);
@@ -132,15 +132,19 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 
 		if (normal.id) {
 			std::cout << "Cube normal texture loaded: " << normal.path << std::endl;
-		}
+		}*/
+
+		Texture* baseColor = AssetManager::GetTextureByName("FloorBoards_ALB.png");
+		Texture* rmaMap = AssetManager::GetTextureByName("FloorBoards_RMA.png");
+		Texture* normalMap = AssetManager::GetTextureByName("FloorBoards_NRM.png");
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
 
 		Mesh cubeMesh("Cube_Primitive_Mesh", vertexlist, indices);
-		cubeMesh.textures.push_back(diffuse);    
-		cubeMesh.textures.push_back(specular);  
-		cubeMesh.textures.push_back(normal);  
+		cubeMesh.textures.push_back(*baseColor);    
+		cubeMesh.textures.push_back(*rmaMap);  
+		cubeMesh.textures.push_back(*normalMap);  
 
 		if (createInfo.instanceOffsets.size() > 0) {
 			CreateInstanceBuffers();
@@ -171,36 +175,17 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture diffuse("resources/textures", "FloorBoards_ALB.png", aiTextureType_DIFFUSE);
-		diffuse.load(false);
-
-		Texture specular("resources/textures", "FloorBoards_RMA.png", aiTextureType_SPECULAR);
-		specular.load(false);
-
-		Texture normal("resources/textures", "FloorBoards_NRM.png", aiTextureType_NORMALS);
-		normal.load(false);
-
-		if (diffuse.id) {
-			std::cout << "Plane diffuse texture loaded: " << diffuse.path << std::endl;
-		}
-		if (specular.id) {
-			std::cout << "Plane specular texture loaded: " << specular.path << std::endl;
-		}
-
-		if (normal.id) {
-			std::cout << "Plane normal texture loaded: " << normal.path << " (ID: " << normal.id << ")" << std::endl;
-		}
-		else {
-			std::cout << "Failed to load normal texture!" << std::endl;
-		}
+		Texture* baseColor = AssetManager::GetTextureByName("FloorBoards_ALB.png");
+		Texture* rmaMap = AssetManager::GetTextureByName("FloorBoards_RMA.png");
+		Texture* normalMap = AssetManager::GetTextureByName("FloorBoards_NRM.png");
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
 
 		Mesh planeMesh("Plane_Primitive_Mesh", vertexlist, indices);
-		planeMesh.textures.push_back(diffuse);  
-		planeMesh.textures.push_back(specular); 
-		planeMesh.textures.push_back(normal);
+		planeMesh.textures.push_back(*baseColor);  
+		planeMesh.textures.push_back(*rmaMap); 
+		planeMesh.textures.push_back(*normalMap);
 
 		meshes.push_back(planeMesh);
 	}
@@ -313,6 +298,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 			std::vector<Texture> diffuseMaps = LoadDefaultMaterials(material, aiTextureType_DIFFUSE);
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
+			// RMA maps
 			LoadRMAMaterials(mesh->mName.C_Str(), material, textures);
 
 			// normal maps (.obj files use aiTextureType_HEIGHT) 

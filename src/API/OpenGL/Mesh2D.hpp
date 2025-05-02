@@ -9,40 +9,30 @@ class Mesh2D {
 private: 
 	unsigned int m_VAO;
 	unsigned int m_VBO;
-    unsigned int m_fontTextureID;
+    unsigned int m_textureID;
+public: 
+    Mesh2D(UICreateInfo& createInfo) {
 
-    void LoadTexture(const std::string& path) {
-        int width, height, nrChannels;
-
-        unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-        if (!data) {
-            std::cerr << "Failed to load font texture: " << path << std::endl;
-            return;
-        }
-
-        glGenTextures(1, &m_fontTextureID);
-        glBindTexture(GL_TEXTURE_2D, m_fontTextureID);
-
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RED;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-
-        // Texture parameters for text rendering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
     }
 
-public: 
 	void Create() {
+        float vertices[] = {
+            // positions    // tex coords
+             0.0f, 0.0f,     0.0f, 0.0f,
+             1.0f, 0.0f,     1.0f, 0.0f,
+             1.0f, 1.0f,     1.0f, 1.0f,
+
+             0.0f, 0.0f,     0.0f, 0.0f,
+             1.0f, 1.0f,     1.0f, 1.0f,
+             0.0f, 1.0f,     0.0f, 1.0f
+        };
+
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
         glBindVertexArray(m_VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
@@ -52,27 +42,30 @@ public:
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-
-        LoadTexture("resources/fonts/sans.png");
 	}
 
-    unsigned int GetVAO() {
-        return m_VAO;
+    void RenderTexture(Shader& shader) {
+        shader.activate();
+        shader.setVec3("tintColor", glm::vec3(1.0f));
+     
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glBindVertexArray(m_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void RenderUI(const std::string& text, float x, float y, float scale, glm::vec3 color, Shader& shader) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_fontTextureID);
-
+    void RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color, Shader& shader) {
         shader.activate();
-        shader.setVec3("textColor", color);
+        shader.setVec3("tintColor", color);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glBindVertexArray(m_VAO);
 
-        // Iterate through each character in the string
         float startX = x;
 
         std::vector<float> vertices;
@@ -116,6 +109,10 @@ public:
 
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    unsigned int GetVAO() {
+        return m_VAO;
     }
 
     void Cleanup() {

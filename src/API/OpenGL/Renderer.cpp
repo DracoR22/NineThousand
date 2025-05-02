@@ -40,6 +40,7 @@ namespace OpenGLRenderer {
 
 		ShadowMap shadowMap;
 		Mesh2D textMesh;
+		Mesh2D crossHairMesh;
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
@@ -54,19 +55,7 @@ namespace OpenGLRenderer {
 		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
 	} g_renderFrameBuffers;
 
-	std::vector<glm::vec3> generateGridOffsets(const glm::vec3& basePosition, int rows, int cols, float spacing) {
-		std::vector<glm::vec3> offsets;
-		for (int y = 0; y < rows; ++y) {
-			for (int x = 0; x < cols; ++x) {
-				glm::vec3 offset = glm::vec3(x * spacing, 0.0f, y * spacing);
-				offsets.push_back(basePosition + offset);
-			}
-		}
-		return offsets;
-	}
-
 	void Init() {
-
 		// load shaders
 		g_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
 		g_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
@@ -97,9 +86,9 @@ namespace OpenGLRenderer {
 		daySky.loadTextures(daySkyFaces);
 		daySky.init();
 
-		// load text
+		// load 2d meshes
 		g_renderData.textMesh.Create();
-
+		g_renderData.crossHairMesh.Create();
 
 		// load models
 		ModelCreateInfo glockCreateInfo{
@@ -278,7 +267,7 @@ namespace OpenGLRenderer {
 			g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 			g_shaders.blurShader.load("blur.vert", "blur.frag");
 			g_shaders.pbrShader.load("pbr.vert", "pbr.frag");
-
+			g_shaders.uiShader.load("ui.vert", "ui.frag");
 		}
 
 		Player& player = Game::GetPLayerByIndex(0);
@@ -451,20 +440,12 @@ namespace OpenGLRenderer {
 		g_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 		AssetManager::DrawModel("CubeLamp", g_shaders.lampShader);
 
-		// ------ BULLET PASS ----------
+		// ------ INSTANCE PASS ----------
 		g_shaders.instancedShader.activate();
 		g_shaders.instancedShader.setMat4("view", view);
 		g_shaders.instancedShader.setMat4("projection", projection);
 
-		AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);
-
-		/*for (int i = 0; i < 5; i++) {
-			Model* bulletModel = AssetManager::GetModelByName("Bullet");
-
-			bulletModel->setPosition(glm::vec3(i * 2.0f, 1.0f, 0.0f));
-
-			AssetManager::DrawModel("Bullet", _shaders.testShader);
-		}*/		
+		AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
@@ -472,24 +453,71 @@ namespace OpenGLRenderer {
 		// ------ UI PASS -------------
 		glDisable(GL_DEPTH_TEST);
 		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::currentWidth, (float)Window::currentHeight, 0.0f);
+
 		g_shaders.uiShader.activate();
 		g_shaders.uiShader.setMat4("projection", UiProjection);
 
-		float fpsTextX = 10.0f;  // Small offset from the left side
+	
+		float fpsTextX = 10.0f;  // offset from the left
 		float fpsTextY = 30.0f;
-		float debugFontSize = 0.2f;  
+		float debugFontSize = 0.45f;  
 
 		float posTextX = 10.0f;
-		float posTextY = 50.0f;
+		float posTextY = 45.0f;
 
-		g_renderData.textMesh.RenderUI("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
+		glm::mat4 uiModel = glm::mat4(1.0f);
+		uiModel = glm::translate(uiModel, glm::vec3(fpsTextX, fpsTextY, 0.0f));
+		uiModel = glm::scale(uiModel, glm::vec3(debugFontSize, debugFontSize, 1.0f));
+		g_shaders.uiShader.setMat4("model", uiModel);
+
+
+		Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sansFontTexture->id);
+
+		g_renderData.textMesh.RenderText("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
 
 		std::string playerPosText = "Player Position: (" +
 			std::to_string(player.getPosition().x) + ", " +
 			std::to_string(player.getPosition().y) + ", " +
 			std::to_string(player.getPosition().z) + ")";
 
-		g_renderData.textMesh.RenderUI(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sansFontTexture->id);
+
+		g_shaders.uiShader.activate();
+		g_shaders.uiShader.setMat4("projection", UiProjection);
+		glm::mat4 posModel = glm::mat4(1.0f);
+		posModel = glm::translate(posModel, glm::vec3(posTextX, posTextY, 0.0f));
+		posModel = glm::scale(posModel, glm::vec3(debugFontSize, debugFontSize, 1.0f));
+		g_shaders.uiShader.setMat4("model", posModel);
+
+		g_renderData.textMesh.RenderText(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
+
+		// crosshair
+		glm::vec2 meshSize = glm::vec2(50.0f, 50.0f); 
+		glm::vec3 position = glm::vec3(
+			(Window::currentWidth - meshSize.x) * 0.5f,
+			(Window::currentHeight - meshSize.y) * 0.5f,
+			0.0f 
+		);
+
+		glm::mat4 model = glm::mat4(1.0f);
+
+		model = glm::translate(model, position);
+		model = glm::scale(model, glm::vec3(meshSize, 1.0f));
+
+		g_shaders.uiShader.activate();
+		g_shaders.uiShader.setMat4("projection", UiProjection);
+		g_shaders.uiShader.setMat4("model", model);
+		g_shaders.uiShader.setInt("baseTexture", 0);
+
+		Texture* crossTexture = AssetManager::GetTextureByName("CrossHairDotOutline.png");
+
+		glActiveTexture(0);
+		glBindTexture(GL_TEXTURE_2D, crossTexture->id);
+		g_renderData.crossHairMesh.RenderTexture(g_shaders.uiShader);
 
 
 		glEnable(GL_DEPTH_TEST);

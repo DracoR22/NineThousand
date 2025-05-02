@@ -106,7 +106,7 @@ namespace AssetManager {
 		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
 			return;
 
-		Texture texture("resources/textures", name, type);
+		Texture texture("resources/fonts", name, type);
 		texture.load(false);
 		
 		g_textures.push_back(texture);
@@ -162,7 +162,7 @@ namespace AssetManager {
 		return nullptr;
 	}
 
-// ---------------------------------------------------------// ANIMATIONS //---------------------------------------------------------------------------//
+// Animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
 		static bool reserved = false;
 		if (!reserved) {
