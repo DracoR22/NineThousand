@@ -56,6 +56,13 @@ else()
     file(GLOB_RECURSE PHYSX_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/lib/release/*.lib")
 endif()
 
+# fmod
+add_library(fmod STATIC IMPORTED)
+set_target_properties(fmod PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fmod/lib/fmod_vc.lib
+)
+target_include_directories(fmod INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fmod/include)
+
 
 file(GLOB_RECURSE ALL_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/vendor/dll/*.dll")
 
@@ -67,7 +74,7 @@ add_executable(NineThousand ${SOURCES})
 
 # Link all libraries
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/include)
-target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp ${PHYSX_LIBS})
+target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp fmod ${PHYSX_LIBS})
 
 # Include resources to output folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)

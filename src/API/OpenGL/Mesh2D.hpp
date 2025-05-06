@@ -11,9 +11,7 @@ private:
 	unsigned int m_VBO;
     unsigned int m_textureID;
 public: 
-    Mesh2D(UICreateInfo& createInfo) {
-
-    }
+   
 
 	void Create() {
         float vertices[] = {

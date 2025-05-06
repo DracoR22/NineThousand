@@ -62,7 +62,7 @@ void Player::processInput(double deltaTime) {
 
      physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
      glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
-     const float cameraLag = 0.05f;
+
      camera.setPosition(targetPosition); 
 }
 
@@ -72,6 +72,22 @@ glm::vec3 Player::getPosition() {
 
 bool Player::IsMoving() {
     return m_isMoving;
+}
+
+bool Player::CanFireWeapon() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    Animator* weaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+
+    if (
+        m_weaponAction == WeaponAction::IDLE ||
+        m_weaponAction == WeaponAction::WALK ||
+        m_weaponAction == WeaponAction::FIRE && weaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.fire)
+        ) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void Player::EquipWeapon(std::string weaponName) {
@@ -86,6 +102,15 @@ WeaponInfo* Player::GetEquipedWeaponInfo() {
 
 WeaponAction Player::GetWeaponAction() {
     return m_weaponAction;
+}
+
+bool Player::PressingFire() {
+    if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool Player::PressingADS() {
@@ -153,12 +178,14 @@ void Player::FireWeapon() {
     Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
     Animation* weaponADSFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSFire[0]);
 
-    if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT) && currentWeaponAnimator->GetCurrentAnimation() != weaponReloadAnimation) {
+    if (PressingFire() && CanFireWeapon()) {
         if (PressingADS()) {
             currentWeaponAnimator->PlayAnimation(weaponADSFireAnimation);
+            m_weaponAction = WeaponAction::ADS_FIRE;
         }
         else {
             currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+            m_weaponAction = WeaponAction::FIRE;
         }
 
         glm::vec3 playerPos = camera.cameraPos;

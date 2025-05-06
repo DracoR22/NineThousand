@@ -31,9 +31,3 @@ struct LightCreateInfo {
 
 	LightType type = LightType::POINT_LIGHT;
 };
-
-struct UICreateInfo {
-	glm::vec2 position = glm::vec2(0.0f);
-	glm::vec2 size = glm::vec2(1.0f);
-	glm::vec3 tintColor = glm::vec3(1.0f);
-};

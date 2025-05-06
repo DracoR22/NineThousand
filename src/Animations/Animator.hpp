@@ -59,6 +59,14 @@ public:
 		return m_AnimationFinished;
 	}
 
+	int GetAnimationFrameNumber() {
+		return m_CurrentTime * m_CurrentAnimation->GetTicksPerSecond();
+	}
+
+	bool AnimationIsPastFrameNumber(int frameNumber) {
+		return frameNumber < GetAnimationFrameNumber();
+	}
+
 	void Reset()
 	{
 		m_CurrentTime = 0.0f;

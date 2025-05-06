@@ -38,7 +38,6 @@ uniform vec3 camPos;
 
 uniform bool flipLights;
 
-
 const float PI = 3.14159265359;
 
 vec3 getNormalFromMap()
@@ -90,6 +89,49 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
+
+// TONE MAPPING
+
+vec3 ACESFilm(vec3 x)
+{
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+vec3 filmic(vec3 x) {
+  vec3 X = max(vec3(0.0), x - 0.004);
+  vec3 result = (X * (6.2 * X + 0.5)) / (X * (6.2 * X + 1.7) + 0.06);
+  return pow(result, vec3(2.2));
+}
+
+vec3 reinhard(vec3 x) {
+  return x / (1.0 + x);
+}
+
+vec3 uncharted2Tonemap(vec3 x) {
+  float A = 0.15;
+  float B = 0.50;
+  float C = 0.10;
+  float D = 0.20;
+  float E = 0.02;
+  float F = 0.30;
+  float W = 11.2;
+  return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
+vec3 uncharted2(vec3 color) {
+  const float W = 11.2;
+  float exposureBias = 2.0;
+  vec3 curr = uncharted2Tonemap(exposureBias * color);
+  vec3 whiteScale = 1.0 / uncharted2Tonemap(vec3(W));
+  return curr * whiteScale;
+}
+
+
 void main() {
  vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
  vec3 rma = texture(rmaMap, TexCoords).rgb;
@@ -125,7 +167,7 @@ void main() {
 
    vec3 H = normalize(V + L);
 
-   vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
+    vec3 F  = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughness);
    float NDF = DistributionGGX(N, H, roughness);       
    float G   = GeometrySmith(N, V, L, roughness);    
 
@@ -145,7 +187,7 @@ void main() {
  vec3 ambient = vec3(0.02) * albedo * ao;
  vec3 color   = Lo;  
 
-  color = color / (color + vec3(1.0));
+  //color = uncharted2(color);
   color = pow(color, vec3(1.0/2.2));
 
  FragColor = vec4(color, 1.0);

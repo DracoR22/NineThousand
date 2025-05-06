@@ -11,6 +11,7 @@ namespace Physics {
     PxMaterial* _gMaterial = nullptr;
     PxMaterial* _gCharacterMaterial = nullptr;
     PxController* _gController = nullptr;
+    PxControllerManager* g_controllerManager = nullptr;
 
 
     PxRigidDynamic* _cubeActor = nullptr;
@@ -84,24 +85,23 @@ namespace Physics {
     }
 
     void InitializeCharacterController() {
-        PxControllerManager* manager = PxCreateControllerManager(*_gScene);
+        g_controllerManager = PxCreateControllerManager(*_gScene);
 
-        // Define the controller description
         physx::PxCapsuleControllerDesc desc;
-        desc.height = 1.8f;          // Player height
-        desc.radius = 0.3f;          // Capsule radius
-        desc.material = _gPhysics->createMaterial(0.5f, 0.5f, 0.0f); // Friction/restitution
-        desc.position = PxExtendedVec3(0, 5, 0); // Start position
-        desc.slopeLimit = 0.707f;    // Max slope the player can walk up
-        desc.stepOffset = 0.5f;      // Max step height
-        desc.upDirection = PxVec3(0, 1, 0); // "Up" direction
+        desc.height = 1.8f;       
+        desc.radius = 0.3f;         
+        desc.material = _gPhysics->createMaterial(0.5f, 0.5f, 0.0f);
+        desc.position = PxExtendedVec3(0, 5, 0); 
+        desc.slopeLimit = 0.707f;    
+        desc.stepOffset = 0.5f;      
+        desc.upDirection = PxVec3(0, 1, 0);
 
-       _gController = manager->createController(desc);
+       _gController = g_controllerManager->createController(desc);
     }
 
     void MovePlayerController(const glm::vec3& direction, float deltaTime) {
 
-        g_ControllerVerticalVelocity -= 9.81f * deltaTime; // Reset gravity when grounded
+        g_ControllerVerticalVelocity -= 5.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
@@ -184,6 +184,7 @@ namespace Physics {
     void CleanupPhysX() {
         _cubeActor->release();
         _gController->release();
+        g_controllerManager->release();
         _gScene->release();
         _gDispatcher->release();
         _gMaterial->release();

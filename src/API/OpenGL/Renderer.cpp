@@ -138,7 +138,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
 		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
-		AssetManager::LoadModel("Bullet", ModelType::CUBE, bulletCreateInfo);
+		/*AssetManager::LoadModel("Bullet", ModelType::CUBE, bulletCreateInfo);*/
 
 		// Quad For FrameBuffer
 		glGenVertexArrays(1, &g_renderData.frameBufferQuadVAO);
@@ -441,11 +441,11 @@ namespace OpenGLRenderer {
 		AssetManager::DrawModel("CubeLamp", g_shaders.lampShader);
 
 		// ------ INSTANCE PASS ----------
-		g_shaders.instancedShader.activate();
+		/*g_shaders.instancedShader.activate();
 		g_shaders.instancedShader.setMat4("view", view);
-		g_shaders.instancedShader.setMat4("projection", projection);
+		g_shaders.instancedShader.setMat4("projection", projection);*/
 
-		AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
+		//AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
@@ -454,9 +454,12 @@ namespace OpenGLRenderer {
 		glDisable(GL_DEPTH_TEST);
 		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::currentWidth, (float)Window::currentHeight, 0.0f);
 
+		UIElement fpsTextElement;
+		fpsTextElement.m_alignment = UIAlignment::TopLeft;
+		fpsTextElement.m_size = glm::vec2(0.0f, 30.0f);
+
 		g_shaders.uiShader.activate();
 		g_shaders.uiShader.setMat4("projection", UiProjection);
-
 	
 		float fpsTextX = 10.0f;  // offset from the left
 		float fpsTextY = 30.0f;
@@ -469,7 +472,6 @@ namespace OpenGLRenderer {
 		uiModel = glm::translate(uiModel, glm::vec3(fpsTextX, fpsTextY, 0.0f));
 		uiModel = glm::scale(uiModel, glm::vec3(debugFontSize, debugFontSize, 1.0f));
 		g_shaders.uiShader.setMat4("model", uiModel);
-
 
 		Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");
 
@@ -496,27 +498,19 @@ namespace OpenGLRenderer {
 		g_renderData.textMesh.RenderText(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
 
 		// crosshair
-		glm::vec2 meshSize = glm::vec2(50.0f, 50.0f); 
-		glm::vec3 position = glm::vec3(
-			(Window::currentWidth - meshSize.x) * 0.5f,
-			(Window::currentHeight - meshSize.y) * 0.5f,
-			0.0f 
-		);
-
-		glm::mat4 model = glm::mat4(1.0f);
-
-		model = glm::translate(model, position);
-		model = glm::scale(model, glm::vec3(meshSize, 1.0f));
+		UIElement crosshairElement;
+		crosshairElement.m_size = glm::vec2(50.0f, 50.0f);
+		crosshairElement.m_alignment = UIAlignment::Center;
 
 		g_shaders.uiShader.activate();
 		g_shaders.uiShader.setMat4("projection", UiProjection);
-		g_shaders.uiShader.setMat4("model", model);
+		g_shaders.uiShader.setMat4("model", crosshairElement.GetModelMatrix());
 		g_shaders.uiShader.setInt("baseTexture", 0);
 
-		Texture* crossTexture = AssetManager::GetTextureByName("CrossHairDotOutline.png");
+		Texture* crosshairTexture = AssetManager::GetTextureByName("CrossHairDotOutline.png");
 
 		glActiveTexture(0);
-		glBindTexture(GL_TEXTURE_2D, crossTexture->id);
+		glBindTexture(GL_TEXTURE_2D, crosshairTexture->id);
 		g_renderData.crossHairMesh.RenderTexture(g_shaders.uiShader);
 
 
@@ -624,6 +618,10 @@ namespace OpenGLRenderer {
 
 	void UpdateLightRadius(int index, float radius) {
 		g_renderData.sceneLights[index].radius = radius;
+	}
+
+	void UpdateLightPosition(int index, glm::vec3 newPosition) {
+		g_renderData.sceneLights[index].position = newPosition;
 	}
 
 	void Cleanup() {

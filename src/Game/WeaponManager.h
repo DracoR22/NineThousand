@@ -13,6 +13,7 @@ enum class WeaponAction {
     WALK,
 	RELOAD,
 	RELOAD_EMPTY,
+	FIRE,
 	ADS_IN,
 	ADS_OUT,
 	ADS_IDLE,
@@ -34,10 +35,19 @@ struct WeaponAnimations {
 	std::vector<std::string> ADSFire;
 };
 
+struct WeaponAnimationCancelFrames {
+	int fire = 0;
+	int reload = 0;
+	int reloadEmpty = 0;
+	int draw = 0;
+};
+
 struct WeaponInfo {
 	std::string name;
 	std::string modelName;
 	WeaponAnimations animations;
+	WeaponAnimationCancelFrames animationCancelFrames;
+
 };
 
 namespace WeaponManager {

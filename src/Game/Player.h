@@ -36,10 +36,13 @@ public:
 	WeaponInfo* GetEquipedWeaponInfo();
 
 	bool IsMoving();
+
 	bool CanReloadWeapon();
 	bool CanEnterADS();
+	bool CanFireWeapon();
 	bool IsDrawingWeapon();
 
+	bool PressingFire();
 	bool PressingADS();
 	bool PressedADS();
 	bool PressedReload();

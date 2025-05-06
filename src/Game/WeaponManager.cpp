@@ -20,6 +20,7 @@ namespace WeaponManager {
 		glock.animations.ADSOut = "Glock_ADS_Out";
 		glock.animations.ADSWalk = "Glock_ADS_Walk";
 		glock.animations.ADSFire.push_back("Glock_ADS_Fire");
+		glock.animationCancelFrames.fire = 4;
 
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
@@ -36,6 +37,7 @@ namespace WeaponManager {
 		p90.animations.ADSOut = "P90_ADS_Out";
 		p90.animations.ADSWalk = "P90_ADS_Walk";
 		p90.animations.ADSFire.push_back("P90_ADS_Fire");
+		p90.animationCancelFrames.fire = 2;
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -51,6 +53,7 @@ namespace WeaponManager {
 		aks74u.animations.ADSOut = "AKS74U_ADS_Out";
 		aks74u.animations.ADSWalk = "AKS74U_ADS_Walk";
 		aks74u.animations.ADSFire.push_back("AKS74U_ADS_Fire");
+		aks74u.animationCancelFrames.fire = 3;
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string name) {
