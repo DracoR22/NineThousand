@@ -13,7 +13,7 @@ struct PhysicsTransformData {
 namespace Physics {
     using namespace physx;
 
-    void InitPhysx();
+    void Init();
 
     /* Collision Shapes */
     PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass);

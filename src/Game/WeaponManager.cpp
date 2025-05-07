@@ -21,7 +21,13 @@ namespace WeaponManager {
 		glock.animations.ADSWalk = "Glock_ADS_Walk";
 		glock.animations.ADSFire.push_back("Glock_ADS_Fire");
 		glock.animationCancelFrames.fire = 4;
-
+		glock.audioFiles.fire.push_back("Glock_Fire0.wav");
+		glock.audioFiles.fire.push_back("Glock_Fire1.wav");
+		glock.audioFiles.fire.push_back("Glock_Fire2.wav");
+		glock.audioFiles.fire.push_back("Glock_Fire3.wav");
+		glock.audioFiles.reload = "Glock_Reload.wav";
+		glock.audioFiles.reloadEmpty = "Glock_ReloadEmpty.wav";
+		glock.audioFiles.draw = "NextWeapon.wav";
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
@@ -38,6 +44,13 @@ namespace WeaponManager {
 		p90.animations.ADSWalk = "P90_ADS_Walk";
 		p90.animations.ADSFire.push_back("P90_ADS_Fire");
 		p90.animationCancelFrames.fire = 2;
+		p90.audioFiles.fire.push_back("P90_Fire0.wav");
+		p90.audioFiles.fire.push_back("P90_Fire1.wav");
+		p90.audioFiles.fire.push_back("P90_Fire2.wav");
+		p90.audioFiles.fire.push_back("P90_Fire3.wav");
+		p90.audioFiles.reload = "P90_Reload.wav";
+		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
+		p90.audioFiles.draw = "NextWeapon.wav";
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -53,17 +66,24 @@ namespace WeaponManager {
 		aks74u.animations.ADSOut = "AKS74U_ADS_Out";
 		aks74u.animations.ADSWalk = "AKS74U_ADS_Walk";
 		aks74u.animations.ADSFire.push_back("AKS74U_ADS_Fire");
-		aks74u.animationCancelFrames.fire = 3;
+		aks74u.animationCancelFrames.fire = 2;
+		aks74u.audioFiles.fire.push_back("AKS74U_Fire0.wav");
+		aks74u.audioFiles.fire.push_back("AKS74U_Fire1.wav");
+		aks74u.audioFiles.fire.push_back("AKS74U_Fire2.wav");
+		aks74u.audioFiles.fire.push_back("AKS74U_Fire3.wav");
+		aks74u.audioFiles.reload = "AKS74U_Reload.wav";
+		aks74u.audioFiles.reloadEmpty = "AKS74U_ReloadEmpty.wav";
+		aks74u.audioFiles.draw = "NextWeapon.wav";
 	}
 
-	WeaponInfo* GetWeaponInfoByName(std::string name) {
+	WeaponInfo* GetWeaponInfoByName(std::string& name) {
 		for (int i = 0; i < g_weapons.size(); i++) {
 			if (g_weapons[i].name == name) {
 				return &g_weapons[i];
 			}
 		}
 
-		std::cout << "WeaponManager::GetWeaponInfoByName() failed because '" << name << "' does not exist!\n";
+		std::cout << "WeaponManager::GetWeaponInfoByName() failed because '" << name << "' does not exist\n";
 		return nullptr;
 	}
 }

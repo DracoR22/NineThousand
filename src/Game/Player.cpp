@@ -165,6 +165,7 @@ void Player::ReloadWeapon() {
     float animationSpeed = 1.0f;
 
     currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
+    AudioManager::PlayAudio(weaponInfo->audioFiles.reload, 1.0f, 1.0f);
     m_weaponAction = WeaponAction::RELOAD;  
 }
 
@@ -187,6 +188,9 @@ void Player::FireWeapon() {
             currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
             m_weaponAction = WeaponAction::FIRE;
         }
+        
+        int rand = std::rand() % weaponInfo->audioFiles.fire.size();
+        AudioManager::PlayAudio(weaponInfo->audioFiles.fire[rand], 1.0f, 1.0f);
 
         glm::vec3 playerPos = camera.cameraPos;
         glm::vec3 cameraDir = glm::normalize(camera.cameraFront);

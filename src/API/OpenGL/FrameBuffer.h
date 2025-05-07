@@ -9,6 +9,7 @@ struct ColorAttachment {
 	const char* name = "undefined";
 	GLuint textureID = 0;
 	GLenum attachment = 0;
+	bool isMultisampled = false;
 };
 
 class FrameBuffer {
@@ -39,6 +40,7 @@ public:
 	void BindTexture();
 	void SetViewport();
 	void Resize(unsigned int width, unsigned int height);
+	void ResizeMSAA(unsigned int width, unsigned int height);
 	void Cleanup();
 	unsigned int GetWidth() const;
 	unsigned int GetHeight() const;

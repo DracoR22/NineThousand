@@ -310,8 +310,15 @@ namespace OpenGLRenderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ------ BIND FRAME BUFFERS -------
+	/*	if (g_renderFrameBuffers.mssaFrameBuffer.GetWidth() != Window::currentWidth ||
+			g_renderFrameBuffers.mssaFrameBuffer.GetHeight() != Window::currentHeight) {
+
+			g_renderFrameBuffers.mssaFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
+		}*/
+
 		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() != Window::currentWidth || g_renderFrameBuffers.postProcessingFrameBuffer.GetHeight() != Window::currentHeight) {
 			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
+			g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(Window::currentWidth, Window::currentHeight);
 		}
 
 		g_renderFrameBuffers.mssaFrameBuffer.Bind();
@@ -520,7 +527,9 @@ namespace OpenGLRenderer {
 		// ------ FRAME BUFFER PASS -----------
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-		glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		if (g_renderFrameBuffers.mssaFrameBuffer.GetWidth() == Window::currentWidth && g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == Window::currentWidth) {
+			glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -573,13 +582,12 @@ namespace OpenGLRenderer {
 
 		glBindVertexArray(g_renderData.frameBufferQuadVAO);
 		glDisable(GL_DEPTH_TEST);
-
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
-		/*glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));*/
-		/*g_renderFrameBuffers.postProcessingFrameBuffer.BindTextures();*/
+		//*glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));*/
+		//*g_renderFrameBuffers.postProcessingFrameBuffer.BindTextures();*/
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}

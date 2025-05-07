@@ -6,6 +6,8 @@
 
 #include "../Physics/Physics.h"
 
+#include "../Audio/AudioManager.h"
+
 #include "WeaponManager.h"
 
 #include "../Core/AssetManager.h"

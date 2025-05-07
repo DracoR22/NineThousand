@@ -34,6 +34,7 @@
 #include "../Game/Game.h"
 #include "../Game/WeaponManager.h"
 
+#include "../Audio/AudioManager.h"
 
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>

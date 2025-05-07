@@ -34,6 +34,7 @@ void FrameBuffer::CreateMSAAAttachment(const char* name) {
 	ColorAttachment& colorAttachment = m_colorAttachments.emplace_back();
 	colorAttachment.name = name;
 	colorAttachment.attachment = GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(m_colorAttachments.size() - 1);
+	colorAttachment.isMultisampled = true;
 
 	glGenTextures(1, &colorAttachment.textureID);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorAttachment.textureID);
@@ -93,21 +94,39 @@ void FrameBuffer::SetViewport() {
 }
 
 void FrameBuffer::Resize(unsigned int width, unsigned int height) {
-	this->m_width = width;
-	this->m_height = height;
+	m_width = width;
+	m_height = height;
 
-	// Resize viewport
 	glViewport(0, 0, m_width, m_height);
 
-	// Resize color texture
 	for (auto& attachment : m_colorAttachments) {
 		glBindTexture(GL_TEXTURE_2D, attachment.textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	}
 
-	// Resize renderbuffer
 	glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
+}
+
+void FrameBuffer::ResizeMSAA(unsigned int width, unsigned int height) {
+	m_width = width;
+	m_height = height;
+
+	for (auto& attachment : m_colorAttachments) {
+		if (!attachment.isMultisampled) continue;
+
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, attachment.textureID);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_msaaSamples, GL_RGB, m_width, m_height, GL_TRUE);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment.attachment, GL_TEXTURE_2D_MULTISAMPLE, attachment.textureID, 0);
+	}
+
+	glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_msaaSamples, GL_DEPTH24_STENCIL8, m_width, m_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER::MSAA Resize failed! Incomplete framebuffer." << std::endl;
 }
 
 void FrameBuffer::Cleanup() {

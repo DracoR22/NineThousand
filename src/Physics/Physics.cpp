@@ -19,7 +19,7 @@ namespace Physics {
 
     float g_ControllerVerticalVelocity = 0.0f;
 
-    void InitPhysx() {
+    void Init() {
         _gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gAllocator, _gErrorCallback);
         _gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *_gFoundation, PxTolerancesScale(), true);
 

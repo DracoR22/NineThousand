@@ -42,15 +42,23 @@ struct WeaponAnimationCancelFrames {
 	int draw = 0;
 };
 
+struct WeaponAudio {
+	std::vector<std::string> fire;
+	std::string reload;
+	std::string reloadEmpty;
+	std::string draw;
+};
+
 struct WeaponInfo {
 	std::string name;
 	std::string modelName;
 	WeaponAnimations animations;
 	WeaponAnimationCancelFrames animationCancelFrames;
+	WeaponAudio audioFiles;
 
 };
 
 namespace WeaponManager {
 	void Init();
-	WeaponInfo* GetWeaponInfoByName(std::string name);
+	WeaponInfo* GetWeaponInfoByName(std::string& name);
 }

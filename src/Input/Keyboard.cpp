@@ -4,6 +4,11 @@ bool Keyboard::m_keys[GLFW_KEY_LAST] = { 0 };
 bool Keyboard::m_keysChanged[GLFW_KEY_LAST] = { 0 };
 
 void Keyboard::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	// ignore media keys for now TODO stuff
+	if (key < 0 || key >= 1024) {
+		return;
+	}
+
 	if (action != GLFW_RELEASE) {
 		if (!m_keys[key]) {
 			m_keys[key] = true;
