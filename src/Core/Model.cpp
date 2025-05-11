@@ -11,8 +11,6 @@ void Model::draw(Shader& shader) {
 	model = glm::scale(model, size);
 	model *= rotation;
 
-	/*model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
-
 	shader.setMat4("model", model);
 
 	for (unsigned int i = 0; i < meshes.size(); i++) {
@@ -113,30 +111,9 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		/*Texture diffuse("resources/textures", "rustediron2_basecolor.png", aiTextureType_DIFFUSE);
-		diffuse.load(false);
-
-		Texture specular("resources/textures", "rustediron2_metallic.png", aiTextureType_SPECULAR);
-		specular.load(false);
-
-		Texture normal("resources/textures", "rustediron2_normal.png", aiTextureType_NORMALS);
-		normal.load(false);
-
-
-		if (diffuse.id) {
-			std::cout << "Cube diffuse texture loaded: " << diffuse.path << std::endl;
-		}
-		if (specular.id) {
-			std::cout << "Cube specular texture loaded: " << specular.path << std::endl;
-		}
-
-		if (normal.id) {
-			std::cout << "Cube normal texture loaded: " << normal.path << std::endl;
-		}*/
-
-		Texture* baseColor = AssetManager::GetTextureByName("FloorBoards_ALB.png");
-		Texture* rmaMap = AssetManager::GetTextureByName("FloorBoards_RMA.png");
-		Texture* normalMap = AssetManager::GetTextureByName("FloorBoards_NRM.png");
+		Texture* baseColor = AssetManager::GetTextureByName("Concrete_ALB.png");
+		Texture* rmaMap = AssetManager::GetTextureByName("Concrete_RMA.png");
+		Texture* normalMap = AssetManager::GetTextureByName("Concrete_NRM.png");
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
@@ -158,16 +135,17 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 	else if (type == ModelType::PLANE) {
 		int noVertices = 6;
 
+		float tiling = 1.0f;
+
 		float vertices[] = {
-			// position               normal           texcoord
-			// First triangle
-			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
-			 0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
-			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 1.0f,
-			 // Second triangle
-			 -0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
-			  0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 1.0f,
-			 -0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 1.0f
+			// position               normal           texcoord (tiled!)
+			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 0.0f * tiling,
+			 0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 0.0f * tiling,
+			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 1.0f * tiling,
+
+			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 0.0f * tiling,
+			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 1.0f * tiling,
+			-0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 1.0f * tiling
 		};
 
 		std::vector<unsigned int> indices(noVertices);
@@ -175,9 +153,9 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture* baseColor = AssetManager::GetTextureByName("FloorBoards_ALB.png");
-		Texture* rmaMap = AssetManager::GetTextureByName("FloorBoards_RMA.png");
-		Texture* normalMap = AssetManager::GetTextureByName("FloorBoards_NRM.png");
+		Texture* baseColor = AssetManager::GetTextureByName("Concrete_ALB.png");
+		Texture* rmaMap = AssetManager::GetTextureByName("Concrete_RMA.png");
+		Texture* normalMap = AssetManager::GetTextureByName("Concrete_NRM.png");
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);

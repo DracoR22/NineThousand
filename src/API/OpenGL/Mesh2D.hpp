@@ -11,8 +11,6 @@ private:
 	unsigned int m_VBO;
     unsigned int m_textureID;
 public: 
-   
-
 	void Create() {
         float vertices[] = {
             // positions    // tex coords

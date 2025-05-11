@@ -27,6 +27,7 @@ private:
 	WeaponInfo* m_equippedWeapon = nullptr;
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
 public:
+	float _muzzleFlashTimer = 0;
 	Player(glm::vec3 position, float height, float mass);
 
     void processInput(double deltaTime);

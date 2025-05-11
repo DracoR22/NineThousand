@@ -16,6 +16,7 @@ namespace OpenGLRenderer {
 		Shader uiShader;
 		Shader blurShader;
 		Shader pbrShader;
+		Shader muzzleFlashShader;
 	} g_shaders;
 
 	ModelCreateInfo bulletCreateInfo{
@@ -39,8 +40,10 @@ namespace OpenGLRenderer {
 		std::vector<CubeMap> cubeMaps = {};
 
 		ShadowMap shadowMap;
+
 		Mesh2D textMesh;
 		Mesh2D crossHairMesh;
+		Mesh2D muzzleFlashMesh;
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
@@ -70,6 +73,7 @@ namespace OpenGLRenderer {
 		g_shaders.uiShader.load("ui.vert", "ui.frag");
 		g_shaders.blurShader.load("blur.vert", "blur.frag");
 		g_shaders.pbrShader.load("pbr.vert", "pbr.frag");
+		g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -89,6 +93,7 @@ namespace OpenGLRenderer {
 		// load 2d meshes
 		g_renderData.textMesh.Create();
 		g_renderData.crossHairMesh.Create();
+		g_renderData.muzzleFlashMesh.Create();
 
 		// load models
 		ModelCreateInfo glockCreateInfo{
@@ -268,6 +273,7 @@ namespace OpenGLRenderer {
 			g_shaders.blurShader.load("blur.vert", "blur.frag");
 			g_shaders.pbrShader.load("pbr.vert", "pbr.frag");
 			g_shaders.uiShader.load("ui.vert", "ui.frag");
+			g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
 		}
 
 		Player& player = Game::GetPLayerByIndex(0);
@@ -440,6 +446,7 @@ namespace OpenGLRenderer {
 		AssetManager::DrawModel("Plane", g_shaders.texturedObjectShader);
 		AssetManager::DrawModel("Cube", g_shaders.pbrShader);
 
+		// DEBUG LIGHTS
 		g_shaders.lampShader.activate();
 		g_shaders.lampShader.set3Float("viewPos", player.getPosition());
 		g_shaders.lampShader.setMat4("view", view);
@@ -456,6 +463,41 @@ namespace OpenGLRenderer {
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
+		Model* weaponModel = AssetManager::GetModelByName(player.GetEquipedWeaponInfo()->name);
+
+		// ------ MUZZLE FLASH PASS
+		glm::vec3 barrelOffset = player.GetEquipedWeaponInfo()->muzzleFlashOffset;
+		glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), weaponModel->pos) * weaponModel->rotation;
+
+		glm::vec4 worldBarrelPos = gunTransform * glm::vec4(barrelOffset, 1.0f);
+
+		glm::mat4 muzzleFlashModel = glm::mat4(1.0f);
+
+		muzzleFlashModel = glm::translate(muzzleFlashModel, glm::vec3(worldBarrelPos));
+
+	    muzzleFlashModel *= glm::inverse(glm::mat4(glm::mat3(view)));
+		muzzleFlashModel = glm::scale(muzzleFlashModel, glm::vec3(4.0f));
+
+		float randomAngle = Utils::RandomFloat(0.0f, glm::two_pi<float>());
+
+		g_shaders.muzzleFlashShader.activate();
+
+		g_shaders.muzzleFlashShader.setMat4("model", muzzleFlashModel);
+		g_shaders.muzzleFlashShader.setMat4("view", view);
+		g_shaders.muzzleFlashShader.setMat4("projection", projection);
+		g_shaders.muzzleFlashShader.setFloat("rotation", randomAngle);
+
+		Texture* muzzleFlashTexture = AssetManager::GetTextureByName("MuzzleFlash.png");
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, muzzleFlashTexture->id);
+
+		if (player._muzzleFlashTimer > 0) {
+			g_renderData.muzzleFlashMesh.RenderTexture(g_shaders.muzzleFlashShader);
+			player._muzzleFlashTimer--;
+		}
+
+
 
 		// ------ UI PASS -------------
 		glDisable(GL_DEPTH_TEST);

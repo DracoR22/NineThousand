@@ -26,6 +26,8 @@
 
 #include "../../UI/UIElement.h"
 
+#include "../../Utils/Utils.h"
+
 #define GLCheckError() \
 { \
     GLenum err; \

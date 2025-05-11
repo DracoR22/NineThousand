@@ -55,7 +55,8 @@ struct WeaponInfo {
 	WeaponAnimations animations;
 	WeaponAnimationCancelFrames animationCancelFrames;
 	WeaponAudio audioFiles;
-
+	glm::vec3 muzzleFlashOffset = glm::vec3(0.0f);
+	float muzzleFlashSize = 0.0f;
 };
 
 namespace WeaponManager {

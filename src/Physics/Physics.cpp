@@ -101,7 +101,7 @@ namespace Physics {
 
     void MovePlayerController(const glm::vec3& direction, float deltaTime) {
 
-        g_ControllerVerticalVelocity -= 5.81f * deltaTime;
+        g_ControllerVerticalVelocity -= 3.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);

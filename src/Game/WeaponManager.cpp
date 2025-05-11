@@ -28,6 +28,8 @@ namespace WeaponManager {
 		glock.audioFiles.reload = "Glock_Reload.wav";
 		glock.audioFiles.reloadEmpty = "Glock_ReloadEmpty.wav";
 		glock.audioFiles.draw = "NextWeapon.wav";
+		glock.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -15.0f);
+		glock.muzzleFlashSize = 4.0f;
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
@@ -51,6 +53,8 @@ namespace WeaponManager {
 		p90.audioFiles.reload = "P90_Reload.wav";
 		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
 		p90.audioFiles.draw = "NextWeapon.wav";
+		p90.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, 17.0f);
+		p90.muzzleFlashSize = 4.0f;
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -74,6 +78,8 @@ namespace WeaponManager {
 		aks74u.audioFiles.reload = "AKS74U_Reload.wav";
 		aks74u.audioFiles.reloadEmpty = "AKS74U_ReloadEmpty.wav";
 		aks74u.audioFiles.draw = "NextWeapon.wav";
+		aks74u.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -20.0f);
+		aks74u.muzzleFlashSize = 4.0f;
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string& name) {
