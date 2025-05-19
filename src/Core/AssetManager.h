@@ -22,9 +22,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+struct Material {
+	std::string name = "";
+	int baseColor = 0;
+	int normal = 0;
+	int rma = 0;
+};
+
 namespace AssetManager {
 	inline std::vector<Model> g_models;
 	inline std::vector<Texture> g_textures;
+	inline std::vector<Material> g_materials;
 	inline std::vector<Animation> g_animations;
 	inline std::vector<Animator> g_animators;
 
@@ -43,6 +51,8 @@ namespace AssetManager {
 	aiTextureType GetFileTextureType(const std::string& filename);
 	aiTextureType GetFileTextureType(const std::string& filename);
 	Texture* GetTextureByName(const std::string& name);
+
+	void LoadMaterials();
 
 	// animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model);

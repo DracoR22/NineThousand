@@ -16,6 +16,7 @@ class FrameBuffer {
 private:
 	std::vector<ColorAttachment> m_colorAttachments;
 
+	unsigned int m_depthTextureID = 0;
 	unsigned int m_fbo = 0;
 	unsigned int m_rbo = 0;
 
@@ -32,12 +33,12 @@ public:
 	void CreateAttachment(const char* name);
 	void CreateMSAAAttachment(const char* name);
 	void CreateDepthAttachment();
+	void CreateDepthTextureAttachment();
 	void DrawBuffers();
 	void DrawBuffer();
 	void Unbind();
 	void Bind();
 	void BindTextures();
-	void BindTexture();
 	void SetViewport();
 	void Resize(unsigned int width, unsigned int height);
 	void ResizeMSAA(unsigned int width, unsigned int height);
@@ -47,4 +48,5 @@ public:
 	unsigned int GetFBO() const;
 	GLuint GetColorAttachmentByIndex(int index); 
 	GLuint GetColorAttachmentTextureIdByIndex(int index);
+	GLuint GetDepthTextureAttachmentId();
 };

@@ -111,9 +111,13 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture* baseColor = AssetManager::GetTextureByName("Concrete_ALB.png");
-		Texture* rmaMap = AssetManager::GetTextureByName("Concrete_RMA.png");
-		Texture* normalMap = AssetManager::GetTextureByName("Concrete_NRM.png");
+		Texture* baseColor = AssetManager::GetTextureByName(createInfo.baseTexture);
+		Texture* normalMap = AssetManager::GetTextureByName(createInfo.normalTexture);
+		Texture* rmaMap = AssetManager::GetTextureByName(createInfo.rmaTexture);
+
+		baseColor->type = aiTextureType_DIFFUSE;
+		normalMap->type = aiTextureType_NORMALS;
+		rmaMap->type = aiTextureType_SPECULAR;
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
@@ -153,9 +157,13 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 			indices[i] = i;
 		}
 
-		Texture* baseColor = AssetManager::GetTextureByName("Concrete_ALB.png");
-		Texture* rmaMap = AssetManager::GetTextureByName("Concrete_RMA.png");
-		Texture* normalMap = AssetManager::GetTextureByName("Concrete_NRM.png");
+		Texture* baseColor = AssetManager::GetTextureByName(createInfo.baseTexture);
+		Texture* normalMap = AssetManager::GetTextureByName(createInfo.normalTexture);
+		Texture* rmaMap = AssetManager::GetTextureByName(createInfo.rmaTexture);
+
+		baseColor->type = aiTextureType_DIFFUSE;
+		normalMap->type = aiTextureType_NORMALS;
+		rmaMap->type = aiTextureType_SPECULAR;
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
@@ -227,14 +235,14 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		Vertex vertex;
 		// position
-		vertex.Position = glm::vec3(
+		vertex.m_Position = glm::vec3(
 			mesh->mVertices[i].x,
 			mesh->mVertices[i].y,
 			mesh->mVertices[i].z
 		);
 
 		// normals
-		vertex.Normal = glm::vec3(
+		vertex.m_Normal = glm::vec3(
 			mesh->mNormals[i].x,
 			mesh->mNormals[i].y,
 			mesh->mNormals[i].z
@@ -242,17 +250,17 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 		// texture coords
 		if (mesh->mTextureCoords[0]) {
-			vertex.TexCoords = glm::vec2(
+			vertex.m_TexCoords = glm::vec2(
 				mesh->mTextureCoords[0][i].x,
 				mesh->mTextureCoords[0][i].y
 			);
 		}
 		else {
-			vertex.TexCoords = glm::vec2(0.0f);
+			vertex.m_TexCoords = glm::vec2(0.0f);
 		}
 
 		// tangent vector
-		vertex.Tangent = {
+		vertex.m_Tangent = {
 			mesh->mTangents[i].x,
 			mesh->mTangents[i].y,
 			mesh->mTangents[i].z
@@ -312,11 +320,11 @@ std::vector<Texture> Model::LoadDefaultMaterials(aiMaterial* mat, aiTextureType 
 		}
 
 		if (!skip) {
-			/*Texture tex(m_directory, fileName, type);*/
 			Texture* texture = AssetManager::GetTextureByName(fileName);
-			/*tex.load(false);*/
-			textures.push_back(*texture);
-			m_textures_loaded.push_back(*texture);
+			if (texture) {
+				textures.push_back(*texture);
+				m_textures_loaded.push_back(*texture);
+			}
 		}
 	}
 	return textures;
@@ -336,6 +344,16 @@ void Model::LoadRMAMaterials(const std::string& meshName, aiMaterial* material, 
 		{"AKS74U_ScopeMain",  "AKS74U_ScopeMain_RMA.png"},
 		{"AKS74U_ScopeFrontCap",  "AKS74U_ScopeVxor_RMA.png"},
 		{"AKS74U_ScopeBackCap",  "AKS74U_ScopeVxorr_RMA.png"},
+		{"Magazine_low",  "P90_Mag_RMA.png"},
+		{"Magazine_low2",  "P90_Mag_RMA.png"},
+		{"LowReceiver_low",  "P90_Main_RMA.png"},
+		{"SideRail_low",  "P90_Rails_RMA.png"},
+		{"TopRailStandard_low",  "P90_Rails_RMA.png"},
+		{"UpperReceiver_low",  "P90_FrontEnd_RMA.png"},
+		{"SideRailScrews_low",  "P90_Rails_RMA.png"},
+		{"Compensator_low",  "P90_FrontEnd_RMA.png"},
+		{"ChargingHandle_low",  "P90_FrontEnd_RMA.png"},
+		{"ChargingHandlePlate_low",  "P90_FrontEnd_RMA.png"},
 	};
 
 	auto it = RMAOverrides.find(meshName);

@@ -189,7 +189,7 @@ void Player::FireWeapon() {
             m_weaponAction = WeaponAction::FIRE;
         }
 
-        _muzzleFlashTimer = 5;
+        _muzzleFlashTimer = 6;
         
         int rand = std::rand() % weaponInfo->audioFiles.fire.size();
         AudioManager::PlayAudio(weaponInfo->audioFiles.fire[rand], 1.0f, 1.0f);

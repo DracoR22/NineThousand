@@ -30,7 +30,7 @@ void forceBoneUse() {
 }
 
 void main() {
- forceBoneUse();
+ //forceBoneUse();
   vec4 totalPosition = vec4(0.0f);
   vec3 totalNormal = vec3(0.0f);
   vec3 totalTangent = vec3(0.0);

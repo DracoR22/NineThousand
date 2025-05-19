@@ -5,6 +5,7 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_animationIndexMap;
 	std::unordered_map<std::string, int> g_animatorIndexMap;
 	std::unordered_map<std::string, int> g_textureIndexMap;
+	std::unordered_map<std::string, int> g_materailIndexMap;
 
 	// Models
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {

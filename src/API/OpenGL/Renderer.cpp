@@ -15,22 +15,24 @@ namespace OpenGLRenderer {
 		Shader instancedShader;
 		Shader uiShader;
 		Shader blurShader;
-		Shader pbrShader;
+		Shader lightingShader;
 		Shader muzzleFlashShader;
+		Shader waterShader;
+		Shader simpleTextureShader;
 	} g_shaders;
 
-	ModelCreateInfo bulletCreateInfo{
-			glm::vec3(0.0f, 5.0f, 1.0f),
-			glm::vec3(0.75f),
-			glm::mat4(1.0f),
-			{                                     // instanceOffsets (hardcoded)
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(2.0f, 0.0f, 0.0f),
-		glm::vec3(-2.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 2.0f, 0.0f),
-		glm::vec3(0.0f, -2.0f, 0.0f)
-	}
-	};
+	//ModelCreateInfo bulletCreateInfo{
+	//		glm::vec3(0.0f, 5.0f, 1.0f),
+	//		glm::vec3(0.75f),
+	//		glm::mat4(1.0f),
+	//		{                                     // instanceOffsets (hardcoded)
+	//	glm::vec3(0.0f, 0.0f, 0.0f),
+	//	glm::vec3(2.0f, 0.0f, 0.0f),
+	//	glm::vec3(-2.0f, 0.0f, 0.0f),
+	//	glm::vec3(0.0f, 2.0f, 0.0f),
+	//	glm::vec3(0.0f, -2.0f, 0.0f)
+	//}
+	//};
 
 	struct RenderData {
 		unsigned int frameBufferQuadVAO = 0;
@@ -54,6 +56,7 @@ namespace OpenGLRenderer {
 	struct RenderFrameBuffer {
 		FrameBuffer postProcessingFrameBuffer;
 		FrameBuffer mssaFrameBuffer;
+		FrameBuffer refractionFrameBuffer;
 
 		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
 	} g_renderFrameBuffers;
@@ -72,8 +75,10 @@ namespace OpenGLRenderer {
 		g_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 		g_shaders.uiShader.load("ui.vert", "ui.frag");
 		g_shaders.blurShader.load("blur.vert", "blur.frag");
-		g_shaders.pbrShader.load("pbr.vert", "pbr.frag");
+		g_shaders.lightingShader.load("lighting.vert", "lighting.frag");
 		g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
+		g_shaders.waterShader.load("water.vert", "water.frag");
+		g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -109,7 +114,7 @@ namespace OpenGLRenderer {
 		};
 
 		ModelCreateInfo aks74uCreateInfo{
-		 glm::vec3(0.0f, 5.0f, 0.0f),
+		 glm::vec3(0.0f, 2.0f, 0.0f),
 		 glm::vec3(0.05f),
 		 glm::mat4(1.0f)
 		};
@@ -129,12 +134,16 @@ namespace OpenGLRenderer {
 		ModelCreateInfo planeCreateInfo{
 			glm::vec3(0.0f),
 			glm::vec3(50.0f),
-			glm::mat4(1.0f)
+			glm::mat4(1.0f),
 		};
 
-		
-
-		/*bulletCreateInfo.instanceOffsets = generateGridOffsets(bulletCreateInfo.position, 5, 5, 1.5f);*/
+		ModelCreateInfo waterPlaneCreateInfo{
+			glm::vec3(0.0f, 0.5f, 0.0f),
+			glm::vec3(20.0f),
+			glm::mat4(1.0f),
+			"WaterDUDV.png",
+			"WaterNormal.png",
+		};
 
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
@@ -143,6 +152,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
 		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
+		AssetManager::LoadModel("WaterPlane", ModelType::PLANE, waterPlaneCreateInfo);
 		/*AssetManager::LoadModel("Bullet", ModelType::CUBE, bulletCreateInfo);*/
 
 		// Quad For FrameBuffer
@@ -197,11 +207,19 @@ namespace OpenGLRenderer {
 		g_renderFrameBuffers.postProcessingFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.postProcessingFrameBuffer.Unbind();
 
+		g_renderFrameBuffers.refractionFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.refractionFrameBuffer.Bind();
+		g_renderFrameBuffers.refractionFrameBuffer.CreateAttachment("refractionAttachment");
+		g_renderFrameBuffers.refractionFrameBuffer.CreateDepthTextureAttachment();
+		g_renderFrameBuffers.refractionFrameBuffer.DrawBuffer();
+		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
+
 		g_renderFrameBuffers.mssaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
 		g_renderFrameBuffers.mssaFrameBuffer.Bind();
 		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment("msaaAttachment");
 		g_renderFrameBuffers.mssaFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.mssaFrameBuffer.Unbind();
+
 
 		/*g_renderFrameBuffers.pingPongFrameBuffers.resize(2);
 		for (int i = 0; i < 2; i++) {
@@ -271,9 +289,11 @@ namespace OpenGLRenderer {
 			g_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 			g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 			g_shaders.blurShader.load("blur.vert", "blur.frag");
-			g_shaders.pbrShader.load("pbr.vert", "pbr.frag");
+			g_shaders.lightingShader.load("lighting.vert", "lighting.frag");
 			g_shaders.uiShader.load("ui.vert", "ui.frag");
 			g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
+			g_shaders.waterShader.load("water.vert", "water.frag");
+			g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 		}
 
 		Player& player = Game::GetPLayerByIndex(0);
@@ -281,7 +301,6 @@ namespace OpenGLRenderer {
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
 		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
-		
 
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -315,15 +334,48 @@ namespace OpenGLRenderer {
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		/*glEnable(GL_CLIP_DISTANCE0);*/
+		// REFLECTION PASS 
+		g_renderFrameBuffers.refractionFrameBuffer.Bind();
+		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		g_shaders.simpleTextureShader.activate();
+		g_shaders.simpleTextureShader.setMat4("view", view);
+		g_shaders.simpleTextureShader.setMat4("projection", projection);
+		/*g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
+		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+			std::string lightUniform = "lights[" + std::to_string(i) + "]";
+
+			g_shaders.lightingShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
+			g_shaders.lightingShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
+			g_shaders.lightingShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
+			g_shaders.lightingShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
+			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
+
+			g_shaders.lightingShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
+			g_shaders.lightingShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
+			g_shaders.lightingShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
+			g_shaders.lightingShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
+			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+		}
+		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
+		g_shaders.lightingShader.set3Float("camPos", player.getPosition());
+		g_shaders.lightingShader.setInt("shadowMap", 3);*/
+		AssetManager::DrawModel("Plane", g_shaders.simpleTextureShader);
+		// AssetManager::DrawModel("Cube", g_shaders.lightingShader);
+
+		//g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, view, projection);
+
+		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
+		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// ------ BIND FRAME BUFFERS -------
-	/*	if (g_renderFrameBuffers.mssaFrameBuffer.GetWidth() != Window::currentWidth ||
-			g_renderFrameBuffers.mssaFrameBuffer.GetHeight() != Window::currentHeight) {
-
-			g_renderFrameBuffers.mssaFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
-		}*/
-
 		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() != Window::currentWidth || g_renderFrameBuffers.postProcessingFrameBuffer.GetHeight() != Window::currentHeight) {
 			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
+			g_renderFrameBuffers.refractionFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
 			g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(Window::currentWidth, Window::currentHeight);
 		}
 
@@ -383,68 +435,66 @@ namespace OpenGLRenderer {
 				g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 			AssetManager::DrawModel("P90", g_shaders.weaponShader);
 		}
-	
-		/*_shaders.animShader.activate();
-		_shaders.animShader.setMat4("view", view);
-		_shaders.animShader.setMat4("projection", projection);
-		if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
-			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); ++i) {
-				_shaders.animShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			}
-
-			AssetManager::DrawModel("AKS74U", _shaders.animShader);
-		}*/
-
-		/*g_shaders.texturedObjectShader.activate();
-		g_shaders.texturedObjectShader.set3Float("viewPos", player.getPosition());
-		g_shaders.texturedObjectShader.setMat4("view", view);
-		g_shaders.texturedObjectShader.setMat4("projection", projection);
-		g_shaders.texturedObjectShader.setMat4("lightProjection", lightProjection);
-		g_shaders.texturedObjectShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.texturedObjectShader.setInt("shadowMap", 3);
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			g_shaders.texturedObjectShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
-			g_shaders.texturedObjectShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
-			g_shaders.texturedObjectShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
-			g_shaders.texturedObjectShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
-
-			g_shaders.texturedObjectShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
-			g_shaders.texturedObjectShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
-			g_shaders.texturedObjectShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
-			g_shaders.texturedObjectShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
-		}
-
-		AssetManager::DrawModel("Plane", g_shaders.texturedObjectShader);*/
 
 		// TO TEST PBR WORKS CORRECTLY FOR NOW-------------------------------------------------------
-		g_shaders.pbrShader.activate();
-		g_shaders.pbrShader.setMat4("view", view);
-		g_shaders.pbrShader.setMat4("projection", projection);
-		g_shaders.pbrShader.setMat4("lightProjection", lightProjection);
+		g_shaders.lightingShader.activate();
+		g_shaders.lightingShader.setMat4("view", view);
+		g_shaders.lightingShader.setMat4("projection", projection);
+		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			g_shaders.pbrShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
-			g_shaders.pbrShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
-			g_shaders.pbrShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
-			g_shaders.pbrShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
-			g_shaders.pbrShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-			g_shaders.pbrShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
+			g_shaders.lightingShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
+			g_shaders.lightingShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
+			g_shaders.lightingShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
+			g_shaders.lightingShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
+			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
 
-			g_shaders.pbrShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
-			g_shaders.pbrShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
-			g_shaders.pbrShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
-			g_shaders.pbrShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
-			g_shaders.pbrShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+			g_shaders.lightingShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
+			g_shaders.lightingShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
+			g_shaders.lightingShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
+			g_shaders.lightingShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
+			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
-		g_shaders.pbrShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.pbrShader.set3Float("camPos", player.getPosition());
-		g_shaders.pbrShader.setInt("shadowMap", 3);
-		AssetManager::DrawModel("Plane", g_shaders.texturedObjectShader);
-		AssetManager::DrawModel("Cube", g_shaders.pbrShader);
+		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
+		g_shaders.lightingShader.set3Float("camPos", player.getPosition());
+		g_shaders.lightingShader.setInt("shadowMap", 3);
+		AssetManager::DrawModel("Plane", g_shaders.lightingShader);
+		AssetManager::DrawModel("Cube", g_shaders.lightingShader);
+
+		// WATER PASS
+		static float moveFactor = 0.0f;
+		float waveSpeed = 0.03f;
+		moveFactor += waveSpeed * Window::GetDeltaTime();
+		if (moveFactor > 1.0f)
+			moveFactor -= 1.0f;
+
+		g_shaders.waterShader.activate();
+		g_shaders.waterShader.setMat4("view", view);
+		g_shaders.waterShader.setMat4("projection", projection);
+		g_shaders.waterShader.setVec3("camPos", player.getPosition());
+
+		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+			std::string lightUniform = "lights[" + std::to_string(i) + "]";
+
+			g_shaders.waterShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
+			g_shaders.waterShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
+			g_shaders.waterShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+		}
+		g_shaders.waterShader.setInt("lightsNr", g_renderData.sceneLights.size());
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.refractionFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
+		g_shaders.waterShader.setInt("refractionColor", 4);
+
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.refractionFrameBuffer.GetDepthTextureAttachmentId());
+		g_shaders.waterShader.setInt("depthTexture", 5);
+
+		g_shaders.waterShader.setFloat("moveFactor", moveFactor);
+
+		AssetManager::DrawModel("WaterPlane", g_shaders.waterShader);
 
 		// DEBUG LIGHTS
 		g_shaders.lampShader.activate();
@@ -463,6 +513,7 @@ namespace OpenGLRenderer {
 
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
+
 		Model* weaponModel = AssetManager::GetModelByName(player.GetEquipedWeaponInfo()->name);
 
 		// ------ MUZZLE FLASH PASS
@@ -496,8 +547,6 @@ namespace OpenGLRenderer {
 			g_renderData.muzzleFlashMesh.RenderTexture(g_shaders.muzzleFlashShader);
 			player._muzzleFlashTimer--;
 		}
-
-
 
 		// ------ UI PASS -------------
 		glDisable(GL_DEPTH_TEST);
@@ -566,7 +615,7 @@ namespace OpenGLRenderer {
 		glEnable(GL_DEPTH_TEST);
 
 
-		// ------ FRAME BUFFER PASS -----------
+		// ------ POST PROCESS PASS -----------
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
 		if (g_renderFrameBuffers.mssaFrameBuffer.GetWidth() == Window::currentWidth && g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == Window::currentWidth) {
@@ -683,6 +732,7 @@ namespace OpenGLRenderer {
 		};
 
 		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
+		g_renderFrameBuffers.refractionFrameBuffer.Cleanup();
 		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();
 	}
 }

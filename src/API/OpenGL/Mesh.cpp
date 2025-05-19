@@ -8,19 +8,19 @@ std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
 	int stride = 8;
 
 	for (int i = 0; i < noVertices; i++) {
-		ret[i].Position = glm::vec3(
+		ret[i].m_Position = glm::vec3(
 			vertices[i * stride + 0],
 			vertices[i * stride + 1],
 			vertices[i * stride + 2]
 		);
 
-		ret[i].Normal = glm::vec3(
+		ret[i].m_Normal = glm::vec3(
 			vertices[i * stride + 3],
 			vertices[i * stride + 4],
 			vertices[i * stride + 5]
 		);
 
-		ret[i].TexCoords = glm::vec2(
+		ret[i].m_TexCoords = glm::vec2(
 			vertices[i * stride + 6],
 			vertices[i * stride + 7]
 		);
@@ -43,12 +43,12 @@ std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
 		Vertex v3 = list[indices[i + 2]];
 
 		// calculate edges
-		glm::vec3 edge1 = v2.Position - v1.Position;
-		glm::vec3 edge2 = v3.Position - v1.Position;
+		glm::vec3 edge1 = v2.m_Position - v1.m_Position;
+		glm::vec3 edge2 = v3.m_Position - v1.m_Position;
 
 		// calculate dUVs
-		glm::vec2 deltaUV1 = v2.TexCoords - v1.TexCoords;
-		glm::vec2 deltaUV2 = v3.TexCoords - v1.TexCoords;
+		glm::vec2 deltaUV1 = v2.m_TexCoords - v1.m_TexCoords;
+		glm::vec2 deltaUV2 = v3.m_TexCoords - v1.m_TexCoords;
 
 		// use inverse of the UV matrix to determine tangent
 		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
@@ -60,9 +60,9 @@ std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
 		};
 
 		// average in the new tangent vector
-		AverageVectors(list[indices[i + 0]].Tangent, tangent, counts[indices[i + 0]]++);
-		AverageVectors(list[indices[i + 1]].Tangent, tangent, counts[indices[i + 1]]++);
-		AverageVectors(list[indices[i + 2]].Tangent, tangent, counts[indices[i + 2]]++);
+		AverageVectors(list[indices[i + 0]].m_Tangent, tangent, counts[indices[i + 0]]++);
+		AverageVectors(list[indices[i + 1]].m_Tangent, tangent, counts[indices[i + 1]]++);
+		AverageVectors(list[indices[i + 2]].m_Tangent, tangent, counts[indices[i + 2]]++);
 	}
 }
 
@@ -117,15 +117,15 @@ void Mesh::setupMesh() {
 
 	// Vertex normals
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Normal));
 
 	// Vertex Texture Coords
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_TexCoords));
 
 	// Tangent Vector
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Tangent));
 
 	// Bone Ids
 	glEnableVertexAttribArray(4);
@@ -139,23 +139,19 @@ void Mesh::setupMesh() {
 }
 
 void Mesh::draw(Shader& shader, unsigned int instances) {
-	unsigned int diffuseNr = 0;
-	unsigned int specularNr = 0;
-	unsigned int normalNr = 0;
-
 	for (unsigned int i = 0; i < textures.size(); i++) {
 		glActiveTexture(GL_TEXTURE0 + i);
 
 		std::string name;
 		switch (textures[i].type) {
 		case aiTextureType_DIFFUSE:
-			name = "albedoMap";
-			break;
-		case aiTextureType_SPECULAR:
-			name = "rmaMap";
+			name = "baseTexture";
 			break;
 		case aiTextureType_NORMALS:
-			name = "normalMap";
+			name = "normalTexture";
+			break;
+		case aiTextureType_SPECULAR:
+			name = "rmaTexture";
 			break;
 		default:
 			continue;
@@ -180,7 +176,7 @@ void Mesh::draw(Shader& shader, unsigned int instances) {
 
 	glActiveTexture(GL_TEXTURE0);
 	for (unsigned int i = 0; i < textures.size(); i++) {
-		glBindTexture(GL_TEXTURE_2D, 0); // Unbind each texture
+		glBindTexture(GL_TEXTURE_2D, 0); 
 	}
 }
 

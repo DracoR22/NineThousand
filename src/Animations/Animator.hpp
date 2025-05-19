@@ -91,8 +91,7 @@ public:
 
 		std::shared_ptr<Bone> Bone = m_CurrentAnimation->FindBone(nodeName);
 
-		if (Bone)
-		{
+		if (Bone) {
 			Bone->Update(m_CurrentTime * m_CurrentAnimation->GetTicksPerSecond());
 			nodeTransform = Bone->GetLocalTransform();
 		}
@@ -100,8 +99,7 @@ public:
 		glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
 		const auto& boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
-		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
-		{
+		if (boneInfoMap.find(nodeName) != boneInfoMap.end()) {
 			int index = boneInfoMap.at(nodeName).id;
 			m_FinalBoneMatrices[index] = globalTransformation * boneInfoMap.at(nodeName).offset;
 		}

@@ -12,6 +12,9 @@ struct ModelCreateInfo {
 	glm::vec3 position = glm::vec3(0.0f);
 	glm::vec3 size = glm::vec3(1.0f);
 	glm::mat4 rotation = glm::mat4(1.0f);
+	std::string baseTexture = "Concrete_ALB.png";
+	std::string normalTexture = "Concrete_NRM.png";
+	std::string rmaTexture = "Concrete_RMA.png";
 	std::vector<glm::vec3> instanceOffsets = {};
 };
 

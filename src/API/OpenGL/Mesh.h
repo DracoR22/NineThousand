@@ -12,10 +12,10 @@
 #define UPPER_BOUND 100
 
 struct Vertex {
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 TexCoords;
-	glm::vec3 Tangent;   
+	glm::vec3 m_Position;
+	glm::vec3 m_Normal;
+	glm::vec2 m_TexCoords;
+	glm::vec3 m_Tangent;   
 
 	int m_BoneIDs[MAX_BONE_INFLUENCE] = { -1, -1, -1, -1 };
 	float m_Weights[MAX_BONE_INFLUENCE] = { 0.0f, 0.0f, 0.0f, 0.0f };

@@ -53,7 +53,7 @@ namespace WeaponManager {
 		p90.audioFiles.reload = "P90_Reload.wav";
 		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
 		p90.audioFiles.draw = "NextWeapon.wav";
-		p90.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, 17.0f);
+		p90.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, 15.0f);
 		p90.muzzleFlashSize = 4.0f;
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();

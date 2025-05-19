@@ -260,7 +260,7 @@ namespace Game {
 	}
 
 	void CreatePlayers() {
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 2.3f, 75.0f);
+		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 3.3f, 75.0f);
 		player.EquipWeapon("Glock");
 
 		g_players.push_back(player);
@@ -291,7 +291,7 @@ namespace Game {
 		else if (name == "P90") {
 			gunPosition = g_players[0].getPosition() +
 				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -3.8f);    // Offset downward
+				(g_players[0].camera.cameraUp * -4.2f);    // Offset downward
 		}
 		else {
 			gunPosition = g_players[0].getPosition() +

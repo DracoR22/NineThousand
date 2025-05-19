@@ -62,6 +62,18 @@ void FrameBuffer::CreateDepthAttachment() {
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 }
 
+void FrameBuffer::CreateDepthTextureAttachment() {
+	glGenTextures(1, &m_depthTextureID);
+	glBindTexture(GL_TEXTURE_2D, m_depthTextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTextureID, 0);
+}
+
 void FrameBuffer::DrawBuffers() {
 	std::vector<GLenum> attachments;
 	for (int i = 0; i < m_colorAttachments.size(); i++) {
@@ -155,4 +167,8 @@ GLuint FrameBuffer::GetColorAttachmentByIndex(int index) {
 
 GLuint FrameBuffer::GetColorAttachmentTextureIdByIndex(int index) {
 	return m_colorAttachments[index].textureID;
+}
+
+GLuint FrameBuffer::GetDepthTextureAttachmentId() {
+	return m_depthTextureID;
 }

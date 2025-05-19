@@ -30,9 +30,9 @@ in mat3 TBN;
 uniform Light lights[MAX_POINT_LIGHTS];
 uniform int noLights;
 
-uniform sampler2D albedoMap;
-uniform sampler2D rmaMap;
-uniform sampler2D normalMap;
+uniform sampler2D baseTexture;
+uniform sampler2D normalTexture;
+uniform sampler2D rmaTexture;
 
 uniform vec3 camPos;
 
@@ -42,7 +42,7 @@ const float PI = 3.14159265359;
 
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalTexture, TexCoords).xyz * 2.0 - 1.0;
     return normalize(TBN * tangentNormal);
 }
 
@@ -133,8 +133,8 @@ vec3 uncharted2(vec3 color) {
 
 
 void main() {
- vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
- vec3 rma = texture(rmaMap, TexCoords).rgb;
+ vec3 albedo = pow(texture(baseTexture, TexCoords).rgb, vec3(2.2));
+ vec3 rma = texture(rmaTexture, TexCoords).rgb;
  float roughness = rma.r;
  float metallic  = rma.g;
  float ao        = rma.b;
