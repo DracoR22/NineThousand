@@ -139,17 +139,15 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 	else if (type == ModelType::PLANE) {
 		int noVertices = 6;
 
-		float tiling = 1.0f;
-
 		float vertices[] = {
-			// position               normal           texcoord (tiled!)
-			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 0.0f * tiling,
-			 0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 0.0f * tiling,
-			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 1.0f * tiling,
+			// position               normal           texcoord
+			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+			 0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 0.0f,
+			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 1.0f,
 
-			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 0.0f * tiling,
-			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f * tiling, 1.0f * tiling,
-			-0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    0.0f * tiling, 1.0f * tiling
+			-0.5f, 0.0f, -0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 0.0f,
+			 0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    1.0f, 1.0f,
+			-0.5f, 0.0f,  0.5f,     0.0f, 1.0f, 0.0f,    0.0f, 1.0f
 		};
 
 		std::vector<unsigned int> indices(noVertices);

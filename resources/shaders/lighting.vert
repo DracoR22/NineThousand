@@ -19,7 +19,7 @@ uniform mat4 lightProjection;
 
 void main() {
     WorldPos = vec3(model * vec4(aPos, 1.0));
-    TexCoords = aTexCoord;
+    TexCoords = aTexCoord * 2;
     Normal = mat3(transpose(inverse(model))) * aNormal;
 
     WorldPosLight = lightProjection * vec4(WorldPos, 1.0);

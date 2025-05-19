@@ -41,7 +41,7 @@ void main() {
     refractTexCoords = clamp(refractTexCoords, 0.001, 0.999); 
 
     vec4 normalMapColor = texture(normalTexture, distortedTexCoords);
-    vec3 normal = vec3(normalMapColor.r * 2.0 - 1.0, normalMapColor.b * 3.0, normalMapColor.g * 2.0 - 1.0);
+    vec3 normal = vec3(normalMapColor.r * 2.0 - 1.0, normalMapColor.b, normalMapColor.g * 2.0 - 1.0);
     normal = normalize(normal);
 
     vec3 viewVector = normalize(camPos - WorldPos.xyz);
@@ -59,6 +59,6 @@ void main() {
    }
 
     FragColor = texture(refractionColor, refractTexCoords);
-    FragColor = mix(FragColor, vec4(0.0, 0.3, 0.5, 1.0), 0.1) + vec4(specularHighlights, 0.0);
+    FragColor = mix(FragColor, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(specularHighlights, 0.0);
  
 }
