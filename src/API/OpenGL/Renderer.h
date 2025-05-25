@@ -18,6 +18,7 @@
 
 #include "../../Game/Player.h"
 #include "../../Game/Game.h"
+#include "../../Game/Scene.h"
 
 #include "../../Core/Window.h"
 #include "../../Core/AssetManager.h"

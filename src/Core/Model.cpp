@@ -5,27 +5,27 @@ Model::Model(const std::string& name, const ModelCreateInfo& createInfo)
 	: m_name(name), pos(createInfo.position), size(createInfo.size), rotation(createInfo.rotation) {}
 
 void Model::draw(Shader& shader) {
-	glm::mat4 model = glm::mat4(1.0f);
+	//glm::mat4 model = glm::mat4(1.0f);
 
-	model = glm::translate(model, pos);
-	model = glm::scale(model, size);
-	model *= rotation;
+	//model = glm::translate(model, pos);
+	//model = glm::scale(model, size);
+	//model *= rotation;
 
-	shader.setMat4("model", model);
+	//shader.setMat4("model", model);
 
 	for (unsigned int i = 0; i < meshes.size(); i++) {
-		meshes[i].draw(shader);
+		meshes[i].Draw(shader);
 	}
 }
 
 void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
-	glm::mat4 model = glm::mat4(1.0f);
+	/*glm::mat4 model = glm::mat4(1.0f);
 
 	model = glm::translate(model, pos);
 	model = glm::scale(model, size);
 	model *= rotation;
 
-	shader.setMat4("model", model);
+	shader.setMat4("model", model);*/
 
 	int fixedOffsets = std::min(UPPER_BOUND, (int)offsets.size());
 
@@ -33,7 +33,7 @@ void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
 	glBufferSubData(GL_ARRAY_BUFFER, 0, fixedOffsets * sizeof(glm::vec3), &offsets[0]);
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, offsets.size());
+		meshes[i].Draw(shader, offsets.size());
 }
 
 void Model::setPosition(const glm::vec3& newPos) {
@@ -167,8 +167,8 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 		Vertex::CalcTanVectors(vertexlist, indices);
 
 		Mesh planeMesh("Plane_Primitive_Mesh", vertexlist, indices);
-		planeMesh.textures.push_back(*baseColor);  
-		planeMesh.textures.push_back(*rmaMap); 
+		planeMesh.textures.push_back(*baseColor);
+		planeMesh.textures.push_back(*rmaMap);
 		planeMesh.textures.push_back(*normalMap);
 
 		meshes.push_back(planeMesh);
@@ -183,7 +183,7 @@ void Model::loadAssimpModel(std::string path) {
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-		
+
 		return;
 	}
 	/* directory = path.substr(0, path.find_last_of('/'));*/
@@ -199,7 +199,7 @@ void Model::CreateInstanceBuffers() {
 	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene) {	
+void Model::processNode(aiNode* node, const aiScene* scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -240,11 +240,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		);
 
 		// normals
-		vertex.m_Normal = glm::vec3(
-			mesh->mNormals[i].x,
-			mesh->mNormals[i].y,
-			mesh->mNormals[i].z
-		);
+		if (mesh->HasNormals()) {
+			vertex.m_Normal = glm::vec3(
+				mesh->mNormals[i].x,
+				mesh->mNormals[i].y,
+				mesh->mNormals[i].z
+			);
+		}
 
 		// texture coords
 		if (mesh->mTextureCoords[0]) {
@@ -258,11 +260,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		}
 
 		// tangent vector
-		vertex.m_Tangent = {
+		if (mesh->HasTangentsAndBitangents()) {
+			vertex.m_Tangent = {
 			mesh->mTangents[i].x,
 			mesh->mTangents[i].y,
 			mesh->mTangents[i].z
-		};
+			};
+		}
 
 		vertices.push_back(vertex);
 	}
@@ -352,6 +356,7 @@ void Model::LoadRMAMaterials(const std::string& meshName, aiMaterial* material, 
 		{"Compensator_low",  "P90_FrontEnd_RMA.png"},
 		{"ChargingHandle_low",  "P90_FrontEnd_RMA.png"},
 		{"ChargingHandlePlate_low",  "P90_FrontEnd_RMA.png"},
+		{"Katana", "Katana_RMA.png"}
 	};
 
 	auto it = RMAOverrides.find(meshName);
@@ -371,7 +376,7 @@ void Model::LoadRMAMaterials(const std::string& meshName, aiMaterial* material, 
 
 void Model::cleanup() {
 	for (Mesh mesh : meshes) {
-		mesh.cleanup();
+		mesh.Cleanup();
 	}
 }
 

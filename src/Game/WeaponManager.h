@@ -21,6 +21,12 @@ enum class WeaponAction {
 	ADS_WALK
 };
 
+enum class WeaponType {
+	MELEE,
+	SEMI,
+	AUTO
+};
+
 struct WeaponAnimations {
 	std::string idle;
 	std::string walk;
@@ -50,13 +56,14 @@ struct WeaponAudio {
 };
 
 struct WeaponInfo {
-	std::string name;
-	std::string modelName;
+	std::string name = "";
+	std::string modelName = "";
 	WeaponAnimations animations;
 	WeaponAnimationCancelFrames animationCancelFrames;
 	WeaponAudio audioFiles;
 	glm::vec3 muzzleFlashOffset = glm::vec3(0.0f);
 	float muzzleFlashSize = 0.0f;
+	WeaponType type;
 };
 
 namespace WeaponManager {

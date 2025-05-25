@@ -33,6 +33,8 @@ namespace Engine {
 		AudioManager::LoadAudio("AKS74U_Reload.wav");
 		AudioManager::LoadAudio("AKS74U_ReloadEmpty.wav");
 		AudioManager::LoadAudio("NextWeapon.wav");
+		AudioManager::LoadAudio("Katana_Hit1.wav");
+		AudioManager::LoadAudio("Katana_Draw.wav");
 
 		Text2D::LoadFont("resources/fonts/sans.fnt");
 		AssetManager::LoadTexture("sans.png", aiTextureType_DIFFUSE);
@@ -61,11 +63,14 @@ namespace Engine {
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			if (Game::GetGameState() == Game::GameState::PLAYING) {
-				player.processInput(Window::GetDeltaTime());
+				player.Update(Window::GetDeltaTime());
 				Game::Update(Window::GetDeltaTime());
 
-			    AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
-			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);
+			   /* AssetManager::GetModelByName("Cube")->setPosition(cubeTransformData.position);
+			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);*/
+
+				Scene::GetGameObjectByName("Cube0")->SetPosition(cubeTransformData.position);
+				Scene::GetGameObjectByName("Cube0")->SetRotation(rotationMatrix);
 
 
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

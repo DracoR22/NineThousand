@@ -119,6 +119,12 @@ namespace OpenGLRenderer {
 		 glm::mat4(1.0f)
 		};
 
+		ModelCreateInfo katanaCreateInfo{
+		 glm::vec3(0.0f, 2.0f, 0.0f),
+		 glm::vec3(0.05f),
+		 glm::mat4(1.0f)
+		};
+
 		ModelCreateInfo cubeCreateInfo{
 			glm::vec3(0.0f, 5.0f, 1.0f),
 			glm::vec3(0.75f),
@@ -154,6 +160,8 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74UBfbx.fbx", aks74uCreateInfo);
+		AssetManager::LoadAssimpModel("Katana", "resources/models/untitled.fbx", katanaCreateInfo);
+		AssetManager::LoadAssimpModel("DEAGLE", "resources/models/Deagle_Animation.fbx", aks74uCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
@@ -242,6 +250,8 @@ namespace OpenGLRenderer {
 		Model* glockModel = AssetManager::GetModelByName("Glock");
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
+		Model* katanaModel = AssetManager::GetModelByName("Katana");
+		Model* dEagleModel = AssetManager::GetModelByName("DEAGLE");
 
 		// load animations
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
@@ -267,6 +277,15 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Walk", "resources/animations/Glock_ADS_Walk.fbx", glockModel);
 
+		AssetManager::LoadAnimation("Knife_Idle", "resources/animations/Knife_Idle.fbx", katanaModel);
+		AssetManager::LoadAnimation("Knife_Swing0", "resources/animations/Knife_Swing0.fbx", katanaModel);
+		AssetManager::LoadAnimation("Knife_Swing1", "resources/animations/Knife_Swing1.fbx", katanaModel);
+		AssetManager::LoadAnimation("Knife_Swing2", "resources/animations/Knife_Swing2.fbx", katanaModel);
+		AssetManager::LoadAnimation("Knife_Draw", "resources/animations/Knife_Draw.fbx", katanaModel);
+		AssetManager::LoadAnimation("Knife_Walk", "resources/animations/Knife_Walk.fbx", katanaModel);
+
+		AssetManager::LoadAnimation("DEAGLE_Walk", "resources/models/Deagle_Animation.fbx", dEagleModel);
+
 		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Walk", "resources/animations/P90_Walk.fbx", p90Model);
@@ -280,6 +299,10 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
 		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
+		AssetManager::LoadAnimator("DEAGLEAnimator", AssetManager::GetAnimationByName("DEAGLE_Walk"));
+		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
+
+		Scene::CreateGameObjects();
 	}
 
 	void RenderFrame() {
@@ -307,6 +330,13 @@ namespace OpenGLRenderer {
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
 		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
+		Animator* katanaAnimator = AssetManager::GetAnimatorByName("KatanaAnimator");
+		Animator* dEagleAnimator = AssetManager::GetAnimatorByName("DEAGLEAnimator");
+
+		dEagleAnimator->UpdateAnimation(Window::GetDeltaTime());
+		if (Keyboard::KeyJustPressed(GLFW_KEY_V)) {
+			dEagleAnimator->PlayAnimation(AssetManager::GetAnimationByName("DEAGLE_Walk"));
+		}
 
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -418,31 +448,37 @@ namespace OpenGLRenderer {
 		else {
 			g_shaders.weaponShader.setBool("flipLights", false);
 		}
-		if (player.GetEquipedWeaponInfo()->name == "Glock") {
-			auto& transforms = glockAnimator->GetFinalBoneMatrices();
-			
-			for (int i = 0; i < transforms.size(); ++i) {
-				g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			}
 
-			AssetManager::DrawModel("Glock", g_shaders.weaponShader);
+		glm::mat4 amodel = glm::mat4(1.0f);
+
+		amodel = glm::translate(amodel, player.m_currentWeaponGameObject.GetPosition());
+		amodel = glm::scale(amodel, player.m_currentWeaponGameObject.GetSize());
+		amodel *= player.m_currentWeaponGameObject.GetRotation();
+
+		g_shaders.weaponShader.setMat4("model", amodel);
+
+		auto& transforms = AssetManager::GetAnimatorByName(player.GetEquipedWeaponInfo()->name + "Animator")->GetFinalBoneMatrices();
+		for (int i = 0; i < transforms.size(); ++i) {
+			g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 		}
-		else if (player.GetEquipedWeaponInfo()->name == "AKS74U") {
-			auto transforms = aks74uAnimator->GetFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); ++i) {
-				g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			}
+		AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, g_shaders.weaponShader);
 
-			AssetManager::DrawModel("AKS74U", g_shaders.weaponShader);
-		}	
-		else if (player.GetEquipedWeaponInfo()->name == "P90") {
-			auto transforms = p90Animator->GetFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); ++i)
-				g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-			AssetManager::DrawModel("P90", g_shaders.weaponShader);
+		glm::mat4 bmodel = glm::mat4(1.0f);
+
+		bmodel = glm::translate(bmodel, glm::vec3(0.0f, 2.0f, 0.0f));
+		bmodel = glm::scale(bmodel, glm::vec3(0.05f));
+		bmodel *= glm::mat4(1.0f);
+
+		g_shaders.weaponShader.setMat4("model", bmodel);
+		
+		auto& etransforms = dEagleAnimator->GetFinalBoneMatrices();
+		for (int i = 0; i < etransforms.size(); ++i) {
+			g_shaders.weaponShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", etransforms[i]);
 		}
+		AssetManager::DrawModel("DEAGLE", g_shaders.weaponShader);
+		
 
-		// TO TEST PBR WORKS CORRECTLY FOR NOW-------------------------------------------------------
+		// LIGHTING PASS
 		g_shaders.lightingShader.activate();
 		g_shaders.lightingShader.setMat4("view", view);
 		g_shaders.lightingShader.setMat4("projection", projection);
@@ -466,8 +502,21 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
 		g_shaders.lightingShader.set3Float("camPos", player.getPosition());
 		g_shaders.lightingShader.setInt("shadowMap", 3);
-		AssetManager::DrawModel("Plane", g_shaders.lightingShader);
-		AssetManager::DrawModel("Cube", g_shaders.lightingShader);
+
+		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			glm::mat4 cmodel = glm::mat4(1.0f);
+
+			cmodel = glm::translate(cmodel, gameObject.GetPosition());
+			cmodel = glm::scale(cmodel, gameObject.GetSize());
+			cmodel *= gameObject.GetRotation();
+
+			g_shaders.lightingShader.setMat4("model", cmodel);
+
+			AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
+		}
+
+		//AssetManager::DrawModel("Plane", g_shaders.lightingShader);
+		//AssetManager::DrawModel("Cube", g_shaders.lightingShader);
 
 		// WATER PASS
 		static float moveFactor = 0.0f;
@@ -510,6 +559,9 @@ namespace OpenGLRenderer {
 		g_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 		AssetManager::DrawModel("CubeLamp", g_shaders.lampShader);
 
+		// DEBUG PASS
+
+
 		// ------ INSTANCE PASS ----------
 		/*g_shaders.instancedShader.activate();
 		g_shaders.instancedShader.setMat4("view", view);
@@ -520,11 +572,10 @@ namespace OpenGLRenderer {
 		// ------ CUBEMAP PASS -------------
 		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
 
-		Model* weaponModel = AssetManager::GetModelByName(player.GetEquipedWeaponInfo()->name);
-
+		
 		// ------ MUZZLE FLASH PASS
 		glm::vec3 barrelOffset = player.GetEquipedWeaponInfo()->muzzleFlashOffset;
-		glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), weaponModel->pos) * weaponModel->rotation;
+		glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), player.m_currentWeaponGameObject.GetPosition()) * player.m_currentWeaponGameObject.GetRotation();
 
 		glm::vec4 worldBarrelPos = gunTransform * glm::vec4(barrelOffset, 1.0f);
 

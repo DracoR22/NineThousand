@@ -1,11 +1,22 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 enum class LightType {
 	POINT_LIGHT = 0,
 	DIRECTIONAL_LIGHT = 1
+};
+
+struct GameObjectCreateInfo {
+	std::string name = "";
+	std::string modelName = "";
+	glm::vec3 position = glm::vec3(0.0f);
+	glm::vec3 size = glm::vec3(1.0f);
+	glm::mat4 rotation = glm::mat4(1.0f);
 };
 
 struct ModelCreateInfo {

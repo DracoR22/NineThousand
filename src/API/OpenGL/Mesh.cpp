@@ -60,20 +60,9 @@ std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
 		};
 
 		// average in the new tangent vector
-		AverageVectors(list[indices[i + 0]].m_Tangent, tangent, counts[indices[i + 0]]++);
-		AverageVectors(list[indices[i + 1]].m_Tangent, tangent, counts[indices[i + 1]]++);
-		AverageVectors(list[indices[i + 2]].m_Tangent, tangent, counts[indices[i + 2]]++);
-	}
-}
-
-void AverageVectors(glm::vec3& baseVec, glm::vec3 addition, unsigned char existingContributions) {
-	if (!existingContributions) {
-		baseVec = addition;
-	}
-	else {
-		float f = 1 / ((float)existingContributions + 1);
-		baseVec *= (float)(existingContributions)*f;
-		baseVec += addition * f;
+		Utils::AverageVectors(list[indices[i + 0]].m_Tangent, tangent, counts[indices[i + 0]]++);
+		Utils::AverageVectors(list[indices[i + 1]].m_Tangent, tangent, counts[indices[i + 1]]++);
+		Utils::AverageVectors(list[indices[i + 2]].m_Tangent, tangent, counts[indices[i + 2]]++);
 	}
 }
 
@@ -84,11 +73,11 @@ Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<un
 	this->indices = indices;
 	this->textures = textures;
 
-	setupMesh();
+	SetupMesh();
 }
 
 	void Mesh::SetupInstance() {
-		glBindVertexArray(VAO);
+		glBindVertexArray(m_VAO);
 
 		glEnableVertexAttribArray(6);
 		glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -97,18 +86,18 @@ Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<un
 		glBindVertexArray(0);
 	}
 
-void Mesh::setupMesh() {
-	glGenVertexArrays(1, &VAO);
+void Mesh::SetupMesh() {
+	glGenVertexArrays(1, &m_VAO);
 
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_EBO);
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(m_VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
 	// Vertex Positions
@@ -138,7 +127,7 @@ void Mesh::setupMesh() {
 	glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader& shader, unsigned int instances) {
+void Mesh::Draw(Shader& shader, unsigned int instances) {
 	for (unsigned int i = 0; i < textures.size(); i++) {
 		glActiveTexture(GL_TEXTURE0 + i);
 
@@ -164,9 +153,8 @@ void Mesh::draw(Shader& shader, unsigned int instances) {
 	}
 
 	// draw mesh
-	glBindVertexArray(VAO);
+	glBindVertexArray(m_VAO);
 	if (instances > 0) {
-		
 		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instances);
 	}
 	else {
@@ -180,8 +168,8 @@ void Mesh::draw(Shader& shader, unsigned int instances) {
 	}
 }
 
-void Mesh::cleanup() {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+void Mesh::Cleanup() {
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO);
+	glDeleteBuffers(1, &m_EBO);
 }

@@ -3,6 +3,8 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "../../Utils/Utils.h"
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -24,8 +26,6 @@ struct Vertex {
 	static void CalcTanVectors(std::vector<Vertex>& list, std::vector<unsigned int>& indices);
 };
 
-void AverageVectors(glm::vec3& baseVec, glm::vec3 addition, unsigned char existingContributions);
-
 class Mesh {
 public:
 	std::vector<Vertex> vertices;
@@ -36,11 +36,14 @@ public:
 public:
 	Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures = {});
 
-	void draw(Shader& shader, unsigned int instances = 0);
-	void cleanup();
+	void Draw(Shader& shader, unsigned int instances = 0);
+	void Cleanup();
 	void SetupInstance();
-	void setupMesh();
+	void SetupMesh();
+	void GetVAO();
 private:
-	unsigned int VAO, VBO, EBO;
+	unsigned int m_VAO;
+	unsigned int m_VBO;
+	unsigned int m_EBO;
 };
 

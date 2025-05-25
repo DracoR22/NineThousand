@@ -14,7 +14,6 @@ namespace WeaponManager {
 		glock.animations.reload = "Glock_Reload";
 		glock.animations.reloadEmpty = "Glock_ReloadEmpty";
 		glock.animations.fire.push_back("Glock_Fire0");
-		glock.animations.fire.push_back("Glock_Fire1");
 		glock.animations.ADSIdle = "Glock_ADS_Idle";
 		glock.animations.ADSIn = "Glock_ADS_In";
 		glock.animations.ADSOut = "Glock_ADS_Out";
@@ -30,6 +29,22 @@ namespace WeaponManager {
 		glock.audioFiles.draw = "NextWeapon.wav";
 		glock.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -15.0f);
 		glock.muzzleFlashSize = 4.0f;
+		glock.type = WeaponType::SEMI;
+
+		WeaponInfo& katana = g_weapons.emplace_back();
+		katana.name = "Katana";
+		katana.modelName = "Katana";
+		katana.animations.idle = "Knife_Idle";
+		katana.animations.walk = "Knife_Walk";
+		katana.animations.fire.push_back("Knife_Swing0");
+		katana.animations.fire.push_back("Knife_Swing1");
+		katana.animations.fire.push_back("Knife_Swing2");
+		katana.animations.draw = "Knife_Draw";
+		katana.audioFiles.fire.push_back("Katana_Hit1.wav");
+		katana.audioFiles.reloadEmpty = "Glock_ReloadEmpty.wav";
+		katana.audioFiles.draw = "Katana_Draw.wav";
+		katana.animationCancelFrames.fire = 13;
+		katana.type = WeaponType::MELEE;
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
@@ -39,7 +54,6 @@ namespace WeaponManager {
 		p90.animations.reload = "P90_Reload";
 		p90.animations.reloadEmpty = "P90_ReloadEmpty";
 		p90.animations.fire.push_back("P90_Fire0");
-		p90.animations.fire.push_back("P90_Fire1");
 		p90.animations.ADSIdle = "P90_ADS_Idle";
 		p90.animations.ADSIn = "P90_ADS_In";
 		p90.animations.ADSOut = "P90_ADS_Out";
@@ -55,6 +69,7 @@ namespace WeaponManager {
 		p90.audioFiles.draw = "NextWeapon.wav";
 		p90.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, 15.0f);
 		p90.muzzleFlashSize = 4.0f;
+		p90.type = WeaponType::AUTO;
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -64,7 +79,6 @@ namespace WeaponManager {
 		aks74u.animations.reload = "AKS74U_Reload";
 		aks74u.animations.reloadEmpty = "AKS74U_ReloadEmpty";
 		aks74u.animations.fire.push_back("AKS74U_Fire0");
-		aks74u.animations.fire.push_back("AKS74U_Fire1");
 		aks74u.animations.ADSIdle = "AKS74U_ADS_Idle";
 		aks74u.animations.ADSIn = "AKS74U_ADS_In";
 		aks74u.animations.ADSOut = "AKS74U_ADS_Out";
@@ -80,6 +94,7 @@ namespace WeaponManager {
 		aks74u.audioFiles.draw = "NextWeapon.wav";
 		aks74u.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -20.0f);
 		aks74u.muzzleFlashSize = 4.0f;
+		aks74u.type = WeaponType::AUTO;
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string& name) {

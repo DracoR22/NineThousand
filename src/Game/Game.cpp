@@ -43,6 +43,11 @@ namespace Game {
 		Animation* aks74uADSFireAnimation = AssetManager::GetAnimationByName("AKS74U_ADS_Fire");
 		Animation* aks74uADSWalkAnimation = AssetManager::GetAnimationByName("AKS74U_ADS_Walk");
 
+		Animation* katanaIdleAnimation = AssetManager::GetAnimationByName("Knife_Idle");
+		Animation* katanaDrawAnimation = AssetManager::GetAnimationByName("Knife_Draw");
+
+		Animator* katanaAnimator = AssetManager::GetAnimatorByName("KatanaAnimator");
+
 		WeaponInfo* equipedWeapon = g_players[0].GetEquipedWeaponInfo();
 
 		static std::string previousWeapon = equipedWeapon->name;
@@ -54,7 +59,15 @@ namespace Game {
 		static bool isInADS = false;
 
 		g_players[0].FireWeapon();
-		g_players[0].EnterADS();
+
+		if (equipedWeapon->type == WeaponType::MELEE) {
+			g_players[0].MeleeHit();
+		}
+
+		if (g_players[0].CanEnterADS()) {
+			g_players[0].EnterADS();
+		}
+
 		g_players[0].LeaveADS();
 		g_players[0].UpdateWeaponLogic();
 
@@ -70,19 +83,6 @@ namespace Game {
 				isDrawing = true;
 			}
 
-			/*if (g_players[0].PressedADS()) {
-				glockAnimator->PlayAnimation(glockADSInAnimation, 1.5f);
-				ADSInAnimationFinishTime = 0.0f;
-				isInADS = true;
-				g_players[0].SetWeaponAction(WeaponAction::ADS_IN);
-			}*/
-
-
-			/*if (!g_players[0].PressingADS() && g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockIdleAnimation) {
-				glockAnimator->PlayAnimation(glockWalkAnimation);
-				g_players[0].SetWeaponAction(WeaponAction::WALK);
-			}*/
-
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
 
@@ -94,72 +94,9 @@ namespace Game {
 				}
 			}
 
-			/*if (!g_players[0].IsMoving() && isInADS && g_players[0].PressingADS() && glockAnimator->GetCurrentAnimation() == glockADSInAnimation) {
-				ADSInAnimationFinishTime += deltaTime;
-				if (glockAnimator->GetCurrentTime() >= 0.24f) {
-					
-					glockAnimator->PlayAnimation(glockADSIdleAnimation);
-					g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
-				}
-			}*/
-
-		/*	if (g_players[0].IsMoving() && g_players[0].PressingADS() && glockAnimator->GetCurrentAnimation() == glockADSInAnimation) {
-				ADSInAnimationFinishTime += deltaTime;
-				
-				if (ADSInAnimationFinishTime >= 0.23f) {
-					glockAnimator->PlayAnimation(glockADSWalkAnimation);
-					g_players[0].SetWeaponAction(WeaponAction::ADS_WALK);
-				}
-			}*/
-
-			/*if (g_players[0].PressingADS() && glockAnimator->GetCurrentAnimation() == glockADSFire1Animation) {
-				g_players[0].m_ADSFireAnimationFinishTime += deltaTime;
-				if (g_players[0].m_ADSFireAnimationFinishTime >= 0.60f) {
-					
-					glockAnimator->PlayAnimation(glockADSIdleAnimation);
-					g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
-				}
-			}*/
-
-			/*if (g_players[0].PressingADS() && g_players[0].IsMoving() && glockAnimator->GetCurrentAnimation() == glockADSIdleAnimation) {
-				glockAnimator->PlayAnimation(glockADSWalkAnimation);
-				g_players[0].SetWeaponAction(WeaponAction::ADS_WALK);
-			}*/
-
-			/*if (Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
-				glockAnimator->PlayAnimation(glockADSOutAnimation);
-				ADSOutAnimationFinishTime = 0.0f;
-				isInADS = false;
-				g_players[0].SetWeaponAction(WeaponAction::ADS_OUT);
-			}*/
-
-			/*if (!isDrawing && !g_players[0].PressingADS() && glockAnimator->GetCurrentAnimation() == glockADSOutAnimation) {
-				if (glockAnimator->GetCurrentTime() >= 0.25) {
-					glockAnimator->PlayAnimation(glockIdleAnimation);
-					g_players[0].SetWeaponAction(WeaponAction::IDLE);
-				}
-			} else if (!g_players[0].PressingADS() && !isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
-				glockAnimator->PlayAnimation(glockIdleAnimation);
-				g_players[0].SetWeaponAction(WeaponAction::IDLE);
-			}
-			else if (!g_players[0].IsMoving() && g_players[0].PressingADS() && !isDrawing && glockAnimator->IsAnimationFinished() && glockAnimator->GetCurrentAnimation() != glockIdleAnimation) {
-				glockAnimator->PlayAnimation(glockADSIdleAnimation);
-				g_players[0].SetWeaponAction(WeaponAction::ADS_IDLE);
-			}*/
-
 			glockAnimator->UpdateAnimation(deltaTime);
 		}
 		else if (equipedWeapon->name == "AKS74U") {
-			/*if (g_players[0].IsMoving() && aks74uAnimator->GetCurrentAnimation() == aks74uIdleAnimation) {
-				aks74uAnimator->PlayAnimation(aks74uWalkAnimation);
-			}*/
-
-			/*if (g_players[0].PressedADS()) {
-				aks74uAnimator->PlayAnimation(aks74uADSInAnimation, 1.5f);
-				ADSInAnimationFinishTime = 0.0f;
-				isInADS = true;
-			}*/
-
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
 
@@ -170,22 +107,9 @@ namespace Game {
 				}
 			}
 
-			/*if (!isDrawing && !g_players[0].PressingADS() && aks74uAnimator->IsAnimationFinished() && aks74uAnimator->GetCurrentAnimation() != aks74uIdleAnimation) {
-				aks74uAnimator->PlayAnimation(aks74uIdleAnimation);
-			}*/
-
-
 			aks74uAnimator->UpdateAnimation(deltaTime);
 		}
 		else if (equipedWeapon->name == "P90") {
-			/*if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
-				p90Animator->PlayAnimation(p90ReloadAnimation);
-			}*/
-
-		/*	if (g_players[0].IsMoving() && p90Animator->GetCurrentAnimation() == p90IdleAnimation) {
-				p90Animator->PlayAnimation(p90WalkAnimation);
-			}*/
-
 
 			if (isDrawing) {
 				drawAnimationFinishTime += deltaTime;
@@ -197,12 +121,20 @@ namespace Game {
 				}
 			}
 
-
-		/*	if (!isDrawing && p90Animator->IsAnimationFinished() && p90Animator->GetCurrentAnimation() != p90IdleAnimation) {
-				p90Animator->PlayAnimation(p90IdleAnimation);
-			}*/
-
 			p90Animator->UpdateAnimation(deltaTime);
+		}
+		else if (equipedWeapon->name == "Katana") {
+			if (isDrawing) {
+				drawAnimationFinishTime += deltaTime;
+
+
+				if (drawAnimationFinishTime >= 0.85f) {
+					katanaAnimator->PlayAnimation(katanaIdleAnimation, 0.85f);
+					isDrawing = false;
+				}
+			}
+
+			katanaAnimator->UpdateAnimation(deltaTime);
 		}
 
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
@@ -229,6 +161,18 @@ namespace Game {
 			isDrawing = true;
 		}
 		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
+			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
+			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
+			weaponModel->setPosition(newPosition);
+			g_players[0].EquipWeapon("Katana");
+			katanaAnimator->PlayAnimation(katanaDrawAnimation, 0.75f);
+			AudioManager::PlayAudio(g_players[0].GetEquipedWeaponInfo()->audioFiles.draw, 1.0f, 1.0f);
+			/*p90Animator->Reset();*/
+			previousWeapon = equipedWeapon->name;
+			drawAnimationFinishTime = 0.0f;
+			isDrawing = true;
+		}
+		else if (equipedWeapon->name == "Katana" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
 			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
 			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
 			weaponModel->setPosition(newPosition);
@@ -293,9 +237,14 @@ namespace Game {
 				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
 				(g_players[0].camera.cameraUp * -4.2f);    // Offset downward
 		}
-		else {
+		else if (name == "Katana") {
 			gunPosition = g_players[0].getPosition() +
 				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].camera.cameraUp * -3.7f);    // Offset downward
+		}
+		else {
+			gunPosition = g_players[0].getPosition() +
+				(g_players[0].camera.cameraFront * -0.7f) +   // Offset forward
 				(g_players[0].camera.cameraUp * -3.8f);    // Offset downward
 		}
 
@@ -311,14 +260,26 @@ namespace Game {
 
 		glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); 
 		localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); 
-		if (name == "P90" || flipRotation) {
+		if (name == "P90" || name == "Katana" || flipRotation) {
 			localRotationFix = glm::rotate(localRotationFix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		if (name == "Katana") {
+		
+			glm::mat4 katanaForwardTilt = glm::rotate(
+				glm::mat4(1.0f),
+				glm::radians(10.0f),
+				glm::vec3(100.0f, -10.0f, -10.0f)
+			);
+			localRotationFix = katanaForwardTilt * localRotationFix;
 		}
 		gunRotation = gunRotation * localRotationFix;
 
 		// TODO: use a game object: model + physics collition
-		weaponModel->setPosition(gunPosition);
-		weaponModel->setRotation(gunRotation);
+		/*weaponModel->setPosition(gunPosition);
+		weaponModel->setRotation(gunRotation);*/
+		
+		g_players[0].m_currentWeaponGameObject.SetPosition(gunPosition);
+		g_players[0].m_currentWeaponGameObject.SetRotation(gunRotation);
 	}
 
 	GameState GetGameState() {

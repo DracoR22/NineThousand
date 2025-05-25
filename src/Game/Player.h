@@ -11,6 +11,7 @@
 #include "WeaponManager.h"
 
 #include "../Core/AssetManager.h"
+#include "../Objects/GameObject.h"
 
 
 class Player {
@@ -20,17 +21,15 @@ private:
 	bool m_isAimingWeapon = false;
 	
 	glm::vec3 m_velocity = glm::vec3(0.0f);
-
 	float m_speed = 0.0f;
 	float m_height = 0.0f;
 
 	WeaponInfo* m_equippedWeapon = nullptr;
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
 public:
-	float _muzzleFlashTimer = 0;
 	Player(glm::vec3 position, float height, float mass);
 
-    void processInput(double deltaTime);
+    void Update(double deltaTime);
 
 	Camera camera;
 
@@ -46,6 +45,7 @@ public:
 	bool IsDrawingWeapon();
 
 	bool PressingFire();
+	bool PressedFire();
 	bool PressingADS();
 	bool PressedADS();
 	bool PressedReload();
@@ -54,6 +54,7 @@ public:
 
 	void ReloadWeapon();
 	void FireWeapon();
+	void MeleeHit();
 	void EnterADS();
 	void LeaveADS();
 	void EquipWeapon(std::string weaponName);
@@ -62,4 +63,7 @@ public:
 
 	WeaponAction GetWeaponAction();
 	void SetWeaponAction(WeaponAction action);
+public:
+	float _muzzleFlashTimer = 0;
+	GameObject m_currentWeaponGameObject;
 };
