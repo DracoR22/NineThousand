@@ -102,57 +102,41 @@ namespace OpenGLRenderer {
 
 		// load models
 		ModelCreateInfo glockCreateInfo{
-		 glm::vec3(0.0f, 3.0f, 0.0f),
-		 glm::vec3(0.05f),
-		 glm::mat4(1.0f)
+		
 		};
 
 		ModelCreateInfo p90CreateInfo{
-		 glm::vec3(0.0f, 5.0f, 0.0f),
-		 glm::vec3(0.05f),
-		 glm::mat4(1.0f)
+		
 		};
 
 		ModelCreateInfo aks74uCreateInfo{
-		 glm::vec3(0.0f, 2.0f, 0.0f),
-		 glm::vec3(0.05f),
-		 glm::mat4(1.0f)
+		
 		};
 
 		ModelCreateInfo katanaCreateInfo{
-		 glm::vec3(0.0f, 2.0f, 0.0f),
-		 glm::vec3(0.05f),
-		 glm::mat4(1.0f)
+		
 		};
 
 		ModelCreateInfo cubeCreateInfo{
-			glm::vec3(0.0f, 5.0f, 1.0f),
-			glm::vec3(0.75f),
-			glm::mat4(1.0f),
+		
 			"PoolTile_ALB.png",
 			"PoolTile_NRM.png",
 			"PoolTile_RMA.png"
 		};
 
 		ModelCreateInfo lampCreateInfo{
-			glm::vec3(10.0f, 5.0f, 5.0f),
-			glm::vec3(0.75f),
-			glm::mat4(1.0f)
+		
 		};
 
 		ModelCreateInfo planeCreateInfo{
-			glm::vec3(0.0f),
-			glm::vec3(50.0f),
-			glm::mat4(1.0f),
+		
 			"PoolTile_ALB.png",
 			"PoolTile_NRM.png",
 			"PoolTile_RMA.png"
 		};
 
 		ModelCreateInfo waterPlaneCreateInfo{
-			glm::vec3(0.0f, 0.5f, 0.0f),
-			glm::vec3(20.0f),
-			glm::mat4(1.0f),
+			
 			"WaterDUDV.png",
 			"WaterNormal.png",
 		};
@@ -185,7 +169,7 @@ namespace OpenGLRenderer {
 		glBindVertexArray(0);
 
 		LightCreateInfo cubeLampLight;
-		cubeLampLight.position = AssetManager::GetModelByName("CubeLamp")->pos;
+		cubeLampLight.position = glm::vec3(10.0f, 5.0f, 5.0f);
 		cubeLampLight.constant = 1.0f;
 		cubeLampLight.linear = 0.0014f;
 		cubeLampLight.quadratic = 0.000007f;
@@ -198,7 +182,7 @@ namespace OpenGLRenderer {
 		cubeLampLight.type = LightType::POINT_LIGHT;
 
 		LightCreateInfo cubeLampLight2;
-		cubeLampLight2.position = AssetManager::GetModelByName("Cube")->pos;
+		cubeLampLight2.position = glm::vec3(7.0f, 5.0f, 2.0f);
 		cubeLampLight2.constant = 1.0f;
 		cubeLampLight2.linear = 0.0014f;
 		cubeLampLight2.quadratic = 0.000007f;
@@ -303,6 +287,7 @@ namespace OpenGLRenderer {
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
 
 		Scene::CreateGameObjects();
+		Scene::CreateWaterPlaneObjects();
 	}
 
 	void RenderFrame() {
@@ -352,7 +337,7 @@ namespace OpenGLRenderer {
 			lightView = glm::mat4(1.0f);
 		}
 		else {
-			lightView = glm::lookAt(g_renderData.sceneLights[0].position, AssetManager::GetModelByName("Cube")->pos, glm::vec3(0.0f, 1.0f, 0.0f));
+			lightView = glm::lookAt(g_renderData.sceneLights[0].position, Scene::GetGameObjectByName("Cube0")->GetPosition(), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		glm::mat4 lightProjection = orthogonalProjection * lightView;
 
@@ -362,6 +347,12 @@ namespace OpenGLRenderer {
 
 		g_shaders.shadowMapShader.activate();
 		g_shaders.shadowMapShader.setMat4("lightProjection", lightProjection);
+
+		glm::mat4 smodel = glm::mat4(1.0f);
+		smodel = glm::translate(smodel, Scene::GetGameObjectByName("Cube0")->GetPosition());
+		smodel = glm::scale(smodel, Scene::GetGameObjectByName("Cube0")->GetSize());
+		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotation();
+		g_shaders.shadowMapShader.setMat4("model", smodel);
 		AssetManager::DrawModel("Cube", g_shaders.shadowMapShader);
 
 		glCullFace(GL_BACK);
@@ -370,7 +361,7 @@ namespace OpenGLRenderer {
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*glEnable(GL_CLIP_DISTANCE0);*/
+	
 		// REFLECTION PASS 
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
@@ -379,28 +370,13 @@ namespace OpenGLRenderer {
 		g_shaders.simpleTextureShader.activate();
 		g_shaders.simpleTextureShader.setMat4("view", view);
 		g_shaders.simpleTextureShader.setMat4("projection", projection);
-		/*g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			g_shaders.lightingShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
-			g_shaders.lightingShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
-			g_shaders.lightingShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
-			g_shaders.lightingShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
-			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-
-			g_shaders.lightingShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
-			g_shaders.lightingShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
-			g_shaders.lightingShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
-			g_shaders.lightingShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
-			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
-		}
-		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.lightingShader.set3Float("camPos", player.getPosition());
-		g_shaders.lightingShader.setInt("shadowMap", 3);*/
+	
+		glm::mat4 rmodel = glm::mat4(1.0f);
+		rmodel = glm::translate(rmodel, Scene::GetGameObjectByName("Plane0")->GetPosition());
+		rmodel = glm::scale(rmodel, Scene::GetGameObjectByName("Plane0")->GetSize());
+		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotation();
+		g_shaders.simpleTextureShader.setMat4("model", rmodel);
 		AssetManager::DrawModel("Plane", g_shaders.simpleTextureShader);
-		// AssetManager::DrawModel("Cube", g_shaders.lightingShader);
 
 		//g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, view, projection);
 
@@ -420,6 +396,8 @@ namespace OpenGLRenderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ------ RENDER PASS ------
+
+		// ANIMATION PASS
 		g_shaders.weaponShader.activate();
 		g_shaders.weaponShader.setMat4("view", view);
 		g_shaders.weaponShader.setMat4("projection", projection);
@@ -442,19 +420,17 @@ namespace OpenGLRenderer {
 			g_shaders.weaponShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
 		g_shaders.weaponShader.set3Float("camPos", player.getPosition());
-		if (player.PressingADS() || player.GetWeaponAction() == WeaponAction::ADS_OUT) { // little hack because ads light was getting rotated
-			g_shaders.weaponShader.setBool("flipLights", true);
-		}
-		else {
-			g_shaders.weaponShader.setBool("flipLights", false);
-		}
+		//if (player.PressingADS() || player.GetWeaponAction() == WeaponAction::ADS_OUT) { // little hack because ads light was getting rotated
+		//	g_shaders.weaponShader.setBool("flipLights", true);
+		//}
+		//else {
+		//	g_shaders.weaponShader.setBool("flipLights", false);
+		//}
 
 		glm::mat4 amodel = glm::mat4(1.0f);
-
 		amodel = glm::translate(amodel, player.m_currentWeaponGameObject.GetPosition());
 		amodel = glm::scale(amodel, player.m_currentWeaponGameObject.GetSize());
 		amodel *= player.m_currentWeaponGameObject.GetRotation();
-
 		g_shaders.weaponShader.setMat4("model", amodel);
 
 		auto& transforms = AssetManager::GetAnimatorByName(player.GetEquipedWeaponInfo()->name + "Animator")->GetFinalBoneMatrices();
@@ -464,11 +440,9 @@ namespace OpenGLRenderer {
 		AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, g_shaders.weaponShader);
 
 		glm::mat4 bmodel = glm::mat4(1.0f);
-
 		bmodel = glm::translate(bmodel, glm::vec3(0.0f, 2.0f, 0.0f));
 		bmodel = glm::scale(bmodel, glm::vec3(0.05f));
 		bmodel *= glm::mat4(1.0f);
-
 		g_shaders.weaponShader.setMat4("model", bmodel);
 		
 		auto& etransforms = dEagleAnimator->GetFinalBoneMatrices();
@@ -549,7 +523,14 @@ namespace OpenGLRenderer {
 
 		g_shaders.waterShader.setFloat("moveFactor", moveFactor);
 
-		AssetManager::DrawModel("WaterPlane", g_shaders.waterShader);
+		for (WaterPlaneObject& waterPlaneObject: Scene::GetWaterPlaneObjects()) {
+			glm::mat4 lmodel = glm::mat4(1.0f);
+			lmodel = glm::translate(lmodel, waterPlaneObject.GetPosition());
+			lmodel = glm::scale(lmodel, waterPlaneObject.GetSize());
+			lmodel *= waterPlaneObject.GetRotation();
+			g_shaders.waterShader.setMat4("model", lmodel);
+			AssetManager::DrawModel("WaterPlane", g_shaders.waterShader);
+		}
 
 		// DEBUG LIGHTS
 		g_shaders.lampShader.activate();
@@ -557,6 +538,12 @@ namespace OpenGLRenderer {
 		g_shaders.lampShader.setMat4("view", view);
 		g_shaders.lampShader.setMat4("projection", projection);
 		g_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+
+		glm::mat4 lmodel = glm::mat4(1.0f);
+		lmodel = glm::translate(lmodel, glm::vec3(10.0f, 5.0f, 5.0f));
+		lmodel = glm::scale(lmodel, glm::vec3(0.75f));
+		lmodel *= glm::mat4(1.0f);
+		g_shaders.lampShader.setMat4("model", lmodel);
 		AssetManager::DrawModel("CubeLamp", g_shaders.lampShader);
 
 		// DEBUG PASS

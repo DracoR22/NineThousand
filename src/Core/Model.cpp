@@ -2,7 +2,7 @@
 #include "AssetManager.h"
 
 Model::Model(const std::string& name, const ModelCreateInfo& createInfo)
-	: m_name(name), pos(createInfo.position), size(createInfo.size), rotation(createInfo.rotation) {}
+	: m_name(name) {}
 
 void Model::draw(Shader& shader) {
 	//glm::mat4 model = glm::mat4(1.0f);
@@ -34,18 +34,6 @@ void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader, offsets.size());
-}
-
-void Model::setPosition(const glm::vec3& newPos) {
-	pos = newPos;
-}
-
-void Model::setRotation(const glm::mat4& newRotation) {
-	rotation = newRotation;
-}
-
-void Model::setSize(const glm::vec3& newSize) {
-	size = newSize;
 }
 
 const std::string& Model::GetName() {

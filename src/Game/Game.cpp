@@ -138,21 +138,17 @@ namespace Game {
 		}
 
 		if (equipedWeapon->name == "Glock" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
-			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
-			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
-			weaponModel->setPosition(newPosition);
-			if (weaponModel->pos.y == newPosition.y) {
+			
+		
 				g_players[0].EquipWeapon("AKS74U");
 				aks74uAnimator->PlayAnimation(aks74uDrawAnimation, 1.5);
 				previousWeapon = equipedWeapon->name;
 				drawAnimationFinishTime = 0.0f;
 				isDrawing = true;
-			}
+			
 		}
 		else if (equipedWeapon->name == "AKS74U" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
-			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
-			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
-			weaponModel->setPosition(newPosition);
+			
 			g_players[0].EquipWeapon("P90");
 			p90Animator->PlayAnimation(p90DrawAnimation);
 			/*p90Animator->Reset();*/
@@ -161,9 +157,7 @@ namespace Game {
 			isDrawing = true;
 		}
 		else if (equipedWeapon->name == "P90" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
-			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
-			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
-			weaponModel->setPosition(newPosition);
+			
 			g_players[0].EquipWeapon("Katana");
 			katanaAnimator->PlayAnimation(katanaDrawAnimation, 0.75f);
 			AudioManager::PlayAudio(g_players[0].GetEquipedWeaponInfo()->audioFiles.draw, 1.0f, 1.0f);
@@ -173,9 +167,7 @@ namespace Game {
 			isDrawing = true;
 		}
 		else if (equipedWeapon->name == "Katana" && Keyboard::KeyJustPressed(GLFW_KEY_1)) {
-			Model* weaponModel = AssetManager::GetModelByName(equipedWeapon->name);
-			glm::vec3 newPosition = glm::vec3(weaponModel->pos.x, -110.0f, weaponModel->pos.z);
-			weaponModel->setPosition(newPosition);
+		
 			g_players[0].EquipWeapon("Glock");
 			glockAnimator->PlayAnimation(glockDrawAnimation);
 			/*p90Animator->Reset();*/
