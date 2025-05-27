@@ -70,7 +70,7 @@ namespace Engine {
 			    AssetManager::GetModelByName("Cube")->setRotation(rotationMatrix);*/
 
 				Scene::GetGameObjectByName("Cube0")->SetPosition(cubeTransformData.position);
-				Scene::GetGameObjectByName("Cube0")->SetRotation(rotationMatrix);
+				Scene::GetGameObjectByName("Cube0")->SetRotationMatrix(rotationMatrix);
 
 
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

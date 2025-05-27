@@ -20,8 +20,6 @@ Player::Player(glm::vec3 position, float height, float mass)
 }
 
 void Player::Update(double deltaTime) {
-    float moveSpeed = m_speed;
-
     // Calculate direction based on keyboard input
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
@@ -37,12 +35,12 @@ void Player::Update(double deltaTime) {
     if (Keyboard::KeyPressed(GLFW_KEY_A)) {
         moveDirection -= camera.cameraRight;
     }
+    float currentSpeed = m_speed;
     if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-        moveDirection -= camera.cameraUp;
+        currentSpeed *= 2.0f;
     }
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE)) {
-        /*Physics::CharacterActorJump();*/
         Physics::UpdatePlayerControllerVerticalVelocity();
     }
 
@@ -53,7 +51,7 @@ void Player::Update(double deltaTime) {
 
      m_isMoving = glm::length(moveDirection) > 0.0f;
 
-     Physics::MovePlayerController(moveDirection * m_speed * static_cast<float>(deltaTime), deltaTime);
+     Physics::MovePlayerController(moveDirection * currentSpeed * static_cast<float>(deltaTime), deltaTime);
 
      // Handle mouse input for camera rotation
      static glm::vec2 smoothedDelta = glm::vec2(0.0f);

@@ -8,6 +8,7 @@
 #include "../Common/RendererCommon.h"
 #include "../API/OpenGL/Renderer.h"
 #include "../Game/Player.h"
+#include "../Game/Scene.h"
 
 namespace EditorUI {
 	void Init();

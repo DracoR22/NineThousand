@@ -271,7 +271,7 @@ namespace Game {
 		weaponModel->setRotation(gunRotation);*/
 		
 		g_players[0].m_currentWeaponGameObject.SetPosition(gunPosition);
-		g_players[0].m_currentWeaponGameObject.SetRotation(gunRotation);
+		g_players[0].m_currentWeaponGameObject.SetRotationMatrix(gunRotation);
 	}
 
 	GameState GetGameState() {

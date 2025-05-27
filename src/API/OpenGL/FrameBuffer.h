@@ -24,7 +24,7 @@ private:
 	unsigned int m_height = 0;
 
 	// 2, 4, 8 16, 32 
-	unsigned int m_msaaSamples = 8;
+	unsigned int m_msaaSamples = 4;
 
 public:
 	FrameBuffer() = default;

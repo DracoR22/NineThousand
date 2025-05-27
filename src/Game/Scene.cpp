@@ -38,19 +38,8 @@ namespace Scene {
 		g_gameObjects.emplace_back(plane1CreateInfo);
 	}
 
-	void CreateWaterPlaneObjects() {
-		WaterPlaneObjectCreateInfo waterPlaneCreateInfo{
-			"WaterPlane0",
-			"Plane",
-			glm::vec3(0.0f, 0.5f, 0.0f),
-			glm::vec3(20.0f),
-			glm::mat4(1.0f),
-			glm::vec3(0.0, 0.3, 0.5),
-			0.5f
-		};
-
-		g_waterPlaneObjects.emplace_back(waterPlaneCreateInfo);
-
+	void CreateGameObject(GameObjectCreateInfo createInfo) {
+		g_gameObjects.emplace_back(createInfo);
 	}
 
 	std::vector<GameObject>& GetGameObjects() {
@@ -66,6 +55,21 @@ namespace Scene {
 
 		std::cout << "Scene::GetGameObjectByName() failed because " << name << "does not exist!\n";
 		return nullptr;
+	}
+
+	void CreateWaterPlaneObjects() {
+		WaterPlaneObjectCreateInfo waterPlaneCreateInfo{
+			"WaterPlane0",
+			"Plane",
+			glm::vec3(0.0f, 0.5f, 0.0f),
+			glm::vec3(20.0f),
+			glm::mat4(1.0f),
+			glm::vec3(0.0, 0.3, 0.5),
+			0.5f
+		};
+
+		g_waterPlaneObjects.emplace_back(waterPlaneCreateInfo);
+
 	}
 
 	std::vector<WaterPlaneObject>& GetWaterPlaneObjects() {

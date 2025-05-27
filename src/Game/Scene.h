@@ -9,11 +9,12 @@
 
 namespace Scene {
 	void CreateGameObjects();
-	void CreateWaterPlaneObjects();
+	void CreateGameObject(GameObjectCreateInfo createInfo);
 
 	std::vector<GameObject>& GetGameObjects();
 	GameObject* GetGameObjectByName(const std::string& name);
 
+	void CreateWaterPlaneObjects();
 	std::vector<WaterPlaneObject>& GetWaterPlaneObjects();
 
 	void LoadSceneFromFile();

@@ -1,6 +1,8 @@
 #include "EditorUI.h"
 
 namespace EditorUI {
+	bool g_showCreateButtonPanel = false;
+
 	void Init() {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -68,7 +70,7 @@ namespace EditorUI {
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
-			if (ImGui::CollapsingHeader("Post Process", ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::CollapsingHeader("Post Process")) {
 				if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
 					OpenGLRenderer::ChangeGammaValue(gamma);
 				}
@@ -89,7 +91,7 @@ namespace EditorUI {
 
 			}
 
-			if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::CollapsingHeader("Lights")) {
 				std::vector<LightCreateInfo>& lights = OpenGLRenderer::GetSceneLights();
 				for (int i = 0; i < lights.size(); ++i) {
 					ImGui::PushID(i);
@@ -119,9 +121,66 @@ namespace EditorUI {
 					ImGui::PopID();
 				}
 			}
+
+			if (ImGui::CollapsingHeader("Objects")) {
+				int index = 1000;
+				for (GameObject& gameObject : Scene::GetGameObjects()) {
+					ImGui::PushID(index++);
+
+					ImGui::Text("%s", gameObject.GetName().c_str());
+
+					glm::vec3 objectSize = gameObject.GetSize();
+					if (ImGui::SliderFloat("Size", &objectSize.x, 0.0f, 100.0f)) {
+						gameObject.SetSize(glm::vec3(objectSize.x)); // I want size to be always identity so this is fine
+					}
+
+					glm::vec3 objectPosition = gameObject.GetPosition();
+					if (ImGui::InputFloat("Position X", &objectPosition.x, 1.0f, 10.0f, "%.2f")) {
+						gameObject.SetPosition(objectPosition);
+					}
+
+					if (ImGui::InputFloat("Position Y", &objectPosition.y, 1.0f, 10.0f, "%.2f")) {
+						gameObject.SetPosition(objectPosition);
+					}
+
+					if (ImGui::InputFloat("Position Z", &objectPosition.z, 1.0f, 10.0f, "%.2f")) {
+						gameObject.SetPosition(objectPosition);
+					}
+
+					glm::vec3 objectEulerRotation = gameObject.GetRotationEuler();
+					if (ImGui::SliderFloat3("Rotation", &objectEulerRotation.x, -180.0f, 180.0f, "%.2f")) {
+						
+						gameObject.SetRotationEuler(objectEulerRotation);
+					}
+
+
+					ImGui::Separator();
+					ImGui::PopID();
+				}
+
+				if (ImGui::Button("Create New Object")) {
+					g_showCreateButtonPanel = true;
+				}
+			}
+
 			ImGui::End();
 		}
 
+		if (g_showCreateButtonPanel) {
+			ImGui::Begin("Create GameObject", &g_showCreateButtonPanel);
+
+			static char nameBuffer[64] = "NewObject";
+			static glm::vec3 position(0.0f);
+			static glm::vec3 size(1.0f);
+
+			ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
+			ImGui::InputFloat3("Position", &position[0]);
+			ImGui::InputFloat3("Size", &size[0]);
+
+			/*ImGui::BeginCombo("Model")*/
+
+			ImGui::End();
+		}
 	}
 
 	void Render() {
