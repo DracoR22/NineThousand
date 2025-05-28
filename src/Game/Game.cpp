@@ -217,38 +217,38 @@ namespace Game {
 
 		if (name == "Glock") {
 			gunPosition = g_players[0].getPosition() +
-				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -4.10f);    // Offset downward
+				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].m_camera.cameraUp * -4.10f);    // Offset downward
 		} else if (name == "AKS74U") {
 			gunPosition = g_players[0].getPosition() +
-				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -4.2f);    // Offset downward
+				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].m_camera.cameraUp * -4.2f);    // Offset downward
 		}
 		else if (name == "P90") {
 			gunPosition = g_players[0].getPosition() +
-				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -4.2f);    // Offset downward
+				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].m_camera.cameraUp * -4.2f);    // Offset downward
 		}
 		else if (name == "Katana") {
 			gunPosition = g_players[0].getPosition() +
-				(g_players[0].camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -3.7f);    // Offset downward
+				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
+				(g_players[0].m_camera.cameraUp * -3.7f);    // Offset downward
 		}
 		else {
 			gunPosition = g_players[0].getPosition() +
-				(g_players[0].camera.cameraFront * -0.7f) +   // Offset forward
-				(g_players[0].camera.cameraUp * -3.8f);    // Offset downward
+				(g_players[0].m_camera.cameraFront * -0.7f) +   // Offset forward
+				(g_players[0].m_camera.cameraUp * -3.8f);    // Offset downward
 		}
 
 		glm::mat4 gunRotation = glm::mat4(1.0f);
 
-		float theta = acos(glm::dot(g_players[0].camera.worldUp, g_players[0].camera.cameraFront) /
-			(glm::length(g_players[0].camera.worldUp) * glm::length(g_players[0].camera.cameraFront)));
-		gunRotation = glm::rotate(gunRotation, glm::half_pi<float>() - theta, g_players[0].camera.cameraRight);
+		float theta = acos(glm::dot(g_players[0].m_camera.worldUp, g_players[0].m_camera.cameraFront) /
+			(glm::length(g_players[0].m_camera.worldUp) * glm::length(g_players[0].m_camera.cameraFront)));
+		gunRotation = glm::rotate(gunRotation, glm::half_pi<float>() - theta, g_players[0].m_camera.cameraRight);
 
-		glm::vec2 front2D = glm::vec2(g_players[0].camera.cameraFront.x, g_players[0].camera.cameraFront.z);
+		glm::vec2 front2D = glm::vec2(g_players[0].m_camera.cameraFront.x, g_players[0].m_camera.cameraFront.z);
 		theta = acos(glm::dot(glm::vec2(1.0f, 0.0f), glm::normalize(front2D)));
-		gunRotation = glm::rotate(gunRotation, g_players[0].camera.cameraFront.z < 0 ? theta : -theta, g_players[0].camera.worldUp);
+		gunRotation = glm::rotate(gunRotation, g_players[0].m_camera.cameraFront.z < 0 ? theta : -theta, g_players[0].m_camera.worldUp);
 
 		glm::mat4 localRotationFix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); 
 		localRotationFix = glm::rotate(localRotationFix, glm::radians(5.0f), glm::vec3(1.9f, 0.0f, 0.0f)); 

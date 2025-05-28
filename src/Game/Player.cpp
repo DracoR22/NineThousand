@@ -1,10 +1,10 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: m_velocity(0.0f), m_speed(9.5f), camera(position), m_height(height) {
+	: m_speed(9.5f), m_camera(position), m_height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
-	camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
+	m_camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
 
     Physics::InitializeCharacterController();
 
@@ -24,16 +24,16 @@ void Player::Update(double deltaTime) {
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
     if (Keyboard::KeyPressed(GLFW_KEY_W)) {
-        moveDirection += camera.cameraFront;
+        moveDirection += m_camera.cameraFront;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_S)) {
-        moveDirection -= camera.cameraFront;
+        moveDirection -= m_camera.cameraFront;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_D)) {
-        moveDirection += camera.cameraRight;
+        moveDirection += m_camera.cameraRight;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_A)) {
-        moveDirection -= camera.cameraRight;
+        moveDirection -= m_camera.cameraRight;
     }
     float currentSpeed = m_speed;
     if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
@@ -65,16 +65,16 @@ void Player::Update(double deltaTime) {
      smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
 
      float sensitivity = 0.01f;
-     camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
+     m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
      physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
      glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
 
-     camera.setPosition(targetPosition); 
+     m_camera.setPosition(targetPosition); 
 }
 
 glm::vec3 Player::getPosition() {
-	return camera.cameraPos;
+	return m_camera.cameraPos;
 }
 
 bool Player::IsMoving() {
@@ -221,13 +221,13 @@ void Player::FireWeapon() {
             m_weaponAction = WeaponAction::FIRE;
         }
 
-        _muzzleFlashTimer = 6;
+        m_muzzleFlashTimer = 6;
         
         int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
         AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
 
-        glm::vec3 playerPos = camera.cameraPos;
-        glm::vec3 cameraDir = glm::normalize(camera.cameraFront);
+        glm::vec3 playerPos = m_camera.cameraPos;
+        glm::vec3 cameraDir = glm::normalize(m_camera.cameraFront);
 
         physx::PxVec3 origin(playerPos.x, playerPos.y, playerPos.z);
         physx::PxVec3 direction(cameraDir.x, cameraDir.y, cameraDir.z);

@@ -8,7 +8,8 @@
 #include <GLFW/glfw3.h>
 
 #include "../UI/Text2D.h"
-#include "../UI/EditorUI.h"
+#include "../Editor/EditorPanel.h"
+#include "../Editor/Editor.h"
 
 #include "../Core/Window.h"
 #include "../Core/AssetManager.h"
@@ -20,7 +21,9 @@
 #include "../API/OpenGL/FrameBuffer.h"
 #include "../API/OpenGL/Renderer.h"
 
-#include "../Input/Camera.h"
+#include "../Camera/Camera.h"
+#include "../Camera/CameraManager.h"
+
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
 
@@ -44,4 +47,5 @@
 
 namespace Engine {
 	void Run();
+	void LoadResources();
 }

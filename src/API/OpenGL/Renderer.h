@@ -7,7 +7,9 @@
 
 #include "./FrameBuffer.h"
 
-#include "../../Input/Camera.h"
+#include "../../Camera/Camera.h"
+#include "../../Camera/CameraManager.h"
+
 #include "../../Input/Keyboard.h"
 #include "../../Input/Mouse.h"
 
@@ -39,6 +41,8 @@
 namespace OpenGLRenderer {
 	void Init();
 	void RenderFrame();
+
+	void UpdateEditorCamera();
 
 	// stuff for the editor
 	RendererCommon::PostProcessMode GetPostProcessMode();

@@ -50,7 +50,7 @@ namespace OpenGLRenderer {
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
 
 		float gamma = 2.2f;
-		float exposure = 1.0f;
+		float exposure = 1.0f;;
 	} g_renderData;
 
 	struct RenderFrameBuffer {
@@ -62,6 +62,8 @@ namespace OpenGLRenderer {
 	} g_renderFrameBuffers;
 
 	void Init() {
+		Player& player = Game::GetPLayerByIndex(0);
+
 		// load shaders
 		g_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
 		g_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
@@ -291,6 +293,9 @@ namespace OpenGLRenderer {
 	}
 
 	void RenderFrame() {
+		
+
+
 		// Hotload shaders
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 			g_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
@@ -312,10 +317,6 @@ namespace OpenGLRenderer {
 
 		Player& player = Game::GetPLayerByIndex(0);
 
-		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
-		Animator* p90Animator = AssetManager::GetAnimatorByName("P90Animator");
-		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
-		Animator* katanaAnimator = AssetManager::GetAnimatorByName("KatanaAnimator");
 		Animator* dEagleAnimator = AssetManager::GetAnimatorByName("DEAGLEAnimator");
 
 		dEagleAnimator->UpdateAnimation(Window::GetDeltaTime());
@@ -326,8 +327,8 @@ namespace OpenGLRenderer {
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
 
-		view = player.camera.getViewMatrix();
-		projection = glm::perspective(glm::radians(player.camera.getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 500.0f);
+		view = CameraManager::GetActiveCamera()->getViewMatrix();
+		projection = glm::perspective(glm::radians(CameraManager::GetActiveCamera()->getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 500.0f);
 
 		// ------ SHADOW PASS (Render to Depth Map) ------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -351,7 +352,7 @@ namespace OpenGLRenderer {
 		glm::mat4 smodel = glm::mat4(1.0f);
 		smodel = glm::translate(smodel, Scene::GetGameObjectByName("Cube0")->GetPosition());
 		smodel = glm::scale(smodel, Scene::GetGameObjectByName("Cube0")->GetSize());
-		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotation();
+		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotationMatrix();
 		g_shaders.shadowMapShader.setMat4("model", smodel);
 		AssetManager::DrawModel("Cube", g_shaders.shadowMapShader);
 
@@ -374,7 +375,7 @@ namespace OpenGLRenderer {
 		glm::mat4 rmodel = glm::mat4(1.0f);
 		rmodel = glm::translate(rmodel, Scene::GetGameObjectByName("Plane0")->GetPosition());
 		rmodel = glm::scale(rmodel, Scene::GetGameObjectByName("Plane0")->GetSize());
-		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotation();
+		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotationMatrix();
 		g_shaders.simpleTextureShader.setMat4("model", rmodel);
 		AssetManager::DrawModel("Plane", g_shaders.simpleTextureShader);
 
@@ -419,7 +420,7 @@ namespace OpenGLRenderer {
 			g_shaders.weaponShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
 			g_shaders.weaponShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
-		g_shaders.weaponShader.set3Float("camPos", player.getPosition());
+		g_shaders.weaponShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 		//if (player.PressingADS() || player.GetWeaponAction() == WeaponAction::ADS_OUT) { // little hack because ads light was getting rotated
 		//	g_shaders.weaponShader.setBool("flipLights", true);
 		//}
@@ -430,7 +431,7 @@ namespace OpenGLRenderer {
 		glm::mat4 amodel = glm::mat4(1.0f);
 		amodel = glm::translate(amodel, player.m_currentWeaponGameObject.GetPosition());
 		amodel = glm::scale(amodel, player.m_currentWeaponGameObject.GetSize());
-		amodel *= player.m_currentWeaponGameObject.GetRotation();
+		amodel *= player.m_currentWeaponGameObject.GetRotationMatrix();
 		g_shaders.weaponShader.setMat4("model", amodel);
 
 		auto& transforms = AssetManager::GetAnimatorByName(player.GetEquipedWeaponInfo()->name + "Animator")->GetFinalBoneMatrices();
@@ -474,7 +475,7 @@ namespace OpenGLRenderer {
 			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
 		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.lightingShader.set3Float("camPos", player.getPosition());
+		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 		g_shaders.lightingShader.setInt("shadowMap", 3);
 
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
@@ -482,7 +483,7 @@ namespace OpenGLRenderer {
 
 			cmodel = glm::translate(cmodel, gameObject.GetPosition());
 			cmodel = glm::scale(cmodel, gameObject.GetSize());
-			cmodel *= gameObject.GetRotation();
+			cmodel *= gameObject.GetRotationMatrix();
 
 			g_shaders.lightingShader.setMat4("model", cmodel);
 
@@ -502,7 +503,7 @@ namespace OpenGLRenderer {
 		g_shaders.waterShader.activate();
 		g_shaders.waterShader.setMat4("view", view);
 		g_shaders.waterShader.setMat4("projection", projection);
-		g_shaders.waterShader.setVec3("camPos", player.getPosition());
+		g_shaders.waterShader.setVec3("camPos", CameraManager::GetActiveCamera()->cameraPos);
 
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
@@ -534,7 +535,7 @@ namespace OpenGLRenderer {
 
 		// DEBUG LIGHTS
 		g_shaders.lampShader.activate();
-		g_shaders.lampShader.set3Float("viewPos", player.getPosition());
+		g_shaders.lampShader.set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
 		g_shaders.lampShader.setMat4("view", view);
 		g_shaders.lampShader.setMat4("projection", projection);
 		g_shaders.lampShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -557,12 +558,12 @@ namespace OpenGLRenderer {
 		//AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
 
 		// ------ CUBEMAP PASS -------------
-		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, player.camera.getViewMatrix(), projection);
+		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, CameraManager::GetActiveCamera()->getViewMatrix(), projection);
 
 		
 		// ------ MUZZLE FLASH PASS
 		glm::vec3 barrelOffset = player.GetEquipedWeaponInfo()->muzzleFlashOffset;
-		glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), player.m_currentWeaponGameObject.GetPosition()) * player.m_currentWeaponGameObject.GetRotation();
+		glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), player.m_currentWeaponGameObject.GetPosition()) * player.m_currentWeaponGameObject.GetRotationMatrix();
 
 		glm::vec4 worldBarrelPos = gunTransform * glm::vec4(barrelOffset, 1.0f);
 
@@ -587,9 +588,9 @@ namespace OpenGLRenderer {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, muzzleFlashTexture->id);
 
-		if (player._muzzleFlashTimer > 0) {
+		if (player.m_muzzleFlashTimer > 0) {
 			g_renderData.muzzleFlashMesh.RenderTexture(g_shaders.muzzleFlashShader);
-			player._muzzleFlashTimer--;
+			player.m_muzzleFlashTimer--;
 		}
 
 		// ------ UI PASS -------------
@@ -623,9 +624,9 @@ namespace OpenGLRenderer {
 		g_renderData.textMesh.RenderText("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
 
 		std::string playerPosText = "Player Position: (" +
-			std::to_string(player.getPosition().x) + ", " +
-			std::to_string(player.getPosition().y) + ", " +
-			std::to_string(player.getPosition().z) + ")";
+			std::to_string(CameraManager::GetActiveCamera()->cameraPos.x) + ", " +
+			std::to_string(CameraManager::GetActiveCamera()->cameraPos.y) + ", " +
+			std::to_string(CameraManager::GetActiveCamera()->cameraPos.z) + ")";
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, sansFontTexture->id);
@@ -726,7 +727,6 @@ namespace OpenGLRenderer {
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
-
 
 	RendererCommon::PostProcessMode GetPostProcessMode() {
 		return g_renderData.currentMode;

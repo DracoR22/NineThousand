@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "../Input/Camera.h"
+#include "../Camera/Camera.h"
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
 

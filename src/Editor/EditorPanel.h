@@ -10,7 +10,7 @@
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
 
-namespace EditorUI {
+namespace EditorPanel {
 	void Init();
 	void Update();
 	void Render();

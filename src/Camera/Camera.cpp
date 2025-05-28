@@ -7,7 +7,7 @@ Camera::Camera(glm::vec3 position)
 worldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
 yaw(0.0f),
 pitch(0.0f),
-speed(2.5f),
+speed(8.5f),
 zoom(45.0f),
 cameraFront(glm::vec3(1.0f, 0.0f, 0.0f)) {
 	updateCameraVectors();

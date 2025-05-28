@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Keyboard.h"
+#include "../Input/Keyboard.h"
 
 enum class CameraDirection {
 	NONE,
@@ -17,6 +17,7 @@ enum class CameraDirection {
 
 class Camera {
 public:
+	Camera() = default;
 	Camera(glm::vec3 position);
 
 	glm::vec3 cameraPos;

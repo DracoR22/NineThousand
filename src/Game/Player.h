@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Input/Camera.h"
+#include "../Camera/Camera.h"
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
 
@@ -20,7 +20,6 @@ private:
 	bool m_isMoving = false;
 	bool m_isAimingWeapon = false;
 	
-	glm::vec3 m_velocity = glm::vec3(0.0f);
 	float m_speed = 0.0f;
 	float m_height = 0.0f;
 
@@ -28,21 +27,17 @@ private:
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
 public:
 	Player(glm::vec3 position, float height, float mass);
-
     void Update(double deltaTime);
 
-	Camera camera;
-
 	glm::vec3 getPosition();
+	bool IsMoving();
 
 	WeaponInfo* GetEquipedWeaponInfo();
 
-	bool IsMoving();
-
-	bool CanReloadWeapon();
+	bool CanReloadWeapon(); // TODO
 	bool CanEnterADS();
 	bool CanFireWeapon();
-	bool IsDrawingWeapon();
+	bool IsDrawingWeapon();  // TODO
 
 	bool PressingFire();
 	bool PressedFire();
@@ -64,6 +59,7 @@ public:
 	WeaponAction GetWeaponAction();
 	void SetWeaponAction(WeaponAction action);
 public:
-	float _muzzleFlashTimer = 0;
+	Camera m_camera;
+	float m_muzzleFlashTimer = 0;
 	GameObject m_currentWeaponGameObject;
 };

@@ -1,6 +1,6 @@
-#include "EditorUI.h"
+#include "EditorPanel.h"
 
-namespace EditorUI {
+namespace EditorPanel {
 	bool g_showCreateButtonPanel = false;
 
 	void Init() {
