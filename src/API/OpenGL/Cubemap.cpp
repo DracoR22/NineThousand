@@ -1,35 +1,34 @@
 ﻿#include "Cubemap.h"
 
-CubeMap::CubeMap() {}
 
-void CubeMap::loadTextures(std::vector<std::string> faces) {
+void CubeMap::LoadTextures(std::vector<Texture>& faceTextures) {
+	if (faceTextures.size() != 6) {
+		std::cerr << "Cubemap requires exactly 6 textures.\n";
+		return;
+	}
+
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
-	int width, height, nrChannels;
+	for (unsigned int i = 0; i < 6; ++i) {
+		const Texture& tex = faceTextures[i];
+		glBindTexture(GL_TEXTURE_2D, tex.m_id);
 
-	unsigned char* data;
-	for (unsigned int i = 0; i < 6; i++) {
-		data = stbi_load((faces[i]).c_str(), &width, &height, &nrChannels, 0);
+		// interpret the format as linear, I dont know if this is correct since I originally uploaded it as srgb from the asset manager
+		GLenum externalFormat = (tex.m_format == GL_RGBA) ? GL_RGBA : GL_RGB;
+		GLenum internalFormat = externalFormat; 
 
-		GLenum colorMode = GL_RED;
+		int numChannels = (externalFormat == GL_RGBA) ? 4 : 3;
 
-	/*	stbi_set_flip_vertically_on_load(false);*/
-
-		if (data) {
-			GLenum colorMode = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-
-			// Workaround to flip SkyRight horizontically due to texture being inverted
-			if (i == 0) { // SkyRight is the first texture in the list tho
-				FlipImageHorizontally(data, width, height, nrChannels);
-			}
-
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, colorMode, width, height, 0, colorMode, GL_UNSIGNED_BYTE, data);
-			stbi_image_free(data);
+		std::vector<unsigned char> pixels(tex.m_width * tex.m_height * numChannels);
+		glGetTexImage(GL_TEXTURE_2D, 0, externalFormat, GL_UNSIGNED_BYTE, pixels.data());
+		
+		// I flip this one manually
+		if (tex.m_path == "SkyRight.jpg") {
+			FlipImageHorizontally(pixels.data(), tex.m_width, tex.m_height, numChannels);
 		}
-		else {
-			std::cout << "Failed to load texture at " << faces[i] << std::endl;
-		}
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, tex.m_width, tex.m_height, 0, externalFormat, GL_UNSIGNED_BYTE, pixels.data());
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -39,9 +38,8 @@ void CubeMap::loadTextures(std::vector<std::string> faces) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-void CubeMap::init() {
-	float skyboxVertices[] = {
-		// positions          
+void CubeMap::Init() {
+	float skyboxVertices[] = {         
 		-1.0f,  1.0f, -1.0f,
 		-1.0f, -1.0f, -1.0f,
 		 1.0f, -1.0f, -1.0f,
@@ -98,11 +96,10 @@ void CubeMap::init() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 }
 
-void CubeMap::render(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection) {
+void CubeMap::Draw(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection) {
 	glDepthFunc(GL_LEQUAL);
 	shader.activate();
 
-	// TODO: Change the Camera class and projection usage. Myabe create a Scene class or make it part of the Player class
 	glm::mat4 view = glm::mat4(glm::mat3(viewMatrix));
 
 	shader.setMat4("view", view);
@@ -116,7 +113,7 @@ void CubeMap::render(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection) 
 	glDepthFunc(GL_LESS);
 }
 
-void CubeMap::cleanup() {
+void CubeMap::Cleanup() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteTextures(1, &id);

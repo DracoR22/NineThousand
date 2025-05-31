@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./Camera.h"
+#include "../Core/Window.h"
 #include <vector>
 
 namespace CameraManager {
@@ -8,4 +9,8 @@ namespace CameraManager {
 	void SetActiveCamera(int index);
 	void Clear();
 	Camera* GetActiveCamera();
+	void UpdateProjectionMatrix();
+	void UpdateViewMatrix();
+	glm::mat4 GetProjectionMatrix();
+	glm::mat4 GetViewMatrix();
 }

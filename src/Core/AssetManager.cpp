@@ -107,8 +107,15 @@ namespace AssetManager {
 		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
 			return;
 
+		TextureData data = DecodeTexture("resources/fonts", name, type);
 		Texture texture("resources/fonts", name, type);
-		texture.load(false);
+		texture.m_format = data.format;
+		texture.m_internalFormat = data.internalFormat;
+		texture.m_numChannels = data.channels;
+		texture.m_width = data.width;
+		texture.m_height = data.height;
+
+		texture.AllocateMemory(data);
 		
 		g_textures.push_back(texture);
 		g_textureIndexMap[name] = g_textures.size() - 1;
@@ -127,7 +134,13 @@ namespace AssetManager {
 		for (auto& f : futures) {
 			TextureData data = f.get();
 			Texture texture("resources/textures", data.name, data.type);
-			texture.AllocateTexture(data);
+			texture.m_format = data.format;
+			texture.m_internalFormat = data.internalFormat;
+			texture.m_numChannels = data.channels;
+			texture.m_width = data.width;
+			texture.m_height = data.height;
+
+			texture.AllocateMemory(data);
 
 			std::cout << "loaded texture: " << data.name << std::endl;
 			g_textures.push_back(texture);

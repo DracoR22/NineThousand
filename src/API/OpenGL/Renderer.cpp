@@ -21,19 +21,6 @@ namespace OpenGLRenderer {
 		Shader simpleTextureShader;
 	} g_shaders;
 
-	//ModelCreateInfo bulletCreateInfo{
-	//		glm::vec3(0.0f, 5.0f, 1.0f),
-	//		glm::vec3(0.75f),
-	//		glm::mat4(1.0f),
-	//		{                                     // instanceOffsets (hardcoded)
-	//	glm::vec3(0.0f, 0.0f, 0.0f),
-	//	glm::vec3(2.0f, 0.0f, 0.0f),
-	//	glm::vec3(-2.0f, 0.0f, 0.0f),
-	//	glm::vec3(0.0f, 2.0f, 0.0f),
-	//	glm::vec3(0.0f, -2.0f, 0.0f)
-	//}
-	//};
-
 	struct RenderData {
 		unsigned int frameBufferQuadVAO = 0;
 		unsigned int frameBufferQuadVBO = 0;
@@ -86,74 +73,31 @@ namespace OpenGLRenderer {
 		g_renderData.cubeMaps.clear();
 
 		CubeMap& daySky = g_renderData.cubeMaps.emplace_back();
-		std::vector<std::string> daySkyFaces{
-			"resources/textures/SkyRight.jpg",
-			"resources/textures/SkyLeft.jpg",
-			"resources/textures/SkyTop.jpg",
-			"resources/textures/SkyBottom.jpg",
-			"resources/textures/SkyFront.jpg",
-			"resources/textures/SkyBack.jpg",
+
+		std::vector<Texture*> faceTextures = {
+			AssetManager::GetTextureByName("SkyRight.jpg"),
+			AssetManager::GetTextureByName("SkyLeft.jpg"),
+			AssetManager::GetTextureByName("SkyTop.jpg"),
+			AssetManager::GetTextureByName("SkyBottom.jpg"),
+			AssetManager::GetTextureByName("SkyFront.jpg"),
+			AssetManager::GetTextureByName("SkyBack.jpg"),
 		};
-		daySky.loadTextures(daySkyFaces);
-		daySky.init();
+
+		std::vector<Texture> faceTexturesCopy;
+
+		for (Texture* texture : faceTextures) {
+			if (texture) {
+				faceTexturesCopy.push_back(*texture);
+			}
+		}
+
+		daySky.LoadTextures(faceTexturesCopy);
+		daySky.Init();
 
 		// load 2d meshes
 		g_renderData.textMesh.Create();
 		g_renderData.crossHairMesh.Create();
 		g_renderData.muzzleFlashMesh.Create();
-
-		// load models
-		ModelCreateInfo glockCreateInfo{
-		
-		};
-
-		ModelCreateInfo p90CreateInfo{
-		
-		};
-
-		ModelCreateInfo aks74uCreateInfo{
-		
-		};
-
-		ModelCreateInfo katanaCreateInfo{
-		
-		};
-
-		ModelCreateInfo cubeCreateInfo{
-		
-			"PoolTile_ALB.png",
-			"PoolTile_NRM.png",
-			"PoolTile_RMA.png"
-		};
-
-		ModelCreateInfo lampCreateInfo{
-		
-		};
-
-		ModelCreateInfo planeCreateInfo{
-		
-			"PoolTile_ALB.png",
-			"PoolTile_NRM.png",
-			"PoolTile_RMA.png"
-		};
-
-		ModelCreateInfo waterPlaneCreateInfo{
-			
-			"WaterDUDV.png",
-			"WaterNormal.png",
-		};
-
-		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
-		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
-		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74UBfbx.fbx", aks74uCreateInfo);
-		AssetManager::LoadAssimpModel("Katana", "resources/models/untitled.fbx", katanaCreateInfo);
-		AssetManager::LoadAssimpModel("DEAGLE", "resources/models/Deagle_Animation.fbx", aks74uCreateInfo);
-
-		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
-		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
-		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
-		AssetManager::LoadModel("WaterPlane", ModelType::PLANE, waterPlaneCreateInfo);
-		/*AssetManager::LoadModel("Bullet", ModelType::CUBE, bulletCreateInfo);*/
 
 		// Quad For FrameBuffer
 		glGenVertexArrays(1, &g_renderData.frameBufferQuadVAO);
@@ -233,69 +177,11 @@ namespace OpenGLRenderer {
 		// Load shadow map
 		g_renderData.shadowMap.Init();
 
-		Model* glockModel = AssetManager::GetModelByName("Glock");
-		Model* p90Model = AssetManager::GetModelByName("P90");
-		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
-		Model* katanaModel = AssetManager::GetModelByName("Katana");
-		Model* dEagleModel = AssetManager::GetModelByName("DEAGLE");
-
-		// load animations
-		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_Walk", "resources/animations/AKS74U_Walk.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_Fire0", "resources/animations/AKS74U_Fire0.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_Draw", "resources/animations/AKS74U_Draw.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_ADS_In", "resources/animations/AKS74U_ADS_In.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_ADS_Out", "resources/animations/AKS74U_ADS_Out.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_ADS_Idle", "resources/animations/AKS74U_ADS_Idle.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_ADS_Fire", "resources/animations/AKS74U_ADS_Fire0.fbx", aks74uModel);
-		AssetManager::LoadAnimation("AKS74U_ADS_Walk", "resources/animations/AKS74U_ADS_Walk.fbx", aks74uModel);
-
-		AssetManager::LoadAnimation("Glock_Idle", "resources/animations/Glock_Idle.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_Reload", "resources/animations/Glock_Reload.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ReloadEmpty", "resources/animations/Glock_ReloadEmpty.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_Walk", "resources/animations/Glock_Walk.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_Fire0", "resources/animations/Glock_Fire0.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_Draw", "resources/animations/Glock_Draw.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_In", "resources/animations/Glock_ADS_In.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_Out", "resources/animations/Glock_ADS_Out.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_Fire", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
-		AssetManager::LoadAnimation("Glock_ADS_Walk", "resources/animations/Glock_ADS_Walk.fbx", glockModel);
-
-		AssetManager::LoadAnimation("Knife_Idle", "resources/animations/Knife_Idle.fbx", katanaModel);
-		AssetManager::LoadAnimation("Knife_Swing0", "resources/animations/Knife_Swing0.fbx", katanaModel);
-		AssetManager::LoadAnimation("Knife_Swing1", "resources/animations/Knife_Swing1.fbx", katanaModel);
-		AssetManager::LoadAnimation("Knife_Swing2", "resources/animations/Knife_Swing2.fbx", katanaModel);
-		AssetManager::LoadAnimation("Knife_Draw", "resources/animations/Knife_Draw.fbx", katanaModel);
-		AssetManager::LoadAnimation("Knife_Walk", "resources/animations/Knife_Walk.fbx", katanaModel);
-
-		AssetManager::LoadAnimation("DEAGLE_Walk", "resources/models/Deagle_Animation.fbx", dEagleModel);
-
-		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_Walk", "resources/animations/P90_Walk.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_Fire0", "resources/animations/P90_Fire0.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_Draw", "resources/animations/P90_Draw.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_ADS_In", "resources/animations/P90_ADS_In.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_ADS_Out", "resources/animations/P90_ADS_Out.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_ADS_Idle", "resources/animations/P90_ADS_Idle.fbx", p90Model);
-		AssetManager::LoadAnimation("P90_ADS_Fire", "resources/animations/P90_ADS_Fire0.fbx", p90Model);
-
-		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
-		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
-		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
-		AssetManager::LoadAnimator("DEAGLEAnimator", AssetManager::GetAnimationByName("DEAGLE_Walk"));
-		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
-
 		Scene::CreateGameObjects();
 		Scene::CreateWaterPlaneObjects();
 	}
 
 	void RenderFrame() {
-		
-
-
 		// Hotload shaders
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 			g_shaders.texturedObjectShader.load("textured_obj.vert", "textured_obj.frag");
@@ -328,7 +214,7 @@ namespace OpenGLRenderer {
 		glm::mat4 projection = glm::mat4(1.0f);
 
 		view = CameraManager::GetActiveCamera()->getViewMatrix();
-		projection = glm::perspective(glm::radians(CameraManager::GetActiveCamera()->getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.5f, 500.0f);
+		projection = glm::perspective(glm::radians(CameraManager::GetActiveCamera()->getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 500.0f);
 
 		// ------ SHADOW PASS (Render to Depth Map) ------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -378,8 +264,6 @@ namespace OpenGLRenderer {
 		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotationMatrix();
 		g_shaders.simpleTextureShader.setMat4("model", rmodel);
 		AssetManager::DrawModel("Plane", g_shaders.simpleTextureShader);
-
-		//g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, view, projection);
 
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
@@ -558,7 +442,7 @@ namespace OpenGLRenderer {
 		//AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
 
 		// ------ CUBEMAP PASS -------------
-		g_renderData.cubeMaps[0].render(g_shaders.skyboxShader, CameraManager::GetActiveCamera()->getViewMatrix(), projection);
+		g_renderData.cubeMaps[0].Draw(g_shaders.skyboxShader, CameraManager::GetActiveCamera()->getViewMatrix(), projection);
 
 		
 		// ------ MUZZLE FLASH PASS
@@ -586,7 +470,7 @@ namespace OpenGLRenderer {
 		Texture* muzzleFlashTexture = AssetManager::GetTextureByName("MuzzleFlash.png");
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, muzzleFlashTexture->id);
+		glBindTexture(GL_TEXTURE_2D, muzzleFlashTexture->m_id);
 
 		if (player.m_muzzleFlashTimer > 0) {
 			g_renderData.muzzleFlashMesh.RenderTexture(g_shaders.muzzleFlashShader);
@@ -619,7 +503,7 @@ namespace OpenGLRenderer {
 		Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sansFontTexture->id);
+		glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
 
 		g_renderData.textMesh.RenderText("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
 
@@ -629,7 +513,7 @@ namespace OpenGLRenderer {
 			std::to_string(CameraManager::GetActiveCamera()->cameraPos.z) + ")";
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sansFontTexture->id);
+		glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
 
 		g_shaders.uiShader.activate();
 		g_shaders.uiShader.setMat4("projection", UiProjection);
@@ -653,7 +537,7 @@ namespace OpenGLRenderer {
 		Texture* crosshairTexture = AssetManager::GetTextureByName("CrossHairDotOutline.png");
 
 		glActiveTexture(0);
-		glBindTexture(GL_TEXTURE_2D, crosshairTexture->id);
+		glBindTexture(GL_TEXTURE_2D, crosshairTexture->m_id);
 		g_renderData.crossHairMesh.RenderTexture(g_shaders.uiShader);
 
 
@@ -772,7 +656,7 @@ namespace OpenGLRenderer {
 		g_renderData.textMesh.Cleanup();
 
 		for (CubeMap cubeMap : g_renderData.cubeMaps) {
-			cubeMap.cleanup();
+			cubeMap.Cleanup();
 		};
 
 		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();

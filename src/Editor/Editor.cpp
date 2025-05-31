@@ -47,6 +47,10 @@ namespace Editor {
 		}
 	}
 
+	glm::vec3 GetMouseRayOrigin() {
+
+	}
+
 	Camera& GetCamera() {
 		return g_camera;
 	}

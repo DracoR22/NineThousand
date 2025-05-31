@@ -103,9 +103,9 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 		Texture* normalMap = AssetManager::GetTextureByName(createInfo.normalTexture);
 		Texture* rmaMap = AssetManager::GetTextureByName(createInfo.rmaTexture);
 
-		baseColor->type = aiTextureType_DIFFUSE;
-		normalMap->type = aiTextureType_NORMALS;
-		rmaMap->type = aiTextureType_SPECULAR;
+		baseColor->m_type = aiTextureType_DIFFUSE;
+		normalMap->m_type = aiTextureType_NORMALS;
+		rmaMap->m_type = aiTextureType_SPECULAR;
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
@@ -147,9 +147,9 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 		Texture* normalMap = AssetManager::GetTextureByName(createInfo.normalTexture);
 		Texture* rmaMap = AssetManager::GetTextureByName(createInfo.rmaTexture);
 
-		baseColor->type = aiTextureType_DIFFUSE;
-		normalMap->type = aiTextureType_NORMALS;
-		rmaMap->type = aiTextureType_SPECULAR;
+		baseColor->m_type = aiTextureType_DIFFUSE;
+		normalMap->m_type = aiTextureType_NORMALS;
+		rmaMap->m_type = aiTextureType_SPECULAR;
 
 		std::vector<Vertex> vertexlist = Vertex::genList(vertices, noVertices);
 		Vertex::CalcTanVectors(vertexlist, indices);
@@ -302,7 +302,7 @@ std::vector<Texture> Model::LoadDefaultMaterials(aiMaterial* mat, aiTextureType 
 		// prevent duplicate loading
 		bool skip = false;
 		for (const auto& loadedTex : m_textures_loaded) {
-			if (loadedTex.path == fileName) {
+			if (loadedTex.m_path == fileName) {
 				textures.push_back(loadedTex);
 				skip = true;
 				break;

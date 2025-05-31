@@ -132,7 +132,7 @@ void Mesh::Draw(Shader& shader, unsigned int instances) {
 		glActiveTexture(GL_TEXTURE0 + i);
 
 		std::string name;
-		switch (textures[i].type) {
+		switch (textures[i].m_type) {
 		case aiTextureType_DIFFUSE:
 			name = "baseTexture";
 			break;
@@ -149,7 +149,7 @@ void Mesh::Draw(Shader& shader, unsigned int instances) {
 		// set shader texture value
 		shader.setInt(name, i);
 
-		textures[i].bind();
+		textures[i].Bind();
 	}
 
 	// draw mesh
