@@ -26,7 +26,7 @@ target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendo
 
 # nlohmann JSON
 add_library(nlohmann_json INTERFACE)
-target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/nlohmann_json/single_include/nlohmann)
+target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/nlohmann_json/include)
 
 # imGui
 file(GLOB IMGUI_SOURCES
@@ -74,7 +74,7 @@ add_executable(NineThousand ${SOURCES})
 
 # Link all libraries
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/include)
-target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp fmod ${PHYSX_LIBS})
+target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp fmod nlohmann_json ${PHYSX_LIBS})
 
 # Include resources to output folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)

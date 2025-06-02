@@ -158,8 +158,17 @@ namespace EditorPanel {
 					ImGui::PopID();
 				}
 
-				if (ImGui::Button("Create New Object")) {
-					g_showCreateButtonPanel = true;
+				if (ImGui::Button("Create Plane")) {
+					GameObjectCreateInfo newPlaneObject;
+					newPlaneObject.modelName = "Plane";
+					newPlaneObject.name = "Plane" + Scene::GetGameObjects().size();
+
+					Scene::AddGameObject(newPlaneObject);
+					LevelCreateInfo levelCreateInfo;
+					levelCreateInfo.name = "test";
+					levelCreateInfo.gameObjects.push_back(newPlaneObject);
+					JSON::SaveLevel("test.json", levelCreateInfo);
+					/*g_showCreateButtonPanel = true;*/
 				}
 			}
 

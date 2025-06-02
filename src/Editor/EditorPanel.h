@@ -9,6 +9,7 @@
 #include "../API/OpenGL/Renderer.h"
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
+#include "../Utils/JSON.h"
 
 namespace EditorPanel {
 	void Init();

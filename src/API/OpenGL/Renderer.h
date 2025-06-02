@@ -42,8 +42,6 @@ namespace OpenGLRenderer {
 	void Init();
 	void RenderFrame();
 
-	void UpdateEditorCamera();
-
 	// stuff for the editor
 	RendererCommon::PostProcessMode GetPostProcessMode();
 	void ChangePostProcessMode(RendererCommon::PostProcessMode mode);

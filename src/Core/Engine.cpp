@@ -57,7 +57,7 @@ namespace Engine {
 			}
 			else {
 				CameraManager::SetActiveCamera(1);
-				Editor::UpdateCamera();
+				Editor::Update();
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 

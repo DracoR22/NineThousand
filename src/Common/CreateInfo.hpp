@@ -52,3 +52,9 @@ struct LightCreateInfo {
 
 	LightType type = LightType::POINT_LIGHT;
 };
+
+struct LevelCreateInfo {
+	std::string name;
+	std::vector<GameObjectCreateInfo> gameObjects;
+	std::vector<LightCreateInfo> lights;
+};

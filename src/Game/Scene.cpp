@@ -38,7 +38,7 @@ namespace Scene {
 		g_gameObjects.emplace_back(plane1CreateInfo);
 	}
 
-	void CreateGameObject(GameObjectCreateInfo createInfo) {
+	void AddGameObject(GameObjectCreateInfo createInfo) {
 		g_gameObjects.emplace_back(createInfo);
 	}
 
