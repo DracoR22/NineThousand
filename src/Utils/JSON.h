@@ -30,7 +30,8 @@ namespace nlohmann {
             j = {
                 {"name", obj.name},
                 {"modelName", obj.modelName},
-                {"position", obj.position}
+                {"position", obj.position},
+                {"rotation", obj.rotation}
             };
         }
 
@@ -38,19 +39,12 @@ namespace nlohmann {
             j.at("name").get_to(obj.name);
             j.at("modelName").get_to(obj.modelName);
             j.at("position").get_to(obj.position);
+            j.at("rotation").get_to(obj.rotation);
         }
     };
 }
 
-//namespace nlohmann {
-//
-//	void to_json(nlohmann::json& j, const GameObjectCreateInfo& info); 
-//
-//	void from_json(const nlohmann::json& j, GameObjectCreateInfo& info);
-//
-//}
-
 namespace JSON {
     void SaveToFile(nlohmann::json& json, const std::string& filepath);
-    void SaveLevel(const std::string& fileName, LevelCreateInfo& levelCreateInfo);
+    void SaveLevel(const std::string& filePath, LevelCreateInfo& levelCreateInfo);
 }

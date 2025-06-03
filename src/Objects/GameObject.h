@@ -28,4 +28,7 @@ public:
 	glm::vec3 GetRotationEuler() const;
 	std::string GetModelName() const;
 	std::string GetName() const;
+
+	GameObjectCreateInfo GetCreateInfo() const;
+	GameObjectCreateInfo GetLatestCreateInfo() const;
 };

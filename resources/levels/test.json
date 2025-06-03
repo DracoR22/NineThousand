@@ -1,0 +1,41 @@
+{
+    "GameObjects": [
+        {
+            "modelName": "Cube",
+            "name": "Cube0",
+            "position": {
+                "x": -1.5710434126958717e-06,
+                "y": 0.8199999928474426,
+                "z": 0.9999971985816956
+            }
+        },
+        {
+            "modelName": "Plane",
+            "name": "Plane0",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "modelName": "Plane",
+            "name": "Plane1",
+            "position": {
+                "x": 0.0,
+                "y": 10.0,
+                "z": 0.0
+            }
+        },
+        {
+            "modelName": "Plane",
+            "name": "Plane3",
+            "position": {
+                "x": 25.0,
+                "y": 5.0,
+                "z": 0.0
+            }
+        }
+    ],
+    "LevelName": "test"
+}

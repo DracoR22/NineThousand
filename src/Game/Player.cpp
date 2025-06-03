@@ -13,7 +13,7 @@ Player::Player(glm::vec3 position, float height, float mass)
             "",
             glm::vec3(0.0f, 5.0f, 1.0f),
             glm::vec3(0.05f),
-            glm::mat4(1.0f),
+            glm::vec3(0.0f),
     };
 
     m_currentWeaponGameObject = GameObject(gunCreateInfo);

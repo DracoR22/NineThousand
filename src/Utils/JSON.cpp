@@ -18,7 +18,7 @@
 
 
 namespace JSON {
-	void SaveLevel(const std::string& fileName, LevelCreateInfo& levelCreateInfo) {
+	void SaveLevel(const std::string& filePath, LevelCreateInfo& levelCreateInfo) {
 		nlohmann::json json;
 
 		json["LevelName"] = levelCreateInfo.name;
@@ -32,7 +32,7 @@ namespace JSON {
 			});
 		}
 
-		SaveToFile(json, fileName);
+		SaveToFile(json, filePath);
 	}
 
 	void SaveToFile(nlohmann::json& json, const std::string& fileName) {

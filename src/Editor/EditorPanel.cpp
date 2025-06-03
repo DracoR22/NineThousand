@@ -161,32 +161,37 @@ namespace EditorPanel {
 				if (ImGui::Button("Create Plane")) {
 					GameObjectCreateInfo newPlaneObject;
 					newPlaneObject.modelName = "Plane";
-					newPlaneObject.name = "Plane" + Scene::GetGameObjects().size();
+					newPlaneObject.name = "Plane" + std::to_string(Scene::GetGameObjects().size());
 
 					Scene::AddGameObject(newPlaneObject);
-					LevelCreateInfo levelCreateInfo;
-					levelCreateInfo.name = "test";
-					levelCreateInfo.gameObjects.push_back(newPlaneObject);
-					JSON::SaveLevel("test.json", levelCreateInfo);
-					/*g_showCreateButtonPanel = true;*/
 				}
 			}
 
 			ImGui::End();
 		}
 
+		if (Keyboard::KeyJustPressed(GLFW_KEY_F2)) {
+			g_showCreateButtonPanel = !g_showCreateButtonPanel;
+		}
+
 		if (g_showCreateButtonPanel) {
-			ImGui::Begin("Create GameObject", &g_showCreateButtonPanel);
+			ImVec2 fixedSize(300, 200);
+			ImGui::SetNextWindowSize(fixedSize, ImGuiCond_Always);
 
-			static char nameBuffer[64] = "NewObject";
-			static glm::vec3 position(0.0f);
-			static glm::vec3 size(1.0f);
+			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoResize;
 
-			ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
-			ImGui::InputFloat3("Position", &position[0]);
-			ImGui::InputFloat3("Size", &size[0]);
+			ImGui::Begin("Save Current Level", &g_showCreateButtonPanel, windowFlags);
 
-			/*ImGui::BeginCombo("Model")*/
+			if (ImGui::Button("Save")) {
+				std::vector<GameObject> gameObjects = Scene::GetGameObjects();
+				LevelCreateInfo levelCreateInfo;
+				levelCreateInfo.name = "test";
+				for (GameObject& object : gameObjects) {
+					levelCreateInfo.gameObjects.emplace_back(object.GetLatestCreateInfo());
+				}
+				
+				JSON::SaveLevel("resources/levels/" + levelCreateInfo.name + ".json", levelCreateInfo);
+			}
 
 			ImGui::End();
 		}

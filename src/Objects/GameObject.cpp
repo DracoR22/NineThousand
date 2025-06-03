@@ -1,13 +1,13 @@
 #include "./GameObject.h"
 
-
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	m_name = createInfo.name;
 	m_modelName = createInfo.modelName;
 	m_position = createInfo.position;
 	m_size = createInfo.size;
-	m_rotationMatrix = createInfo.rotation;
-	m_eulerRotation = glm::vec3(0.0f);
+	m_rotationMatrix = glm::mat4(1.0f);
+	m_eulerRotation = createInfo.rotation;
+	m_createInfo = createInfo;
 }
 
 void GameObject::SetPosition(glm::vec3 position) {
@@ -16,6 +16,10 @@ void GameObject::SetPosition(glm::vec3 position) {
 
 void GameObject::SetRotationMatrix(glm::mat4 rotation) {
 	m_rotationMatrix = rotation;
+
+	// also update euler rotation
+	glm::quat q = glm::quat_cast(rotation);
+	m_eulerRotation = glm::degrees(glm::eulerAngles(q));
 }
 
 void GameObject::SetSize(glm::vec3 size) {
@@ -36,6 +40,8 @@ glm::mat4 GameObject::GetRotationMatrix() const {
 
 void GameObject::SetRotationEuler(const glm::vec3& eulerDegrees) {
 	m_eulerRotation = eulerDegrees;
+
+	// Also update the rotation matrix
 	glm::vec3 radians = glm::radians(eulerDegrees);
 	m_rotationMatrix = glm::toMat4(glm::quat(radians));
 }
@@ -50,4 +56,18 @@ std::string GameObject::GetModelName() const {
 
 std::string GameObject::GetName() const {
 	return m_name;
+}
+
+GameObjectCreateInfo GameObject::GetCreateInfo() const {
+	return m_createInfo;
+}
+
+GameObjectCreateInfo GameObject::GetLatestCreateInfo() const {
+	GameObjectCreateInfo info;
+	info.name = m_name;
+	info.modelName = m_modelName;
+	info.position = m_position;
+	info.size = m_size;
+	info.rotation = m_eulerRotation;
+	return info;
 }
