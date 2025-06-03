@@ -177,7 +177,7 @@ namespace OpenGLRenderer {
 		// Load shadow map
 		g_renderData.shadowMap.Init();
 
-		Scene::CreateGameObjects();
+		Scene::LoadSceneFromFile();
 		Scene::CreateWaterPlaneObjects();
 	}
 

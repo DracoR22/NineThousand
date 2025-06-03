@@ -6,9 +6,10 @@
 #include "../Core/Model.h"
 #include "../Objects/GameObject.h"
 #include "../Objects/WaterPlaneObject.h"
+#include "../Utils/JSON.h"
 
 namespace Scene {
-	void CreateGameObjects();
+	void CreateHardcodedObjects();
 	void AddGameObject(GameObjectCreateInfo createInfo);
 
 	std::vector<GameObject>& GetGameObjects();

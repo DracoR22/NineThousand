@@ -45,6 +45,9 @@ namespace nlohmann {
 }
 
 namespace JSON {
-    void SaveToFile(nlohmann::json& json, const std::string& filepath);
+    void SaveToFile(nlohmann::json& json, const std::string& filePath);
+    bool LoadFile(nlohmann::json& json, const std::string filePath);
+
     void SaveLevel(const std::string& filePath, LevelCreateInfo& levelCreateInfo);
+    LevelCreateInfo LoadLevel(const std::string& filePath);
 }

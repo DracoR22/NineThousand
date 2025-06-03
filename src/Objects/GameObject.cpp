@@ -1,11 +1,13 @@
 #include "./GameObject.h"
 
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
+	glm::vec3 radians = glm::radians(createInfo.rotation);
+
 	m_name = createInfo.name;
 	m_modelName = createInfo.modelName;
 	m_position = createInfo.position;
 	m_size = createInfo.size;
-	m_rotationMatrix = glm::mat4(1.0f);
+	m_rotationMatrix = glm::toMat4(glm::quat(radians));
 	m_eulerRotation = createInfo.rotation;
 	m_createInfo = createInfo;
 }

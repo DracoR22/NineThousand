@@ -5,7 +5,7 @@ namespace Scene {
 	std::vector<GameObject> g_animatedObjects;
 	std::vector<WaterPlaneObject> g_waterPlaneObjects;
 
-	void CreateGameObjects() {
+	void CreateHardcodedObjects() {
 		// harcoded game objects
 		GameObjectCreateInfo cubeCreateInfo{
 			"Cube0",
@@ -74,5 +74,14 @@ namespace Scene {
 
 	std::vector<WaterPlaneObject>& GetWaterPlaneObjects() {
 		return g_waterPlaneObjects;
+	}
+
+	void LoadSceneFromFile() {
+		LevelCreateInfo levelCreateInfo = JSON::LoadLevel("resources/levels/test.json");
+
+		g_gameObjects.clear();
+		for (GameObjectCreateInfo& createInfo : levelCreateInfo.gameObjects) {
+			g_gameObjects.emplace_back(createInfo);
+		}
 	}
 }
