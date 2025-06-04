@@ -20,7 +20,8 @@ namespace nlohmann {
 			{"name", obj.name},
 			{"modelName", obj.modelName},
 			{"position", obj.position},
-			{"rotation", obj.rotation}
+			{"rotation", obj.rotation},
+			{"textureScale", obj.textureScale}
 		};
 	}
 
@@ -29,6 +30,7 @@ namespace nlohmann {
 		j.at("modelName").get_to(obj.modelName);
 		j.at("position").get_to(obj.position);
 		j.at("rotation").get_to(obj.rotation);
+		j.at("textureScale").get_to(obj.textureScale);
 	}
 }
 
@@ -72,7 +74,8 @@ namespace JSON {
 				{ "modelName", createInfo.modelName },
 				{ "position", createInfo.position },
 				{ "size", createInfo.size },
-				{ "rotation", createInfo.rotation }
+				{ "rotation", createInfo.rotation },
+		    	{ "textureScale", createInfo.textureScale }
 				});
 		}
 
@@ -97,6 +100,7 @@ namespace JSON {
 			createInfo.position = jsonObject["position"];
 			createInfo.rotation = jsonObject["rotation"];
 			createInfo.size = jsonObject["size"];
+			createInfo.textureScale = jsonObject["textureScale"];
 		}
 
 		return levelCreateInfo;

@@ -365,6 +365,7 @@ namespace OpenGLRenderer {
 			cmodel *= gameObject.GetRotationMatrix();
 
 			g_shaders.lightingShader.setMat4("model", cmodel);
+			g_shaders.lightingShader.setFloat("textureScale", gameObject.GetTextureScale());
 
 			if (gameObject.IsSelected()) {
 				glStencilFunc(GL_ALWAYS, 1, 0xFF); 

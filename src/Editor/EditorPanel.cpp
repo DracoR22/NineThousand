@@ -136,8 +136,14 @@ namespace EditorPanel {
 				}
 
 				if (ImGui::BeginCombo("Select Object", g_selectedObjectName.c_str())) {
+					if (ImGui::Selectable("None", g_selectedObjectName == "None")) {
+						for (GameObject& obj : objects)
+							obj.SetSelected(false); // Deselect all
+
+						g_selectedObjectName = "None";
+					}
 					for (GameObject& gameObject : objects) {
-						bool isSelected = (g_selectedObjectName == gameObject.GetName());
+						bool isSelected = (g_selectedObjectName == gameObject.GetName()); // get only the first one selected
 
 						if (ImGui::Selectable(gameObject.GetName().c_str(), isSelected)) {
 							for (GameObject& obj : objects)
@@ -164,17 +170,23 @@ namespace EditorPanel {
 					ImGui::Text("%s", gameObject.GetName().c_str());
 
 					glm::vec3 objectSize = gameObject.GetSize();
-					if (ImGui::SliderFloat("Size x", &objectSize.x, 0.0f, 100.0f)) {
+					if (ImGui::SliderFloat("Size XYZ", &objectSize.x, 0.0f, 100.0f)) {
 						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.x, objectSize.x));
 					}
 
-		/*			if (ImGui::SliderFloat("Size y", &objectSize.y, 0.0f, 100.0f)) {
-						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
-					}
+					if (gameObject.GetModelName() == "Plane") {
+						if (ImGui::SliderFloat("Size X", &objectSize.x, 0.0f, 100.0f)) {
+							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+						}
 
-					if (ImGui::SliderFloat("Size z", &objectSize.z, 0.0f, 100.0f)) {
-						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
-					}*/
+						if (ImGui::SliderFloat("Size Y", &objectSize.y, 0.0f, 100.0f)) {
+							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+						}
+
+						if (ImGui::SliderFloat("Size Z", &objectSize.z, 0.0f, 100.0f)) {
+							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+						}
+					}
 
 					glm::vec3 objectPosition = gameObject.GetPosition();
 					if (ImGui::InputFloat("Position X", &objectPosition.x, 1.0f, 10.0f, "%.2f")) {
@@ -193,6 +205,11 @@ namespace EditorPanel {
 					if (ImGui::SliderFloat3("Rotation", &objectEulerRotation.x, -180.0f, 180.0f, "%.2f")) {
 						
 						gameObject.SetRotationEuler(objectEulerRotation);
+					}
+
+					float textureScale = gameObject.GetTextureScale();
+					if (ImGui::SliderFloat("Texture Scale", &textureScale, 0.1f, 10.0f, "%.2f")) {
+						gameObject.SetTextureScale(textureScale);
 					}
 
 

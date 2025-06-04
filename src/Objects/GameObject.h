@@ -12,6 +12,7 @@ private:
 	glm::vec3 m_size;
 	glm::mat4 m_rotationMatrix;
 	glm::vec3 m_eulerRotation;
+	float m_textureScale;
 	GameObjectCreateInfo m_createInfo;
 	bool m_selected;
 public:
@@ -22,6 +23,7 @@ public:
 	void SetRotationMatrix(glm::mat4 rotation);
 	void SetRotationEuler(const glm::vec3& eulerDegrees);
 	void SetSize(glm::vec3 size);
+	void SetTextureScale(float scale);
 
 	glm::vec3 GetPosition() const;
 	glm::vec3 GetSize() const;
@@ -29,6 +31,7 @@ public:
 	glm::vec3 GetRotationEuler() const;
 	std::string GetModelName() const;
 	std::string GetName() const;
+	float GetTextureScale() const;
 
 	bool IsSelected() const;
 	void SetSelected(bool select);

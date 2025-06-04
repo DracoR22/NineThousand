@@ -10,6 +10,7 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	m_rotationMatrix = glm::toMat4(glm::quat(radians));
 	m_eulerRotation = createInfo.rotation;
 	m_createInfo = createInfo;
+	m_textureScale = createInfo.textureScale;
 	m_selected = false;
 }
 
@@ -27,6 +28,10 @@ void GameObject::SetRotationMatrix(glm::mat4 rotation) {
 
 void GameObject::SetSize(glm::vec3 size) {
 	m_size = size;
+}
+
+void GameObject::SetTextureScale(float scale) {
+	m_textureScale = scale;
 }
 
 glm::vec3 GameObject::GetPosition() const {
@@ -61,6 +66,10 @@ std::string GameObject::GetName() const {
 	return m_name;
 }
 
+float GameObject::GetTextureScale() const {
+	return m_textureScale;
+}
+
 bool GameObject::IsSelected() const {
 	return m_selected;
 }
@@ -80,5 +89,6 @@ GameObjectCreateInfo GameObject::GetLatestCreateInfo() const {
 	info.position = m_position;
 	info.size = m_size;
 	info.rotation = m_eulerRotation;
+	info.textureScale = m_textureScale;
 	return info;
 }
