@@ -13,6 +13,7 @@ private:
 	glm::mat4 m_rotationMatrix;
 	glm::vec3 m_eulerRotation;
 	GameObjectCreateInfo m_createInfo;
+	bool m_selected;
 public:
 	GameObject() = default;
 	GameObject(GameObjectCreateInfo& createInfo);
@@ -28,6 +29,9 @@ public:
 	glm::vec3 GetRotationEuler() const;
 	std::string GetModelName() const;
 	std::string GetName() const;
+
+	bool IsSelected() const;
+	void SetSelected(bool select);
 
 	GameObjectCreateInfo GetCreateInfo() const;
 	GameObjectCreateInfo GetLatestCreateInfo() const;

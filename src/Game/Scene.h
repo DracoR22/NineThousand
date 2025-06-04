@@ -18,6 +18,6 @@ namespace Scene {
 	void CreateWaterPlaneObjects();
 	std::vector<WaterPlaneObject>& GetWaterPlaneObjects();
 
-	void LoadSceneFromFile();
+	void LoadSceneFromFile(const std::string& filePath);
 	void SaveCurrentSceneToFile();
 }

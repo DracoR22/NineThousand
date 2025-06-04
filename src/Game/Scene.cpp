@@ -76,8 +76,8 @@ namespace Scene {
 		return g_waterPlaneObjects;
 	}
 
-	void LoadSceneFromFile() {
-		LevelCreateInfo levelCreateInfo = JSON::LoadLevel("resources/levels/test.json");
+	void LoadSceneFromFile(const std::string& filePath) {
+		LevelCreateInfo levelCreateInfo = JSON::LoadLevel(filePath);
 
 		g_gameObjects.clear();
 		for (GameObjectCreateInfo& createInfo : levelCreateInfo.gameObjects) {

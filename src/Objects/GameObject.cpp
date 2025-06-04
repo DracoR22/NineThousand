@@ -10,6 +10,7 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	m_rotationMatrix = glm::toMat4(glm::quat(radians));
 	m_eulerRotation = createInfo.rotation;
 	m_createInfo = createInfo;
+	m_selected = false;
 }
 
 void GameObject::SetPosition(glm::vec3 position) {
@@ -58,6 +59,14 @@ std::string GameObject::GetModelName() const {
 
 std::string GameObject::GetName() const {
 	return m_name;
+}
+
+bool GameObject::IsSelected() const {
+	return m_selected;
+}
+
+void GameObject::SetSelected(bool select) {
+	m_selected = select;
 }
 
 GameObjectCreateInfo GameObject::GetCreateInfo() const {

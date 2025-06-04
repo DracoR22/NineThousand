@@ -1,7 +1,6 @@
 #include "Engine.h"
 
 namespace Engine {
-
 	void Run() {
 		Window::Init();
 		Physics::Init();
@@ -15,6 +14,8 @@ namespace Engine {
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		LoadResources();
+		Scene::LoadSceneFromFile("resources/levels/test.json");
+		Scene::CreateWaterPlaneObjects();
 
 		OpenGLRenderer::Init();
 		Editor::Init();

@@ -1,5 +1,37 @@
 #include "JSON.h"
 
+namespace nlohmann {
+	void adl_serializer<glm::vec3>::to_json(nlohmann::json& j, const glm::vec3& value) {
+		j = nlohmann::json({
+			{"x", value.x},
+			{"y", value.y},
+			{"z", value.z}
+			});
+	}
+
+	void adl_serializer<glm::vec3>::from_json(const nlohmann::json& j, glm::vec3& value) {
+		j.at("x").get_to(value.x);
+		j.at("y").get_to(value.y);
+		j.at("z").get_to(value.z);
+	}
+
+	void adl_serializer<GameObjectCreateInfo>::to_json(nlohmann::json& j, const GameObjectCreateInfo& obj) {
+		j = {
+			{"name", obj.name},
+			{"modelName", obj.modelName},
+			{"position", obj.position},
+			{"rotation", obj.rotation}
+		};
+	}
+
+	void adl_serializer<GameObjectCreateInfo>::from_json(const nlohmann::json& j, GameObjectCreateInfo& obj) {
+		j.at("name").get_to(obj.name);
+		j.at("modelName").get_to(obj.modelName);
+		j.at("position").get_to(obj.position);
+		j.at("rotation").get_to(obj.rotation);
+	}
+}
+
 namespace JSON {
 	void SaveToFile(nlohmann::json& json, const std::string& filePath) {
 		std::ofstream ofs(filePath);

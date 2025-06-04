@@ -2,6 +2,7 @@
 
 namespace EditorPanel {
 	bool g_showCreateButtonPanel = false;
+	std::string g_selectedObjectName = "None";
 
 	void Init() {
 		IMGUI_CHECKVERSION();
@@ -124,15 +125,56 @@ namespace EditorPanel {
 
 			if (ImGui::CollapsingHeader("Objects")) {
 				int index = 1000;
+
+				std::vector<GameObject>& objects = Scene::GetGameObjects();
+
+				for (GameObject& gameObject : objects) {
+					if (gameObject.IsSelected()) {
+						g_selectedObjectName = gameObject.GetName();
+						break;
+					}
+				}
+
+				if (ImGui::BeginCombo("Select Object", g_selectedObjectName.c_str())) {
+					for (GameObject& gameObject : objects) {
+						bool isSelected = (g_selectedObjectName == gameObject.GetName());
+
+						if (ImGui::Selectable(gameObject.GetName().c_str(), isSelected)) {
+							for (GameObject& obj : objects)
+								obj.SetSelected(false); // Deselect all
+
+							gameObject.SetSelected(true);
+							g_selectedObjectName = gameObject.GetName();
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}	
+					}
+
+					ImGui::EndCombo();
+				}
+
 				for (GameObject& gameObject : Scene::GetGameObjects()) {
+					if (!gameObject.IsSelected())
+						continue; 
+
 					ImGui::PushID(index++);
 
 					ImGui::Text("%s", gameObject.GetName().c_str());
 
 					glm::vec3 objectSize = gameObject.GetSize();
-					if (ImGui::SliderFloat("Size", &objectSize.x, 0.0f, 100.0f)) {
-						gameObject.SetSize(glm::vec3(objectSize.x)); // I want size to be always identity so this is fine
+					if (ImGui::SliderFloat("Size x", &objectSize.x, 0.0f, 100.0f)) {
+						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.x, objectSize.x));
 					}
+
+		/*			if (ImGui::SliderFloat("Size y", &objectSize.y, 0.0f, 100.0f)) {
+						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+
+					if (ImGui::SliderFloat("Size z", &objectSize.z, 0.0f, 100.0f)) {
+						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}*/
 
 					glm::vec3 objectPosition = gameObject.GetPosition();
 					if (ImGui::InputFloat("Position X", &objectPosition.x, 1.0f, 10.0f, "%.2f")) {
