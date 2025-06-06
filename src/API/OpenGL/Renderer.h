@@ -42,6 +42,10 @@ namespace OpenGLRenderer {
 	void Init();
 	void RenderFrame();
 
+	// render passes
+	void ShadowPass(); // TODO!
+	void WaterRefractionPass(); // TODO!
+
 	// stuff for the editor
 	RendererCommon::PostProcessMode GetPostProcessMode();
 	void ChangePostProcessMode(RendererCommon::PostProcessMode mode);

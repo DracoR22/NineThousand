@@ -228,7 +228,7 @@ namespace OpenGLRenderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	
-		// REFLECTION PASS 
+		// REFRACTION PASS 
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -463,6 +463,7 @@ namespace OpenGLRenderer {
 			drawCollisionBoxes = !drawCollisionBoxes;
 		}
 
+		// BIG TODO!! DRAW THE SAME MODEL ATTACHED TO THIS RIGIDSTATIC OR DYNAMIC ACTOR, NOT ALWAYS A CUBE!!
 		if (drawCollisionBoxes) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDisable(GL_DEPTH_TEST);
@@ -587,7 +588,7 @@ namespace OpenGLRenderer {
 
 		g_renderData.textMesh.RenderText(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
 
-		// crosshair
+		// CROSSHAIR DOT PASS
 		UIElement crosshairElement;
 		crosshairElement.m_size = glm::vec2(50.0f, 50.0f);
 		crosshairElement.m_alignment = UIAlignment::Center;

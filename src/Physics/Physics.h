@@ -18,21 +18,24 @@ namespace Physics {
     void Init();
     void Simulate(double dt);
 
-    /* Collision Shapes */
+    // Create
     PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass);
     PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass);
     PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents);
 
     PhysicsTransformData GetActorTransform(const physx::PxRigidActor* actor);
 
-    /* Character Controller */
+    // Character Controller
     void CreateCharacterController();
     void MoveCharacterController(const glm::vec3& direction, float deltaTime);
-    void UpdatePlayerControllerVerticalVelocity();
-    PxExtendedVec3 GetPlayerControllerPosition();
+    void UpdateCharacterControllerVerticalVelocity();
+    PxExtendedVec3 GetCharacterControllerPosition();
 
-    // Rigid Bodies
+    // Rigid Dynamics
+
+    // Rigid Statics
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents);
+    RigidStatic* GetRigidStaticById(uint64_t id);
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap();
 
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec);

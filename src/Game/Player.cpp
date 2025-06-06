@@ -41,7 +41,7 @@ void Player::Update(double deltaTime) {
     }
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE)) {
-        Physics::UpdatePlayerControllerVerticalVelocity();
+        Physics::UpdateCharacterControllerVerticalVelocity();
     }
 
     // Normalize move direction to avoid faster diagonal movement
@@ -67,7 +67,7 @@ void Player::Update(double deltaTime) {
      float sensitivity = 0.01f;
      m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
-     physx::PxExtendedVec3 playerPos = Physics::GetPlayerControllerPosition();
+     physx::PxExtendedVec3 playerPos = Physics::GetCharacterControllerPosition();
      glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
 
      m_camera.setPosition(targetPosition); 

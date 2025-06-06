@@ -129,12 +129,12 @@ namespace Physics {
        }
     }
 
-    void UpdatePlayerControllerVerticalVelocity() {
+    void UpdateCharacterControllerVerticalVelocity() {
         float jumpVelocity = 0.5f; 
         g_ControllerVerticalVelocity = jumpVelocity;
     }
 
-    PxExtendedVec3 GetPlayerControllerPosition() {
+    PxExtendedVec3 GetCharacterControllerPosition() {
         return g_controller->getPosition();
     }
 
@@ -159,6 +159,14 @@ namespace Physics {
         rigidStatic.SetPxRigidStatic(staticActor);
 
         return physicsId;
+    }
+
+    RigidStatic* GetRigidStaticById(uint64_t id) {
+        auto it = g_rigidStatic.find(id);
+        if (it != g_rigidStatic.end()) {
+            return &it->second;
+        }
+        return nullptr;
     }
 
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap() {

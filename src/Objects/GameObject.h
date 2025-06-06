@@ -17,7 +17,6 @@ private:
 	GameObjectCreateInfo m_createInfo;
 	bool m_selected;
 
-	bool m_hasPhysics = false;
 	uint64_t m_physicsId = 0;
 public:
 	GameObject() = default;
