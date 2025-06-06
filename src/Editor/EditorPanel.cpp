@@ -173,20 +173,19 @@ namespace EditorPanel {
 					if (ImGui::SliderFloat("Size XYZ", &objectSize.x, 0.0f, 100.0f)) {
 						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.x, objectSize.x));
 					}
-
-					if (gameObject.GetModelName() == "Plane") {
-						if (ImGui::SliderFloat("Size X", &objectSize.x, 0.0f, 100.0f)) {
-							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
-						}
-
-						if (ImGui::SliderFloat("Size Y", &objectSize.y, 0.0f, 100.0f)) {
-							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
-						}
-
-						if (ImGui::SliderFloat("Size Z", &objectSize.z, 0.0f, 100.0f)) {
-							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
-						}
+					
+					if (ImGui::SliderFloat("Size X", &objectSize.x, 0.0f, 100.0f)) {
+						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
 					}
+
+				    if (ImGui::SliderFloat("Size Y", &objectSize.y, 0.0f, 100.0f)) {
+							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+
+					if (ImGui::SliderFloat("Size Z", &objectSize.z, 0.0f, 100.0f)) {
+							gameObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+				
 
 					glm::vec3 objectPosition = gameObject.GetPosition();
 					if (ImGui::InputFloat("Position X", &objectPosition.x, 1.0f, 10.0f, "%.2f")) {
@@ -224,6 +223,13 @@ namespace EditorPanel {
 
 					Scene::AddGameObject(newPlaneObject);
 				}
+				if (ImGui::Button("Create Cube")) {
+					GameObjectCreateInfo newPlaneObject;
+					newPlaneObject.modelName = "Cube";
+					newPlaneObject.name = "Cube" + std::to_string(Scene::GetGameObjects().size());
+
+					Scene::AddGameObject(newPlaneObject);
+				}
 			}
 
 			ImGui::End();
@@ -249,7 +255,9 @@ namespace EditorPanel {
 					levelCreateInfo.gameObjects.emplace_back(object.GetLatestCreateInfo());
 				}
 				
+				
 				JSON::SaveLevel("resources/levels/" + levelCreateInfo.name + ".json", levelCreateInfo);
+				JSON::SaveLevel("../../../resources/levels/" + levelCreateInfo.name + ".json", levelCreateInfo);
 			}
 
 			ImGui::End();

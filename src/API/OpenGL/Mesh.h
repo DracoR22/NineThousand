@@ -40,7 +40,9 @@ public:
 	void Cleanup();
 	void SetupInstance();
 	void SetupMesh();
-	void GetVAO();
+
+	unsigned int GetVAO() const;
+	std::vector<unsigned int> GetIndices() const;
 private:
 	unsigned int m_VAO;
 	unsigned int m_VBO;

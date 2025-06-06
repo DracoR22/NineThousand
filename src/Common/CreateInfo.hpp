@@ -39,17 +39,10 @@ struct ModelCreateInfo {
 
 struct LightCreateInfo {
 	glm::vec3 position = glm::vec3(0.0f);
+	glm::vec3 color = glm::vec3(0.8f);
 
-	float constant = 1.0f;
-	float linear = 1.0f;
-	float quadratic = 1.0f;
 	float radius = 10.0f;
 	float strength = 1.0f;
-
-	glm::vec3 ambient = glm::vec3(0.0f);
-	glm::vec3 diffuse = glm::vec3(0.0f);
-	glm::vec3 specular = glm::vec3(0.0f);
-	glm::vec3 color = glm::vec3(0.8f);
 
 	LightType type = LightType::POINT_LIGHT;
 };

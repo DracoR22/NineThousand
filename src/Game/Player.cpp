@@ -6,7 +6,7 @@ Player::Player(glm::vec3 position, float height, float mass)
 
 	m_camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
 
-    Physics::InitializeCharacterController();
+    Physics::CreateCharacterController();
 
     GameObjectCreateInfo gunCreateInfo{
             "", 
@@ -51,7 +51,7 @@ void Player::Update(double deltaTime) {
 
      m_isMoving = glm::length(moveDirection) > 0.0f;
 
-     Physics::MovePlayerController(moveDirection * currentSpeed * static_cast<float>(deltaTime), deltaTime);
+     Physics::MoveCharacterController(moveDirection * currentSpeed * static_cast<float>(deltaTime), deltaTime);
 
      // Handle mouse input for camera rotation
      static glm::vec2 smoothedDelta = glm::vec2(0.0f);

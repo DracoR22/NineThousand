@@ -2,53 +2,70 @@
 
 namespace Physics {
     using namespace physx;
-    PxDefaultAllocator _gAllocator;
-    PxDefaultErrorCallback _gErrorCallback;
-    PxFoundation* _gFoundation = nullptr;
-    PxPhysics* _gPhysics = nullptr;
-    PxDefaultCpuDispatcher* _gDispatcher = nullptr;
-    PxScene* _gScene = nullptr;
-    PxMaterial* _gMaterial = nullptr;
-    PxMaterial* _gCharacterMaterial = nullptr;
-    PxController* _gController = nullptr;
+
+    PxDefaultAllocator g_allocator;
+    PxDefaultErrorCallback g_errorCallback;
+    PxFoundation* g_foundation = nullptr;
+    PxPhysics* g_physics = nullptr;
+    PxDefaultCpuDispatcher* g_dispatcher = nullptr;
+    PxScene* g_scene = nullptr;
+    PxMaterial* g_material = nullptr;
+    PxMaterial* g_characterMaterial = nullptr;
+    PxController* g_controller = nullptr;
     PxControllerManager* g_controllerManager = nullptr;
 
-
-    PxRigidDynamic* _cubeActor = nullptr;
-    PxRigidDynamic* _playerActor = nullptr;
+    PxRigidDynamic* g_cubeActor = nullptr;
+    std::unordered_map<uint64_t, RigidStatic> g_rigidStatic;
 
     float g_ControllerVerticalVelocity = 0.0f;
 
     void Init() {
-        _gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, _gAllocator, _gErrorCallback);
-        _gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *_gFoundation, PxTolerancesScale(), true);
+        g_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_allocator, g_errorCallback);
+        g_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *g_foundation, PxTolerancesScale(), true);
 
         // Create a CPU dispatcher for multithreading
-        _gDispatcher = PxDefaultCpuDispatcherCreate(2);
+        g_dispatcher = PxDefaultCpuDispatcherCreate(2);
 
-        PxSceneDesc sceneDesc(_gPhysics->getTolerancesScale()); 
+        PxSceneDesc sceneDesc(g_physics->getTolerancesScale()); 
         sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f); // -9.81 earths gravity
-        sceneDesc.cpuDispatcher = _gDispatcher;
+        sceneDesc.cpuDispatcher = g_dispatcher;
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-        _gScene = _gPhysics->createScene(sceneDesc);
+        g_scene = g_physics->createScene(sceneDesc);
 
-        _gMaterial = _gPhysics->createMaterial(0.5f, 0.5f, 0.0f);
-        _gCharacterMaterial = _gPhysics->createMaterial(0.5f, 0.5f, 0.0f);
+        g_material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
+        g_characterMaterial = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
+
+        // create a ground plane
+        PxRigidStatic* groundPlane = nullptr;
+        groundPlane = PxCreatePlane(*g_physics, PxPlane(0.0f, 1.0f, 0.0f, 0.0f), *g_material);
+        g_scene->addActor(*groundPlane);
     }
 
+    void Simulate(double deltaTime) {
+        const double fixedTimestep = 1.0 / 420; // 420 fps
+        static double accumulatedTime = 0.0;
+
+        accumulatedTime += deltaTime;
+
+        while (accumulatedTime >= fixedTimestep) {
+            g_scene->simulate(fixedTimestep);
+            g_scene->fetchResults(true);
+            accumulatedTime -= fixedTimestep;
+        }
+    }
 
     PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass) {
         PxTransform transform(position);
-        PxRigidDynamic* cubeActor = _gPhysics->createRigidDynamic(transform);
+        PxRigidDynamic* cubeActor = g_physics->createRigidDynamic(transform);
 
-        PxShape* shape = _gPhysics->createShape(PxBoxGeometry(halfExtents), *_gMaterial);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
         cubeActor->attachShape(*shape);
         shape->release();
 
         PxRigidBodyExt::updateMassAndInertia(*cubeActor, mass);
-        _gScene->addActor(*cubeActor);
+        g_scene->addActor(*cubeActor);
 
-        _cubeActor = cubeActor;
+        g_cubeActor = cubeActor;
 
         return cubeActor;
     }
@@ -56,13 +73,13 @@ namespace Physics {
     PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents) {
         PxTransform transform(position);
 
-        PxRigidStatic* staticActor = _gPhysics->createRigidStatic(transform);
+        PxRigidStatic* staticActor = g_physics->createRigidStatic(transform);
 
-        PxShape* shape = _gPhysics->createShape(PxBoxGeometry(halfExtents), *_gMaterial);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
         staticActor->attachShape(*shape);
         shape->release();
 
-        _gScene->addActor(*staticActor);
+        g_scene->addActor(*staticActor);
 
         return staticActor;
     }
@@ -70,42 +87,42 @@ namespace Physics {
     PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass) {
         PxTransform transform(position);
 
-        PxRigidDynamic* capsuleActor = _gPhysics->createRigidDynamic(transform);
+        PxRigidDynamic* capsuleActor = g_physics->createRigidDynamic(transform);
 
-        PxShape* shape = _gPhysics->createShape(PxCapsuleGeometry(radius, halfHeight), *_gMaterial);
+        PxShape* shape = g_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *g_material);
         capsuleActor->attachShape(*shape);
   
         shape->release();
 
         PxRigidBodyExt::updateMassAndInertia(*capsuleActor, mass);
 
-        _gScene->addActor(*capsuleActor);
+        g_scene->addActor(*capsuleActor);
 
         return capsuleActor;
     }
 
-    void InitializeCharacterController() {
-        g_controllerManager = PxCreateControllerManager(*_gScene);
+    void CreateCharacterController() {
+        g_controllerManager = PxCreateControllerManager(*g_scene);
 
         physx::PxCapsuleControllerDesc desc;
         desc.height = 1.8f;       
         desc.radius = 0.3f;         
-        desc.material = _gPhysics->createMaterial(0.5f, 0.5f, 0.0f);
+        desc.material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
         desc.position = PxExtendedVec3(0, 5, 0); 
         desc.slopeLimit = 0.707f;    
         desc.stepOffset = 0.5f;      
         desc.upDirection = PxVec3(0, 1, 0);
 
-       _gController = g_controllerManager->createController(desc);
+       g_controller = g_controllerManager->createController(desc);
     }
 
-    void MovePlayerController(const glm::vec3& direction, float deltaTime) {
+    void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
 
         g_ControllerVerticalVelocity -= 2.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-       PxControllerCollisionFlags flags = _gController->move(displacement, 0.0f, deltaTime, nullptr);
+       PxControllerCollisionFlags flags = g_controller->move(displacement, 0.0f, deltaTime, nullptr);
 
        if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
            g_ControllerVerticalVelocity = 0.0f;
@@ -118,58 +135,49 @@ namespace Physics {
     }
 
     PxExtendedVec3 GetPlayerControllerPosition() {
-        return _gController->getPosition();
+        return g_controller->getPosition();
     }
 
-    void CreateCharacterActor(glm::vec3 position, float height, float mass) {
-      physx::PxVec3 pxPosition(position.x, position.y, position.z);
+    uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
+        PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
+        PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+        PxTransform pxTransform(pxPos, pxRot);
 
-      _playerActor = Physics::CreateDynamicCapsule(pxPosition, height / 2.0f, 0.25f, mass);
-     /* _playerActor = Physics::CreateDynamicBox(pxPosition, PxVec3(0.5f, height / 2.0, 0.5), mass);*/
+        PxRigidStatic* staticActor = g_physics->createRigidStatic(pxTransform);
 
-      _playerActor->setLinearDamping(1.0f);
-      _playerActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, true);
-      _playerActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, true);
-      _playerActor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, true);
+        // create shape
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        staticActor->attachShape(*shape);
+        shape->release();
+
+        g_scene->addActor(*staticActor);
+
+        // create rigid body
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        RigidStatic& rigidStatic = g_rigidStatic[physicsId];
+
+        rigidStatic.SetPxRigidStatic(staticActor);
+
+        return physicsId;
     }
 
-    void CharacterActorJump() {
-        float jumpImpulse = 200.25f;
-        PxVec3 jumpForce(0.0f, jumpImpulse, 0.0f);
-        _playerActor->addForce(jumpForce, physx::PxForceMode::eIMPULSE);
+    std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap() {
+        return g_rigidStatic;
     }
 
-    void MoveCharacterActor(glm::vec3 targetVelocity) {
-        PxVec3 currentVelocity = _playerActor->getLinearVelocity();
-
-        targetVelocity.y = currentVelocity.y;
-        physx::PxVec3 pxTargetVelocity(targetVelocity.x, targetVelocity.y, targetVelocity.z);
-        _playerActor->setLinearVelocity(pxTargetVelocity);
+    glm::vec3 PxVec3toGlmVec3(PxVec3 vec) {
+        return { vec.x, vec.y, vec.z };
     }
 
-    PxTransform GetCharacterActorPosition() {
-        return _playerActor->getGlobalPose();
+    glm::quat PxQuatToGlmQuat(PxQuat quat) {
+        return { quat.x, quat.y, quat.z, quat.w };
     }
 
     PxScene* GetScene() {
-        return _gScene;
+        return g_scene;
     }
 
-
-    void Simulate(double deltaTime) {
-        const double fixedTimestep = 1.0 / 420; // 420 fps
-        static double accumulatedTime = 0.0;
-
-        accumulatedTime += deltaTime;
-
-        while (accumulatedTime >= fixedTimestep) {
-            _gScene->simulate(fixedTimestep);
-            _gScene->fetchResults(true);
-            accumulatedTime -= fixedTimestep;
-        }
-    }
-
-    PhysicsTransformData GetTransformFromPhysics(const physx::PxRigidActor* actor) {
+    PhysicsTransformData GetActorTransform(const physx::PxRigidActor* actor) {
         PhysicsTransformData transformData;
 
         if (!actor) return transformData;
@@ -182,13 +190,14 @@ namespace Physics {
     }
 
     void CleanupPhysX() {
-        _cubeActor->release();
-        _gController->release();
+        g_rigidStatic.clear();
+        g_cubeActor->release();
+        g_controller->release();
         g_controllerManager->release();
-        _gScene->release();
-        _gDispatcher->release();
-        _gMaterial->release();
-        _gPhysics->release();
-        _gFoundation->release();
+        g_scene->release();
+        g_dispatcher->release();
+        g_material->release();
+        g_physics->release();
+        g_foundation->release();
     }
 }

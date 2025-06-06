@@ -10,7 +10,6 @@ namespace Engine {
 
 		Player& player = Game::GetPLayerByIndex(0);
 
-		physx::PxRigidStatic* planeActor = Physics::CreateStaticBox(physx::PxVec3(0.0, 0.0f, 0.0f), physx::PxVec3(50.0, 0.07f, 50.0f));
 		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
 
 		LoadResources();
@@ -40,7 +39,7 @@ namespace Engine {
 			Window::ProcessInput(Window::GetDeltaTime());
 			Physics::Simulate(Window::GetDeltaTime());
 
-			PhysicsTransformData cubeTransformData = Physics::GetTransformFromPhysics(cubeActor);
+			PhysicsTransformData cubeTransformData = Physics::GetActorTransform(cubeActor);
 			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
 
 			CameraManager::UpdateViewMatrix();

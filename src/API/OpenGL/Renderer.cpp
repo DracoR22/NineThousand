@@ -112,12 +112,6 @@ namespace OpenGLRenderer {
 
 		LightCreateInfo cubeLampLight;
 		cubeLampLight.position = glm::vec3(10.0f, 5.0f, 5.0f);
-		cubeLampLight.constant = 1.0f;
-		cubeLampLight.linear = 0.0014f;
-		cubeLampLight.quadratic = 0.000007f;
-		cubeLampLight.ambient = glm::vec3(0.002f);
-		cubeLampLight.diffuse = glm::vec3(0.8f);
-		cubeLampLight.specular = glm::vec3(1.0f);
 		cubeLampLight.color = glm::vec3(0.8f);
 		cubeLampLight.radius = 70.0f;
 		cubeLampLight.strength = 1.0f;
@@ -125,12 +119,6 @@ namespace OpenGLRenderer {
 
 		LightCreateInfo cubeLampLight2;
 		cubeLampLight2.position = glm::vec3(7.0f, 5.0f, 2.0f);
-		cubeLampLight2.constant = 1.0f;
-		cubeLampLight2.linear = 0.0014f;
-		cubeLampLight2.quadratic = 0.000007f;
-		cubeLampLight2.ambient = glm::vec3(0.002f);
-		cubeLampLight2.diffuse = glm::vec3(0.8f);
-		cubeLampLight2.specular = glm::vec3(1.0f);
 		cubeLampLight2.color = glm::vec3(0.8f);
 		cubeLampLight2.radius = 70.0f;
 		cubeLampLight2.strength = 1.0f;
@@ -288,25 +276,12 @@ namespace OpenGLRenderer {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
 			g_shaders.animationShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
-			g_shaders.animationShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
-			g_shaders.animationShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
-			g_shaders.animationShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
 			g_shaders.animationShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
 			g_shaders.animationShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-
-			g_shaders.animationShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
-			g_shaders.animationShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
-			g_shaders.animationShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
 			g_shaders.animationShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
 			g_shaders.animationShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
 		g_shaders.animationShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-		//if (player.PressingADS() || player.GetWeaponAction() == WeaponAction::ADS_OUT) { // little hack because ads light was getting rotated
-		//	g_shaders.weaponShader.setBool("flipLights", true);
-		//}
-		//else {
-		//	g_shaders.weaponShader.setBool("flipLights", false);
-		//}
 
 		glm::mat4 amodel = glm::mat4(1.0f);
 		amodel = glm::translate(amodel, player.m_currentWeaponGameObject.GetPosition());
@@ -341,15 +316,8 @@ namespace OpenGLRenderer {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
 			g_shaders.lightingShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
-			g_shaders.lightingShader.setFloat(lightUniform + ".constant", g_renderData.sceneLights[i].constant);
-			g_shaders.lightingShader.setFloat(lightUniform + ".linear", g_renderData.sceneLights[i].linear);
-			g_shaders.lightingShader.setFloat(lightUniform + ".quadratic", g_renderData.sceneLights[i].quadratic);
 			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
 			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-
-			g_shaders.lightingShader.setVec3(lightUniform + ".ambient", g_renderData.sceneLights[i].ambient);
-			g_shaders.lightingShader.setVec3(lightUniform + ".diffuse", g_renderData.sceneLights[i].diffuse);
-			g_shaders.lightingShader.setVec3(lightUniform + ".specular", g_renderData.sceneLights[i].specular);
 			g_shaders.lightingShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
 			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 		}
@@ -437,8 +405,6 @@ namespace OpenGLRenderer {
 		g_shaders.solidColorShader.setMat4("model", lmodel);
 		AssetManager::DrawModel("CubeLamp", g_shaders.solidColorShader);
 
-		// DEBUG PASS
-
 
 		// ------ INSTANCE PASS ----------
 		/*g_shaders.instancedShader.activate();
@@ -489,6 +455,58 @@ namespace OpenGLRenderer {
 		glStencilMask(0xFF);
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glEnable(GL_DEPTH_TEST);
+
+		// DEBUG PASS
+		static bool drawCollisionBoxes = false;
+
+		if (Keyboard::KeyJustPressed(GLFW_KEY_F3)) {
+			drawCollisionBoxes = !drawCollisionBoxes;
+		}
+
+		if (drawCollisionBoxes) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glDisable(GL_DEPTH_TEST);
+
+			g_shaders.solidColorShader.activate();
+			g_shaders.solidColorShader.set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
+			g_shaders.solidColorShader.setMat4("view", view);
+			g_shaders.solidColorShader.setMat4("projection", projection);
+			g_shaders.solidColorShader.setVec3("lightColor", 0.0f, 1.0f, 0.0f);
+			for (auto& [id, rigidStatic] : Physics::GetRigidStaticsMap()) {
+				PxRigidStatic* actor = rigidStatic.GetPxRigidStatic();
+				PxTransform pxTransform = actor->getGlobalPose();
+
+				glm::vec3 pxPosition = Physics::PxVec3toGlmVec3(pxTransform.p);
+				glm::quat pxRotation = Physics::PxQuatToGlmQuat(pxTransform.q);
+
+				PxBounds3 bounds = actor->getWorldBounds();
+
+				PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+				PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+
+				glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+				glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+
+				glm::mat4 ptModel = glm::mat4(1.0f);
+				ptModel = glm::translate(ptModel, pxPosition);
+				ptModel = glm::scale(ptModel, glmExtents * 2.0f);
+				ptModel *= glm::toMat4(pxRotation);
+
+				g_shaders.solidColorShader.setMat4("model", ptModel);
+
+				Model* debugCube = AssetManager::GetModelByName("Cube");
+
+				for (unsigned int i = 0; i < debugCube->meshes.size(); i++) {
+					glBindVertexArray(debugCube->meshes[i].GetVAO());
+					glDrawElements(GL_TRIANGLES, debugCube->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+				}
+
+			}
+
+			glEnable(GL_DEPTH_TEST);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+
 		
 		// ------ MUZZLE FLASH PASS
 		glm::vec3 barrelOffset = player.GetEquipedWeaponInfo()->muzzleFlashOffset;

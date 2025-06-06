@@ -1,4 +1,5 @@
 #include "./GameObject.h"
+#include <glm/gtx/string_cast.hpp>
 
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	glm::vec3 radians = glm::radians(createInfo.rotation);
@@ -12,6 +13,21 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	m_createInfo = createInfo;
 	m_textureScale = createInfo.textureScale;
 	m_selected = false;
+
+	if (createInfo.modelName == "Cube" && createInfo.name != "Cube0") {
+		PhysicsTransformData physicsTransformData;
+		physicsTransformData.position = createInfo.position;
+		physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
+
+		uint64_t physicsId = Physics::CreateRigidStaticBox(
+			physicsTransformData,
+		    PxVec3(createInfo.size.x * 0.5f,
+			createInfo.size.y * 0.5f,
+			createInfo.size.z * 0.5f)
+		);
+
+		m_physicsId = physicsId;
+	}
 }
 
 void GameObject::SetPosition(glm::vec3 position) {

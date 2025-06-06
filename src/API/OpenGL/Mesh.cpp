@@ -168,6 +168,14 @@ void Mesh::Draw(Shader& shader, unsigned int instances) {
 	}
 }
 
+unsigned int Mesh::GetVAO() const {
+	return m_VAO;
+}
+
+std::vector<unsigned int> Mesh::GetIndices() const {
+	return indices;
+}
+
 void Mesh::Cleanup() {
 	glDeleteVertexArrays(1, &m_VAO);
 	glDeleteBuffers(1, &m_VBO);
