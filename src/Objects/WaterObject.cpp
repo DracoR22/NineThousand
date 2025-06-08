@@ -1,6 +1,6 @@
 #include "./WaterObject.h"
 
-WaterObject::WaterObject(WaterPlaneObjectCreateInfo& createInfo) {
+WaterObject::WaterObject(WaterObjectCreateInfo& createInfo) {
 	m_name = createInfo.name;
 	m_modelName = createInfo.modelName;
 	m_position = createInfo.position;

@@ -396,7 +396,7 @@ namespace OpenGLRenderer {
 
 		g_shaders.waterShader.setFloat("moveFactor", moveFactor);
 
-		for (WaterPlaneObject& waterPlaneObject: Scene::GetWaterPlaneObjects()) {
+		for (WaterObject& waterPlaneObject: Scene::GetWaterPlaneObjects()) {
 			glm::mat4 lmodel = glm::mat4(1.0f);
 			lmodel = glm::translate(lmodel, waterPlaneObject.GetPosition());
 			lmodel = glm::scale(lmodel, waterPlaneObject.GetSize());

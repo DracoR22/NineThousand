@@ -10,11 +10,11 @@ private:
 	glm::vec3 m_position;
 	glm::vec3 m_size;
 	glm::mat4 m_rotation;
-	WaterPlaneObjectCreateInfo m_createInfo;
+	WaterObjectCreateInfo m_createInfo;
 	float m_waterTransparency;
 public:
 	WaterObject() = default;
-	WaterObject(WaterPlaneObjectCreateInfo& createInfo);
+	WaterObject(WaterObjectCreateInfo& createInfo);
 
 	void SetPosition(glm::vec3 position);
 	void SetRotation(glm::mat4 rotation);

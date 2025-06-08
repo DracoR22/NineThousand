@@ -20,7 +20,7 @@ struct GameObjectCreateInfo {
 	float textureScale = 1.0f;
 };
 
-struct WaterPlaneObjectCreateInfo {
+struct WaterObjectCreateInfo {
 	std::string name = "undefined";
 	std::string modelName = "undefined";
 	glm::vec3 position = glm::vec3(0.0f);

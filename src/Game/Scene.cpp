@@ -3,7 +3,7 @@
 namespace Scene {
 	std::vector<GameObject> g_gameObjects;
 	std::vector<GameObject> g_animatedObjects;
-	std::vector<WaterPlaneObject> g_waterPlaneObjects;
+	std::vector<WaterObject> g_waterPlaneObjects;
 
 	void CreateHardcodedObjects() {
 		// harcoded game objects
@@ -58,7 +58,7 @@ namespace Scene {
 	}
 
 	void CreateWaterPlaneObjects() {
-		WaterPlaneObjectCreateInfo waterPlaneCreateInfo{
+		WaterObjectCreateInfo waterPlaneCreateInfo{
 			"WaterPlane0",
 			"Plane",
 			glm::vec3(0.0f, 0.5f, 0.0f),
@@ -72,7 +72,7 @@ namespace Scene {
 
 	}
 
-	std::vector<WaterPlaneObject>& GetWaterPlaneObjects() {
+	std::vector<WaterObject>& GetWaterPlaneObjects() {
 		return g_waterPlaneObjects;
 	}
 

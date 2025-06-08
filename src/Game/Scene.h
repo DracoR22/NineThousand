@@ -5,7 +5,7 @@
 
 #include "../Core/Model.h"
 #include "../Objects/GameObject.h"
-#include "../Objects/WaterPlaneObject.h"
+#include "../Objects/WaterObject.h"
 #include "../Utils/JSON.h"
 
 namespace Scene {
@@ -16,7 +16,7 @@ namespace Scene {
 	GameObject* GetGameObjectByName(const std::string& name);
 
 	void CreateWaterPlaneObjects();
-	std::vector<WaterPlaneObject>& GetWaterPlaneObjects();
+	std::vector<WaterObject>& GetWaterPlaneObjects();
 
 	void LoadSceneFromFile(const std::string& filePath);
 	void SaveCurrentSceneToFile();
