@@ -20,20 +20,22 @@ Player::Player(glm::vec3 position, float height, float mass)
 }
 
 void Player::Update(double deltaTime) {
-    // Calculate direction based on keyboard input
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(m_camera.cameraFront.x, 0.0f, m_camera.cameraFront.z));
+    glm::vec3 horizontalRight = glm::normalize(glm::vec3(m_camera.cameraRight.x, 0.0f, m_camera.cameraRight.z));
+    
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
     if (Keyboard::KeyPressed(GLFW_KEY_W)) {
-        moveDirection += m_camera.cameraFront;
+        moveDirection += horizontalFront;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_S)) {
-        moveDirection -= m_camera.cameraFront;
+        moveDirection -= horizontalFront;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_D)) {
-        moveDirection += m_camera.cameraRight;
+        moveDirection += horizontalRight;
     }
     if (Keyboard::KeyPressed(GLFW_KEY_A)) {
-        moveDirection -= m_camera.cameraRight;
+        moveDirection -= horizontalRight;
     }
     float currentSpeed = m_speed;
     if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
@@ -55,7 +57,7 @@ void Player::Update(double deltaTime) {
 
      // Handle mouse input for camera rotation
      static glm::vec2 smoothedDelta = glm::vec2(0.0f);
-     const float smoothingFactor = 0.55f; // Lower = smoother, but more latency
+     const float smoothingFactor = 0.75f; // Lower = smoother, but more latency
 
      double dx = Mouse::getDX();
      double dy = Mouse::getDY();

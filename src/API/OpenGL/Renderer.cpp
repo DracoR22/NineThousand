@@ -233,16 +233,30 @@ namespace OpenGLRenderer {
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		g_shaders.simpleTextureShader.activate();
-		g_shaders.simpleTextureShader.setMat4("view", view);
-		g_shaders.simpleTextureShader.setMat4("projection", projection);
+		g_shaders.lightingShader.activate();
+		g_shaders.lightingShader.setMat4("view", view);
+		g_shaders.lightingShader.setMat4("projection", projection);
+
+		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
+		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+			std::string lightUniform = "lights[" + std::to_string(i) + "]";
+
+			g_shaders.lightingShader.setVec3(lightUniform + ".position", g_renderData.sceneLights[i].position);
+			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
+			g_shaders.lightingShader.setVec3(lightUniform + ".color", g_renderData.sceneLights[i].color);
+			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+		}
+		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
+		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
+		g_shaders.lightingShader.setInt("shadowMap", 3);
 	
 		glm::mat4 rmodel = glm::mat4(1.0f);
 		rmodel = glm::translate(rmodel, Scene::GetGameObjectByName("Plane0")->GetPosition());
 		rmodel = glm::scale(rmodel, Scene::GetGameObjectByName("Plane0")->GetSize());
 		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotationMatrix();
-		g_shaders.simpleTextureShader.setMat4("model", rmodel);
-		AssetManager::DrawModel("Plane", g_shaders.simpleTextureShader);
+		g_shaders.lightingShader.setMat4("model", rmodel);
+		AssetManager::DrawModel("Plane", g_shaders.lightingShader);
 
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
@@ -472,36 +486,60 @@ namespace OpenGLRenderer {
 			g_shaders.solidColorShader.set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
 			g_shaders.solidColorShader.setMat4("view", view);
 			g_shaders.solidColorShader.setMat4("projection", projection);
-			g_shaders.solidColorShader.setVec3("lightColor", 0.0f, 1.0f, 0.0f);
-			for (auto& [id, rigidStatic] : Physics::GetRigidStaticsMap()) {
-				PxRigidStatic* actor = rigidStatic.GetPxRigidStatic();
-				PxTransform pxTransform = actor->getGlobalPose();
+			g_shaders.solidColorShader.setVec3("lightColor", 0.0f, 1.0f, 0.9f);
 
-				glm::vec3 pxPosition = Physics::PxVec3toGlmVec3(pxTransform.p);
-				glm::quat pxRotation = Physics::PxQuatToGlmQuat(pxTransform.q);
+			for (GameObject& gameObject : Scene::GetGameObjects()) {
+				if (gameObject.GetPhysicsId() != 0) {
+					RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
+					RigidStatic* rigidStatic = Physics::GetRigidStaticById(gameObject.GetPhysicsId());
 
-				PxBounds3 bounds = actor->getWorldBounds();
+					if (rigidStatic) {
+						PxBounds3 bounds = rigidStatic->GetPxRigidStatic()->getWorldBounds();
+						PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+						PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
 
-				PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
-				PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+						glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+						glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-				glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
-				glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+						glm::mat4 dptModel = glm::mat4(1.0f);
+						dptModel = glm::translate(dptModel, rigidStatic->GetCurrentPosition());
+						dptModel = glm::scale(dptModel, glmExtents * 2.0f);
+						dptModel *= glm::mat4_cast(rigidStatic->GetCurrentRotation());
 
-				glm::mat4 ptModel = glm::mat4(1.0f);
-				ptModel = glm::translate(ptModel, pxPosition);
-				ptModel = glm::scale(ptModel, glmExtents * 2.0f);
-				ptModel *= glm::toMat4(pxRotation);
+						g_shaders.solidColorShader.setMat4("model", dptModel);
 
-				g_shaders.solidColorShader.setMat4("model", ptModel);
+						Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
-				Model* debugCube = AssetManager::GetModelByName("Cube");
+						for (unsigned int i = 0; i < debugModel->meshes.size(); i++) {
+							glBindVertexArray(debugModel->meshes[i].GetVAO());
+							glDrawElements(GL_TRIANGLES, debugModel->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+						}
+					}
 
-				for (unsigned int i = 0; i < debugCube->meshes.size(); i++) {
-					glBindVertexArray(debugCube->meshes[i].GetVAO());
-					glDrawElements(GL_TRIANGLES, debugCube->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+					if (rigidDynamic) {
+						PxBounds3 bounds = rigidDynamic->GetPxRigidDynamic()->getWorldBounds();
+
+						PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+						PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+
+						glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+						glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+
+						glm::mat4 dptModel = glm::mat4(1.0f);
+						dptModel = glm::translate(dptModel, rigidDynamic->GetCurrentPosition());
+						dptModel = glm::scale(dptModel, glmExtents * 2.0f);
+						dptModel *= glm::mat4_cast(rigidDynamic->GetCurrentRotation());
+
+						g_shaders.solidColorShader.setMat4("model", dptModel);
+
+						Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
+
+						for (unsigned int i = 0; i < debugModel->meshes.size(); i++) {
+							glBindVertexArray(debugModel->meshes[i].GetVAO());
+							glDrawElements(GL_TRIANGLES, debugModel->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+						}
+					}
 				}
-
 			}
 
 			glEnable(GL_DEPTH_TEST);

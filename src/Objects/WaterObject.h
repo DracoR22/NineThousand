@@ -2,7 +2,7 @@
 
 #include "../Common/CreateInfo.hpp"
 
-class WaterPlaneObject {
+class WaterObject {
 private:
 	std::string m_name;
 	std::string m_modelName;
@@ -13,8 +13,8 @@ private:
 	WaterPlaneObjectCreateInfo m_createInfo;
 	float m_waterTransparency;
 public:
-	WaterPlaneObject() = default;
-	WaterPlaneObject(WaterPlaneObjectCreateInfo& createInfo);
+	WaterObject() = default;
+	WaterObject(WaterPlaneObjectCreateInfo& createInfo);
 
 	void SetPosition(glm::vec3 position);
 	void SetRotation(glm::mat4 rotation);

@@ -5,6 +5,7 @@
 
 #include "../Core/Model.h"
 #include "./RigidStatic.h"
+#include "./RigidDynamic.h"
 #include "../Utils/Utils.h"
 
 struct PhysicsTransformData {
@@ -32,9 +33,12 @@ namespace Physics {
     PxExtendedVec3 GetCharacterControllerPosition();
 
     // Rigid Dynamics
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass);
+    RigidDynamic* GetRigidDynamicById(uint64_t id);
 
     // Rigid Statics
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents);
+    uint64_t CreateRigidStaticConvexMeshFromVertices(const std::vector<glm::vec3>& vertices, const PhysicsTransformData& transform);
     RigidStatic* GetRigidStaticById(uint64_t id);
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap();
 

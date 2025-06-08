@@ -35,6 +35,7 @@ public:
 	std::string GetModelName() const;
 	std::string GetName() const;
 	float GetTextureScale() const;
+	uint64_t GetPhysicsId() const { return m_physicsId; };
 
 	bool IsSelected() const;
 	void SetSelected(bool select);

@@ -14,3 +14,19 @@ void RigidStatic::SetPxRigidStatic(PxRigidStatic* rigidStatic) {
 PxRigidStatic* RigidStatic::GetPxRigidStatic() {
 	return m_pxRigidStatic;
 }
+
+glm::vec3 RigidStatic::GetCurrentPosition() {
+	if (m_pxRigidStatic) {
+		PxTransform transform = m_pxRigidStatic->getGlobalPose();
+		return glm::vec3(transform.p.x, transform.p.y, transform.p.z);
+	}
+	return glm::vec3(0.0f);
+}
+
+glm::quat RigidStatic::GetCurrentRotation() {
+	if (m_pxRigidStatic) {
+		PxTransform transform = m_pxRigidStatic->getGlobalPose();
+		return glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w);
+	}
+	return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+}

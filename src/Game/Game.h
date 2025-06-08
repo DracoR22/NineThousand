@@ -2,8 +2,9 @@
 
 #include <vector>
 
-#include "Player.h"
-#include "WeaponManager.h"
+#include "./Player.h"
+#include "./WeaponManager.h"
+#include "./Scene.h"
 
 #include "../Core/AssetManager.h"
 
@@ -19,6 +20,7 @@ namespace Game {
 
 	void Init();
 	void Update(double deltaTime);
+	void UpdatePhysics();
 
 	void CreatePlayers();
 	Player& GetPLayerByIndex(int index);

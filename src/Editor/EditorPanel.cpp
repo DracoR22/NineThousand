@@ -226,7 +226,7 @@ namespace EditorPanel {
 				if (ImGui::Button("Create Cube")) {
 					GameObjectCreateInfo newPlaneObject;
 					newPlaneObject.modelName = "Cube";
-					newPlaneObject.name = "Cube" + std::to_string(Scene::GetGameObjects().size());
+					newPlaneObject.name = "Cube" + std::to_string(Utils::GenerateUniqueID());
 
 					Scene::AddGameObject(newPlaneObject);
 				}

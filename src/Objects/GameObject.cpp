@@ -21,9 +21,46 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 
 		uint64_t physicsId = Physics::CreateRigidStaticBox(
 			physicsTransformData,
-		    PxVec3(createInfo.size.x * 0.5f,
+		    PxVec3(
+			createInfo.size.x * 0.5f,
 			createInfo.size.y * 0.5f,
-			createInfo.size.z * 0.5f)
+			createInfo.size.z * 0.5f
+			)
+		);
+
+		/*std::vector<Vertex> vertices;
+
+		for (Mesh& mesh : AssetManager::GetModelByName(createInfo.modelName)->meshes) {
+			vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+		}
+
+		std::vector<glm::vec3> positions;
+		positions.reserve(vertices.size());
+
+		for (const Vertex& v : vertices) {
+			positions.push_back(v.m_Position);
+		}
+
+		uint64_t physicsId = Physics::CreateRigidStaticConvexMeshFromVertices(positions, physicsTransformData);*/
+
+		m_physicsId = physicsId;
+	}
+
+	if (createInfo.name == "Cube0") {
+		PhysicsTransformData physicsTransformData;
+		physicsTransformData.position = createInfo.position;
+		physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
+
+		/*std::cout << "CUBE POSITION " << glm::to_string(createInfo.position) << std::endl;*/
+
+		uint64_t physicsId = Physics::CreateRigidDynamicBox(
+			physicsTransformData,
+			PxVec3(
+				createInfo.size.x * 0.5f,
+				createInfo.size.y * 0.5f,
+				createInfo.size.z * 0.5f
+			),
+			10.0f
 		);
 
 		m_physicsId = physicsId;

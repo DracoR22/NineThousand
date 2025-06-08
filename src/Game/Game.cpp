@@ -9,6 +9,7 @@ namespace Game {
 	}
 
 	void Update(double deltaTime) {
+		UpdatePhysics();
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
@@ -195,8 +196,21 @@ namespace Game {
 		
 	}
 
+	void UpdatePhysics() {
+		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			if (gameObject.GetPhysicsId() != 0) {
+				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
+
+				if (rigidDynamic) {
+					gameObject.SetPosition(rigidDynamic->GetCurrentPosition());
+					gameObject.SetRotationEuler(glm::eulerAngles(rigidDynamic->GetCurrentRotation()));
+				}
+			}
+		}
+	}
+
 	void CreatePlayers() {
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 3.3f, 75.0f);
+		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 4.7f, 75.0f);
 		player.EquipWeapon("Glock");
 
 		g_players.push_back(player);

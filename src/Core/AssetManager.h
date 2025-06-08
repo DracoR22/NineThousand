@@ -35,6 +35,7 @@ namespace AssetManager {
 	inline std::vector<Material> g_materials;
 	inline std::vector<Animation> g_animations;
 	inline std::vector<Animator> g_animators;
+	inline std::vector<Mesh> g_meshes;
 
 	// models
 	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
@@ -52,6 +53,7 @@ namespace AssetManager {
 	aiTextureType GetFileTextureType(const std::string& filename);
 	Texture* GetTextureByName(const std::string& name);
 
+	// TODO: MATERIALS
 	void LoadMaterials();
 
 	// animations

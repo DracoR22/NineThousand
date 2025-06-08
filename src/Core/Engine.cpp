@@ -10,8 +10,6 @@ namespace Engine {
 
 		Player& player = Game::GetPLayerByIndex(0);
 
-		physx::PxRigidDynamic* cubeActor = Physics::CreateDynamicBox(physx::PxVec3(0.0f, 10.0f, 1.0f), physx::PxVec3(0.75f, 0.75f, 0.75f), 10.0f);
-
 		LoadResources();
 		Scene::LoadSceneFromFile("resources/levels/test.json");
 		Scene::CreateWaterPlaneObjects();
@@ -39,9 +37,6 @@ namespace Engine {
 			Window::ProcessInput(Window::GetDeltaTime());
 			Physics::Simulate(Window::GetDeltaTime());
 
-			PhysicsTransformData cubeTransformData = Physics::GetActorTransform(cubeActor);
-			glm::mat4 rotationMatrix = glm::mat4_cast(cubeTransformData.rotation);
-
 			CameraManager::UpdateViewMatrix();
 			CameraManager::UpdateProjectionMatrix();
 
@@ -49,9 +44,6 @@ namespace Engine {
 				CameraManager::SetActiveCamera(0);
 				player.Update(Window::GetDeltaTime());
 				Game::Update(Window::GetDeltaTime());
-
-				Scene::GetGameObjectByName("Cube0")->SetPosition(cubeTransformData.position);
-				Scene::GetGameObjectByName("Cube0")->SetRotationMatrix(rotationMatrix);
 
 				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}

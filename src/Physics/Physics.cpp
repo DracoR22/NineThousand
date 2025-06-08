@@ -16,6 +16,7 @@ namespace Physics {
 
     PxRigidDynamic* g_cubeActor = nullptr;
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatic;
+    std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
 
     float g_ControllerVerticalVelocity = 0.0f;
 
@@ -118,19 +119,19 @@ namespace Physics {
 
     void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
 
-        g_ControllerVerticalVelocity -= 2.81f * deltaTime;
+        g_ControllerVerticalVelocity -= 1.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-       PxControllerCollisionFlags flags = g_controller->move(displacement, 0.0f, deltaTime, nullptr);
+        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.0f, deltaTime, nullptr);
 
-       if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
+        if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
            g_ControllerVerticalVelocity = 0.0f;
-       }
+        }
     }
 
     void UpdateCharacterControllerVerticalVelocity() {
-        float jumpVelocity = 0.5f; 
+        float jumpVelocity = 0.25f; 
         g_ControllerVerticalVelocity = jumpVelocity;
     }
 
@@ -138,25 +139,105 @@ namespace Physics {
         return g_controller->getPosition();
     }
 
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass) {
+        PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
+        PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+        PxTransform pxTransform(pxPos, pxRot);
+
+        PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
+
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        pxRigidDynamic->attachShape(*shape);
+        shape->release();
+
+       /* PxRigidBodyExt::updateMassAndInertia(*pxRigidDynamic, mass);*/
+        g_scene->addActor(*pxRigidDynamic);
+
+        // create rigid dynamic
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        RigidDynamic& rigidDynamic = g_rigidDynamic[physicsId];
+        rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
+        rigidDynamic.UpdateMassAndInertia(mass);
+
+        return physicsId;
+    }
+
+    RigidDynamic* GetRigidDynamicById(uint64_t id) {
+        auto it = g_rigidDynamic.find(id);
+        if (it != g_rigidDynamic.end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
+
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
 
-        PxRigidStatic* staticActor = g_physics->createRigidStatic(pxTransform);
+        PxRigidStatic* pxRigidStatic = g_physics->createRigidStatic(pxTransform);
 
         // create shape
         PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
-        staticActor->attachShape(*shape);
+        pxRigidStatic->attachShape(*shape);
         shape->release();
 
-        g_scene->addActor(*staticActor);
+        g_scene->addActor(*pxRigidStatic);
 
-        // create rigid body
+        // create rigid static
         uint64_t physicsId = Utils::GenerateUniqueID();
         RigidStatic& rigidStatic = g_rigidStatic[physicsId];
 
-        rigidStatic.SetPxRigidStatic(staticActor);
+        rigidStatic.SetPxRigidStatic(pxRigidStatic);
+
+        return physicsId;
+    }
+
+    uint64_t CreateRigidStaticConvexMeshFromVertices(const std::vector<glm::vec3>& vertices, const PhysicsTransformData& transform) {
+        // Convert vertices to PxVec3
+        std::vector<PxVec3> pxVertices; 
+        pxVertices.reserve(vertices.size());
+        for (const glm::vec3& v : vertices) {
+            pxVertices.emplace_back(v.x, v.y, v.z);
+        }
+
+        PxConvexMeshDesc convexDesc;
+        convexDesc.points.count = static_cast<PxU32>(pxVertices.size());
+        convexDesc.points.stride = sizeof(PxVec3);
+        convexDesc.points.data = pxVertices.data();
+        convexDesc.flags = PxConvexFlag::eSHIFT_VERTICES | PxConvexFlag::eCOMPUTE_CONVEX;
+
+        PxTolerancesScale scale;
+        PxCookingParams params(scale);
+
+        PxDefaultMemoryOutputStream writeBuffer;
+        PxConvexMeshCookingResult::Enum result;
+        if (!PxCookConvexMesh(params, convexDesc, writeBuffer, &result)) {
+            std::cout << "Convex mesh cooking failed!\n";
+            return 0;
+        }
+
+        PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+        PxConvexMesh* convexMesh = g_physics->createConvexMesh(readBuffer);
+        PxConvexMeshGeometryFlags flags(~PxConvexMeshGeometryFlag::eTIGHT_BOUNDS);
+        PxConvexMeshGeometry geometry(convexMesh, PxMeshScale(PxVec3(1.0f)), flags);
+
+        PxShape* pxShape = g_physics->createShape(geometry, *g_material);
+
+        // create PxRigidStatic
+        PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
+        PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+        PxTransform pxTransform(pxPos, pxRot);
+
+        PxRigidStatic* pxRigidStatic = g_physics->createRigidStatic(pxTransform);
+        pxRigidStatic->attachShape(*pxShape);
+        pxShape->release();
+        g_scene->addActor(*pxRigidStatic);
+
+        // store to RigidStatic
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        RigidStatic& rigidStatic = g_rigidStatic[physicsId];
+        rigidStatic.SetPxRigidStatic(pxRigidStatic);
 
         return physicsId;
     }
@@ -198,8 +279,9 @@ namespace Physics {
     }
 
     void CleanupPhysX() {
+        g_rigidDynamic.clear();
         g_rigidStatic.clear();
-        g_cubeActor->release();
+      /*  g_cubeActor->release();*/
         g_controller->release();
         g_controllerManager->release();
         g_scene->release();
