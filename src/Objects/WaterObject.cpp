@@ -18,6 +18,10 @@ void WaterObject::SetRotation(glm::mat4 rotation) {
 	m_rotation = rotation;
 }
 
+void WaterObject::SetSize(glm::vec3 size) {
+	m_size = size;
+}
+
 glm::vec3 WaterObject::GetPosition() const {
 	return m_position;
 }

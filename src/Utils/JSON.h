@@ -13,6 +13,11 @@ namespace nlohmann {
         static void from_json(const nlohmann::json& j, glm::vec3& value);
     };
     template <>
+    struct adl_serializer<glm::vec2> {
+        static void to_json(nlohmann::json& j, const glm::vec2& value);
+        static void from_json(const nlohmann::json& j, glm::vec2& value);
+    };
+    template <>
     struct adl_serializer<GameObjectCreateInfo> {
         static void to_json(nlohmann::json& j, const GameObjectCreateInfo& obj);
         static void from_json(const nlohmann::json& j, GameObjectCreateInfo& obj);

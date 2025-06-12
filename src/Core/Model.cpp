@@ -40,6 +40,14 @@ const std::string& Model::GetName() {
 	return m_name;
 }
 
+void Model::SetAABBMin(glm::vec3 aabbMin) {
+	m_aabbMin = aabbMin;
+}
+
+void Model::SetAABBMax(glm::vec3 aabbMax) {
+	m_aabbMax = aabbMax;
+}
+
 void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 
 	if (createInfo.instanceOffsets.size() > UPPER_BOUND) {
@@ -344,7 +352,8 @@ void Model::LoadRMAMaterials(const std::string& meshName, aiMaterial* material, 
 		{"Compensator_low",  "P90_FrontEnd_RMA.png"},
 		{"ChargingHandle_low",  "P90_FrontEnd_RMA.png"},
 		{"ChargingHandlePlate_low",  "P90_FrontEnd_RMA.png"},
-		{"Katana", "Katana_RMA.png"}
+		{"Katana", "Katana_RMA.png"},
+		{"PoolLadder3", "PoolLadder_RMA.png"}
 	};
 
 	auto it = RMAOverrides.find(meshName);

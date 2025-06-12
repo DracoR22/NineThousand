@@ -122,11 +122,12 @@ namespace Engine {
 			"WaterNormal.png",
 		};
 
-		AssetManager::LoadAssimpModel("P90", "resources/models/P90T.fbx", p90CreateInfo);
+		AssetManager::LoadAssimpModel("P90", "resources/models/P90.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
-		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74UBfbx.fbx", aks74uCreateInfo);
-		AssetManager::LoadAssimpModel("Katana", "resources/models/untitled.fbx", katanaCreateInfo);
+		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74U_Simple.fbx", aks74uCreateInfo);
+		AssetManager::LoadAssimpModel("Katana", "resources/models/Katana.fbx", katanaCreateInfo);
 		AssetManager::LoadAssimpModel("DEAGLE", "resources/models/Deagle_Animation.fbx", aks74uCreateInfo);
+		AssetManager::LoadAssimpModel("PoolLadder", "resources/models/PoolLadder.obj", aks74uCreateInfo);
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);

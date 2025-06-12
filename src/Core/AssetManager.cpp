@@ -11,6 +11,7 @@ namespace AssetManager {
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
 		Model model(name, createInfo);
 		model.LoadModel(type, createInfo);
+		ComputeModelAABB(model);
 
 		g_models.push_back(model);
 		g_modelIndexMap[name] = g_models.size() - 1;
@@ -19,6 +20,7 @@ namespace AssetManager {
 	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
 		Model model(name, createInfo);
 		model.loadAssimpModel(path);
+		ComputeModelAABB(model);
 
 		g_models.push_back(model);
 	    g_modelIndexMap[name] = g_models.size() - 1;
@@ -55,6 +57,30 @@ namespace AssetManager {
 
 		std::cout << "AssetManager::GetModelByName() failed because '" << name << "' does not exist!\n";
 		return nullptr;
+	}
+
+	void ComputeModelAABB(Model& model) {
+		glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
+		glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());
+
+		for (auto&& mesh : model.meshes) {
+			for (auto&& vertex : mesh.vertices) {
+				minAABB.x = std::min(minAABB.x, vertex.m_Position.x);
+				minAABB.y = std::min(minAABB.y, vertex.m_Position.y);
+				minAABB.z = std::min(minAABB.z, vertex.m_Position.z);
+
+				maxAABB.x = std::max(maxAABB.x, vertex.m_Position.x);
+				maxAABB.y = std::max(maxAABB.y, vertex.m_Position.y);
+				maxAABB.z = std::max(maxAABB.z, vertex.m_Position.z);
+			}
+		}
+
+		model.SetAABBMin(minAABB);
+		model.SetAABBMax(maxAABB);
+	}
+
+	std::vector<Model>& GetModels() {
+		return g_models;
 	}
 
 	void CleanupModels() {

@@ -18,6 +18,7 @@ public:
 
 	void SetPosition(glm::vec3 position);
 	void SetRotation(glm::mat4 rotation);
+	void SetSize(glm::vec3 size);
 
 	glm::vec3 GetPosition() const;
 	glm::vec3 GetSize() const;

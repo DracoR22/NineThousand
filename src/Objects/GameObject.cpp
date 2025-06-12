@@ -83,7 +83,7 @@ void GameObject::SetSize(glm::vec3 size) {
 	m_size = size;
 }
 
-void GameObject::SetTextureScale(float scale) {
+void GameObject::SetTextureScale(glm::vec2 scale) {
 	m_textureScale = scale;
 }
 
@@ -99,16 +99,27 @@ glm::mat4 GameObject::GetRotationMatrix() const {
 	return m_rotationMatrix;
 }
 
+glm::vec3 GameObject::GetRotationEuler() const {
+	return m_eulerRotation;
+}
+
+glm::mat4 GameObject::GetModelMatrix() const {
+	glm::mat4 model = glm::mat4(1.0f);
+
+	model = glm::translate(model, m_position);
+	glm::vec3 radians = glm::radians(m_eulerRotation);
+	model *= glm::mat4_cast(glm::quat(radians));
+	model = glm::scale(model, m_size);
+
+	return model;
+}
+
 void GameObject::SetRotationEuler(const glm::vec3& eulerDegrees) {
 	m_eulerRotation = eulerDegrees;
 
 	// Also update the rotation matrix
 	glm::vec3 radians = glm::radians(eulerDegrees);
 	m_rotationMatrix = glm::toMat4(glm::quat(radians));
-}
-
-glm::vec3 GameObject::GetRotationEuler() const {
-	return m_eulerRotation;
 }
 
 std::string GameObject::GetModelName() const {
@@ -119,7 +130,7 @@ std::string GameObject::GetName() const {
 	return m_name;
 }
 
-float GameObject::GetTextureScale() const {
+glm::vec2 GameObject::GetTextureScale() const {
 	return m_textureScale;
 }
 

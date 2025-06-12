@@ -19,6 +19,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
+
 struct BoneInfo
 {
 	int id;
@@ -52,6 +54,9 @@ private:
 	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
 	unsigned int m_instanceOffsetVBO;
+
+	glm::vec3 m_aabbMin = glm::vec3(0);
+	glm::vec3 m_aabbMax = glm::vec3(0);;
 public:
 	std::vector<Mesh> meshes;
 public:
@@ -71,4 +76,9 @@ public:
 	int& GetBoneCount();
 
 	const std::string& GetName();
+
+	void SetAABBMin(glm::vec3 aabbMin);
+	void SetAABBMax(glm::vec3 aabbMax);
+	glm::vec3 GetAABBMin() const { return m_aabbMin; }
+	glm::vec3 GetAABBMax() const { return m_aabbMax; }
 };

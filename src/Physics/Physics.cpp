@@ -119,7 +119,7 @@ namespace Physics {
 
     void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
 
-        g_ControllerVerticalVelocity -= 1.81f * deltaTime;
+        g_ControllerVerticalVelocity -= 0.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
@@ -131,7 +131,7 @@ namespace Physics {
     }
 
     void UpdateCharacterControllerVerticalVelocity() {
-        float jumpVelocity = 0.25f; 
+        float jumpVelocity = 0.15f; 
         g_ControllerVerticalVelocity = jumpVelocity;
     }
 

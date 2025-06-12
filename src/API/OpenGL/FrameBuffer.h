@@ -5,10 +5,13 @@
 #include <iostream>
 #include <vector>
 
+#include "./GL_Utils.h"
+
 struct ColorAttachment {
 	const char* name = "undefined";
 	GLuint textureID = 0;
 	GLenum attachment = 0;
+	GLenum internalFormat = 0;
 	bool isMultisampled = false;
 };
 
@@ -30,7 +33,7 @@ public:
 	FrameBuffer() = default;
 	FrameBuffer(unsigned int width, unsigned int height);
 	void Create(unsigned int width, unsigned int height);
-	void CreateAttachment(const char* name);
+	void CreateAttachment(const char* name, GLenum internalFormat);
 	void CreateMSAAAttachment(const char* name);
 	void CreateDepthAttachment();
 	void CreateDepthTextureAttachment();

@@ -10,17 +10,19 @@ void FrameBuffer::Create(unsigned int width, unsigned int height) {
 	this->m_height = height;
 }
 
-void FrameBuffer::CreateAttachment(const char* name) {
+void FrameBuffer::CreateAttachment(const char* name, GLenum internalFormat) {
 	ColorAttachment& colorAttachment = m_colorAttachments.emplace_back();
 	colorAttachment.name = name;
 	colorAttachment.attachment = GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(m_colorAttachments.size() - 1);
+	colorAttachment.internalFormat = internalFormat;
 
-	std::cout << colorAttachment.name << " -> " << colorAttachment.attachment << std::endl;
+	GLenum format = OpenGLUtils::GLInternalFormatToGLFormat(internalFormat);
+	GLenum type = OpenGLUtils::GLInternalFormatToGLType(internalFormat);
 
 	glGenTextures(1, &colorAttachment.textureID);
 	glBindTexture(GL_TEXTURE_2D, colorAttachment.textureID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_width, m_height, 0, format, type, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

@@ -9,6 +9,7 @@
 
 #include "../../Camera/Camera.h"
 #include "../../Camera/CameraManager.h"
+#include "../../Camera/Frustum.h"
 
 #include "../../Input/Keyboard.h"
 #include "../../Input/Mouse.h"
@@ -26,6 +27,7 @@
 #include "../../Core/AssetManager.h"
 
 #include "../../Common/RendererCommon.h"
+#include "../../Common/AABB.h"
 
 #include "../../UI/UIElement.h"
 

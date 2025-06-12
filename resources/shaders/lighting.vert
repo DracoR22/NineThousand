@@ -16,7 +16,7 @@ uniform mat4 model;
 uniform mat4 projection;
 
 uniform mat4 lightProjection;
-uniform float textureScale;
+uniform vec2 textureScale;
 
 void main() {
     WorldPos = vec3(model * vec4(aPos, 1.0));
@@ -31,7 +31,6 @@ void main() {
     vec3 B = cross(N, T);
 
     TBN = mat3(T, B, N);
-
   
     gl_Position = projection * view * vec4(WorldPos, 1.0);
 }

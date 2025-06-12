@@ -1,7 +1,7 @@
 #include "Player.h"
 
 Player::Player(glm::vec3 position, float height, float mass)
-	: m_speed(9.5f), m_camera(position), m_height(height) {
+	: m_speed(12.5f), m_camera(position), m_height(height) {
     float eyeHeight = position.y + (height * 0.8f);
 
 	m_camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
@@ -326,7 +326,7 @@ void Player::UpdateWeaponLogic() {
         ReloadWeapon();
     }
 
-    // what if player tries to reload while pressing ADS key?
+    // if player tries to reload while pressing ADS key
     /*if (PressingADS() && m_weaponAction == WeaponAction::RELOAD && currentWeaponAnimator->IsAnimationFinished()) {
         currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
         SetWeaponAction(WeaponAction::ADS_IN);
@@ -373,6 +373,12 @@ void Player::UpdateWeaponLogic() {
         currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
         m_weaponAction = WeaponAction::ADS_IDLE;
     }*/
+
+    // cut walk animation if player stops moving!
+    //if (m_weaponAction == WeaponAction::WALK && !IsMoving()) {
+    //    currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
+    //    m_weaponAction = WeaponAction::IDLE;
+    //}
 
     // loop idle animation
     if (!PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {

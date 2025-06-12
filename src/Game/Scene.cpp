@@ -61,8 +61,8 @@ namespace Scene {
 		WaterObjectCreateInfo waterPlaneCreateInfo{
 			"WaterPlane0",
 			"Plane",
-			glm::vec3(0.0f, 0.5f, 0.0f),
-			glm::vec3(20.0f),
+			glm::vec3(-4.0f, 0.5f, 8.0f),
+			glm::vec3(100.0f),
 			glm::mat4(1.0f),
 			glm::vec3(0.0, 0.3, 0.5),
 			0.5f

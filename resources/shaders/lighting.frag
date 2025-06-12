@@ -136,7 +136,7 @@ vec3 albedo = pow(texture(baseTexture, TexCoords).rgb, vec3(2.2));
      attenuation =  smoothstep(light.radius, 0, length(light.position - WorldPos));    
      radiance = light.color * attenuation * light.strength;
   } else { // Directional light
-     L = normalize(-vec3(0.0, -1.0, 0.0)); 
+     L = normalize(-vec3(1.0, -1.0, 0.0)); 
 
      radiance = light.color * light.strength;
   }

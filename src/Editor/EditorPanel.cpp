@@ -1,8 +1,10 @@
 #include "EditorPanel.h"
 
 namespace EditorPanel {
-	bool g_showCreateButtonPanel = false;
+	bool g_saveLevelPanel = false;
+	bool g_addModelPanel = false;
 	std::string g_selectedObjectName = "None";
+	int g_selectedModelIndex = 0;
 
 	void Init() {
 		IMGUI_CHECKVERSION();
@@ -102,20 +104,30 @@ namespace EditorPanel {
 						OpenGLRenderer::UpdateLightStrength(i, lights[i].strength);
 					}
 
-					if (ImGui::SliderFloat("Radius", &lights[i].radius, 0.0f, 100.0f)) {
-						OpenGLRenderer::UpdateLightRadius(i, lights[i].radius);
-					}
+					if (lights[i].type == LightType::POINT_LIGHT) {
+						if (ImGui::SliderFloat("Radius", &lights[i].radius, 0.0f, 100.0f)) {
+							OpenGLRenderer::UpdateLightRadius(i, lights[i].radius);
+						}
 
-					if (ImGui::InputFloat("Position X", &lights[i].position.x, 1.0f, 10.0f, "%.2f")) {
-						OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
-					}
+						if (ImGui::InputFloat("Position X", &lights[i].position.x, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						}
 
-					if (ImGui::InputFloat("Position Y", &lights[i].position.y, 1.0f, 10.0f, "%.2f")) {
-						OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
-					}
+						if (ImGui::InputFloat("Position Y", &lights[i].position.y, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						}
 
-					if (ImGui::InputFloat("Position Z", &lights[i].position.z, 1.0f, 10.0f, "%.2f")) {
-						OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						if (ImGui::InputFloat("Position Z", &lights[i].position.z, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						}
+					}
+					// TODO
+					else if (lights[i].type == LightType::DIRECTIONAL_LIGHT) {
+						static float yaw = 0.0f;   // Horizontal angle
+						static float pitch = -45.0f; // Vertical angle
+
+						ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f);
+						ImGui::SliderFloat("Pitch", &pitch, -89.0f, 89.0f);
 					}
 
 					ImGui::Separator();
@@ -206,11 +218,16 @@ namespace EditorPanel {
 						gameObject.SetRotationEuler(objectEulerRotation);
 					}
 
-					float textureScale = gameObject.GetTextureScale();
-					if (ImGui::SliderFloat("Texture Scale", &textureScale, 0.1f, 10.0f, "%.2f")) {
-						gameObject.SetTextureScale(textureScale);
+					glm::vec2 textureScale = gameObject.GetTextureScale();
+					int textureScaleXInt = static_cast<int>(textureScale.x);
+					if (ImGui::SliderInt("Texture Scale X", &textureScaleXInt, 1, 10)) {
+						gameObject.SetTextureScale(glm::vec2(static_cast<float>(textureScaleXInt), textureScale.y));
 					}
 
+					int textureScaleYInt = static_cast<int>(textureScale.y);
+					if (ImGui::SliderInt("Texture Scale Y", &textureScaleYInt, 1, 10)) {
+						gameObject.SetTextureScale(glm::vec2(textureScale.x, static_cast<float>(textureScaleYInt)));
+					}
 
 					ImGui::Separator();
 					ImGui::PopID();
@@ -230,22 +247,69 @@ namespace EditorPanel {
 
 					Scene::AddGameObject(newPlaneObject);
 				}
+				if (ImGui::Button("Add Game Object")) {
+					g_addModelPanel = true;
+				}
+			}
+
+			if (ImGui::CollapsingHeader("Water Objects")) {
+				int waterIndex = 10000;
+
+				for (WaterObject& waterObject : Scene::GetWaterPlaneObjects()) {
+					/*if (!waterObject.IsSelected())
+						continue;*/
+
+					ImGui::PushID(waterIndex++);
+
+					glm::vec3 objectSize = waterObject.GetSize();
+					if (ImGui::SliderFloat("Size XYZ", &objectSize.x, 0.0f, 100.0f)) {
+						waterObject.SetSize(glm::vec3(objectSize.x, objectSize.x, objectSize.x));
+					}
+
+					if (ImGui::SliderFloat("Size X", &objectSize.x, 0.0f, 100.0f)) {
+						waterObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+
+					if (ImGui::SliderFloat("Size Y", &objectSize.y, 0.0f, 100.0f)) {
+						waterObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+
+					if (ImGui::SliderFloat("Size Z", &objectSize.z, 0.0f, 100.0f)) {
+						waterObject.SetSize(glm::vec3(objectSize.x, objectSize.y, objectSize.z));
+					}
+
+					glm::vec3 objectPosition = waterObject.GetPosition();
+					if (ImGui::InputFloat("Position X", &objectPosition.x, 1.0f, 10.0f, "%.2f")) {
+						waterObject.SetPosition(objectPosition);
+					}
+
+					if (ImGui::InputFloat("Position Y", &objectPosition.y, 1.0f, 10.0f, "%.2f")) {
+						waterObject.SetPosition(objectPosition);
+					}
+
+					if (ImGui::InputFloat("Position Z", &objectPosition.z, 1.0f, 10.0f, "%.2f")) {
+						waterObject.SetPosition(objectPosition);
+					}
+
+					ImGui::Separator();
+					ImGui::PopID();
+				}
 			}
 
 			ImGui::End();
 		}
 
 		if (Keyboard::KeyJustPressed(GLFW_KEY_F2)) {
-			g_showCreateButtonPanel = !g_showCreateButtonPanel;
+			g_saveLevelPanel = !g_saveLevelPanel;
 		}
 
-		if (g_showCreateButtonPanel) {
+		if (g_saveLevelPanel) {
 			ImVec2 fixedSize(300, 200);
 			ImGui::SetNextWindowSize(fixedSize, ImGuiCond_Always);
 
 			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoResize;
 
-			ImGui::Begin("Save Current Level", &g_showCreateButtonPanel, windowFlags);
+			ImGui::Begin("Save Current Level", &g_saveLevelPanel, windowFlags);
 
 			if (ImGui::Button("Save")) {
 				std::vector<GameObject> gameObjects = Scene::GetGameObjects();
@@ -262,6 +326,42 @@ namespace EditorPanel {
 
 			ImGui::End();
 		}
+
+			if (g_addModelPanel) {
+				ImGui::Begin("Add a new Game Object", &g_addModelPanel);
+
+				std::vector<Model>& models = AssetManager::GetModels();
+				if (models.empty()) {
+					ImGui::Text("No models available");
+				}
+				else {
+					const std::string& currentName = models[g_selectedModelIndex].GetName();
+					if (ImGui::BeginCombo("Add Model", currentName.c_str())) {
+						for (int i = 0; i < models.size(); ++i) {
+							const std::string& modelName = models[i].GetName();
+							bool isSelected = (i == g_selectedModelIndex);
+
+							if (ImGui::Selectable(modelName.c_str(), isSelected)) {
+								g_selectedModelIndex = i;
+							}
+
+							if (isSelected)
+								ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
+
+					if (ImGui::Button("Create Object")) {
+						GameObjectCreateInfo newPlaneObject;
+						newPlaneObject.modelName = models[g_selectedModelIndex].GetName();
+						newPlaneObject.name = models[g_selectedModelIndex].GetName() + std::to_string(Utils::GenerateUniqueID());
+
+						Scene::AddGameObject(newPlaneObject);
+					}
+				}
+
+				ImGui::End();
+			}
 	}
 
 	void Render() {

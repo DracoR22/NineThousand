@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include <glm/gtx/string_cast.hpp>
 
 namespace OpenGLRenderer {
 
@@ -42,6 +43,7 @@ namespace OpenGLRenderer {
 		FrameBuffer postProcessingFrameBuffer;
 		FrameBuffer mssaFrameBuffer;
 		FrameBuffer refractionFrameBuffer;
+		FrameBuffer gBuffer;
 
 		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
 	} g_renderFrameBuffers;
@@ -115,12 +117,12 @@ namespace OpenGLRenderer {
 		cubeLampLight.color = glm::vec3(0.8f);
 		cubeLampLight.radius = 70.0f;
 		cubeLampLight.strength = 1.0f;
-		cubeLampLight.type = LightType::POINT_LIGHT;
+		cubeLampLight.type = LightType::DIRECTIONAL_LIGHT;
 
 		LightCreateInfo cubeLampLight2;
 		cubeLampLight2.position = glm::vec3(7.0f, 5.0f, 2.0f);
 		cubeLampLight2.color = glm::vec3(0.8f);
-		cubeLampLight2.radius = 70.0f;
+		cubeLampLight2.radius = 100.0f;
 		cubeLampLight2.strength = 1.0f;
 		cubeLampLight2.type = LightType::POINT_LIGHT;
 
@@ -128,16 +130,26 @@ namespace OpenGLRenderer {
 		g_renderData.sceneLights.push_back(cubeLampLight2);
 
 		// Load frame buffers
+		/*g_renderFrameBuffers.gBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.gBuffer.Bind();
+		g_renderFrameBuffers.gBuffer.CreateAttachment("WorldPosition", GL_RGBA16F);
+		g_renderFrameBuffers.gBuffer.CreateAttachment("BaseColor", GL_RGBA8);
+		g_renderFrameBuffers.gBuffer.CreateAttachment("Normal", GL_RGBA16F);
+		g_renderFrameBuffers.gBuffer.CreateAttachment("RMA", GL_RGBA8);
+		g_renderFrameBuffers.gBuffer.CreateDepthAttachment();
+		g_renderFrameBuffers.gBuffer.DrawBuffers();
+		g_renderFrameBuffers.gBuffer.Unbind();*/
+
 		g_renderFrameBuffers.postProcessingFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
 		g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
-		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment("hdrAttachment");
+		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment("hdrAttachment", GL_RGBA16F);
 		g_renderFrameBuffers.postProcessingFrameBuffer.CreateDepthAttachment();
 		g_renderFrameBuffers.postProcessingFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.postProcessingFrameBuffer.Unbind();
 
 		g_renderFrameBuffers.refractionFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
-		g_renderFrameBuffers.refractionFrameBuffer.CreateAttachment("refractionAttachment");
+		g_renderFrameBuffers.refractionFrameBuffer.CreateAttachment("refractionAttachment", GL_RGBA16F);
 		g_renderFrameBuffers.refractionFrameBuffer.CreateDepthTextureAttachment();
 		g_renderFrameBuffers.refractionFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
@@ -184,16 +196,24 @@ namespace OpenGLRenderer {
 
 		Animator* dEagleAnimator = AssetManager::GetAnimatorByName("DEAGLEAnimator");
 
-		dEagleAnimator->UpdateAnimation(Window::GetDeltaTime());
+	/*	dEagleAnimator->UpdateAnimation(Window::GetDeltaTime());
 		if (Keyboard::KeyJustPressed(GLFW_KEY_V)) {
 			dEagleAnimator->PlayAnimation(AssetManager::GetAnimationByName("DEAGLE_Walk"));
-		}
+		}*/
 
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
 
 		view = CameraManager::GetActiveCamera()->getViewMatrix();
 		projection = glm::perspective(glm::radians(CameraManager::GetActiveCamera()->getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 500.0f);
+
+		float fovY = glm::radians(CameraManager::GetActiveCamera()->getZoom());  
+		float aspect = static_cast<float>(Window::currentWidth) / static_cast<float>(Window::currentHeight);
+		float zNear = 0.1f;
+		float zFar = 500.0f;
+
+		Frustum camFrustum;
+		camFrustum.Update(projection * view);
 
 		// ------ SHADOW PASS --------
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -214,11 +234,11 @@ namespace OpenGLRenderer {
 		g_shaders.shadowMapShader.activate();
 		g_shaders.shadowMapShader.setMat4("lightProjection", lightProjection);
 
-		glm::mat4 smodel = glm::mat4(1.0f);
+		/*glm::mat4 smodel = glm::mat4(1.0f);
 		smodel = glm::translate(smodel, Scene::GetGameObjectByName("Cube0")->GetPosition());
 		smodel = glm::scale(smodel, Scene::GetGameObjectByName("Cube0")->GetSize());
-		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotationMatrix();
-		g_shaders.shadowMapShader.setMat4("model", smodel);
+		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotationMatrix();*/
+		g_shaders.shadowMapShader.setMat4("model", Scene::GetGameObjectByName("Cube0")->GetModelMatrix());
 		AssetManager::DrawModel("Cube", g_shaders.shadowMapShader);
 
 		glCullFace(GL_BACK);
@@ -237,6 +257,7 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.setMat4("view", view);
 		g_shaders.lightingShader.setMat4("projection", projection);
 
+
 		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
@@ -250,14 +271,19 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
 		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 		g_shaders.lightingShader.setInt("shadowMap", 3);
-	
-		glm::mat4 rmodel = glm::mat4(1.0f);
-		rmodel = glm::translate(rmodel, Scene::GetGameObjectByName("Plane0")->GetPosition());
-		rmodel = glm::scale(rmodel, Scene::GetGameObjectByName("Plane0")->GetSize());
-		rmodel *= Scene::GetGameObjectByName("Plane0")->GetRotationMatrix();
-		g_shaders.lightingShader.setMat4("model", rmodel);
-		AssetManager::DrawModel("Plane", g_shaders.lightingShader);
+		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			if (gameObject.GetName() == "Plane0") {
+				/*glm::mat4 rmodel = glm::mat4(1.0f);
+				rmodel = glm::translate(rmodel, gameObject.GetPosition());
+				rmodel = glm::scale(rmodel, gameObject.GetSize());
+				rmodel *= gameObject.GetRotationMatrix();*/
+				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
+				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
 
+				AssetManager::DrawModel("Plane", g_shaders.lightingShader);
+			}
+		}
+		
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -309,7 +335,7 @@ namespace OpenGLRenderer {
 		}
 		AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, g_shaders.animationShader);
 
-		glm::mat4 bmodel = glm::mat4(1.0f);
+		/*glm::mat4 bmodel = glm::mat4(1.0f);
 		bmodel = glm::translate(bmodel, glm::vec3(0.0f, 2.0f, 0.0f));
 		bmodel = glm::scale(bmodel, glm::vec3(0.05f));
 		bmodel *= glm::mat4(1.0f);
@@ -319,7 +345,7 @@ namespace OpenGLRenderer {
 		for (int i = 0; i < etransforms.size(); ++i) {
 			g_shaders.animationShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", etransforms[i]);
 		}
-		AssetManager::DrawModel("DEAGLE", g_shaders.animationShader);
+		AssetManager::DrawModel("DEAGLE", g_shaders.animationShader);*/
 
 		// LIGHTING PASS
 		g_shaders.lightingShader.activate();
@@ -340,14 +366,14 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.setInt("shadowMap", 3);
 
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			glm::mat4 cmodel = glm::mat4(1.0f);
+			/*glm::mat4 cmodel = glm::mat4(1.0f);
 
 			cmodel = glm::translate(cmodel, gameObject.GetPosition());
 			cmodel = glm::scale(cmodel, gameObject.GetSize());
-			cmodel *= gameObject.GetRotationMatrix();
+			cmodel *= gameObject.GetRotationMatrix();*/
 
-			g_shaders.lightingShader.setMat4("model", cmodel);
-			g_shaders.lightingShader.setFloat("textureScale", gameObject.GetTextureScale());
+			g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
+			g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
 
 			if (gameObject.IsSelected()) {
 				glStencilFunc(GL_ALWAYS, 1, 0xFF); 
@@ -357,7 +383,16 @@ namespace OpenGLRenderer {
 				glStencilMask(0x00);
 			}
 
-			AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
+			Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
+			AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
+
+			glm::mat4 modelMatrix = gameObject.GetModelMatrix(); 
+			AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
+			
+			if (camFrustum.IntersectsAABB(worldAABB)) {
+				AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
+			}
+
 		}
 		glStencilMask(0x00);
 		
@@ -461,7 +496,7 @@ namespace OpenGLRenderer {
 			stModel = glm::scale(stModel, outlineObject.GetSize() * outlineScale);
 			stModel *= outlineObject.GetRotationMatrix();
 
-			g_shaders.outlineAnimatedShader.setMat4("model", stModel);
+			g_shaders.outlineAnimatedShader.setMat4("model",stModel);
 			AssetManager::DrawModel(outlineObject.GetModelName(), g_shaders.outlineAnimatedShader);
 		}
 
@@ -477,7 +512,6 @@ namespace OpenGLRenderer {
 			drawCollisionBoxes = !drawCollisionBoxes;
 		}
 
-		// BIG TODO!! DRAW THE SAME MODEL ATTACHED TO THIS RIGIDSTATIC OR DYNAMIC ACTOR, NOT ALWAYS A CUBE!!
 		if (drawCollisionBoxes) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDisable(GL_DEPTH_TEST);
@@ -501,12 +535,14 @@ namespace OpenGLRenderer {
 						glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
 						glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-						glm::mat4 dptModel = glm::mat4(1.0f);
+						/*glm::mat4 dptModel = glm::mat4(1.0f);
 						dptModel = glm::translate(dptModel, rigidStatic->GetCurrentPosition());
 						dptModel = glm::scale(dptModel, glmExtents * 2.0f);
-						dptModel *= glm::mat4_cast(rigidStatic->GetCurrentRotation());
+						dptModel *= glm::mat4_cast(rigidStatic->GetCurrentRotation());*/
 
-						g_shaders.solidColorShader.setMat4("model", dptModel);
+						gameObject.SetSize(glmExtents * 2.0f); 
+						gameObject.SetPosition(glmCenter);     
+						g_shaders.solidColorShader.setMat4("model", gameObject.GetModelMatrix());
 
 						Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
@@ -525,12 +561,12 @@ namespace OpenGLRenderer {
 						glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
 						glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-						glm::mat4 dptModel = glm::mat4(1.0f);
+						/*glm::mat4 dptModel = glm::mat4(1.0f);
 						dptModel = glm::translate(dptModel, rigidDynamic->GetCurrentPosition());
 						dptModel = glm::scale(dptModel, glmExtents * 2.0f);
-						dptModel *= glm::mat4_cast(rigidDynamic->GetCurrentRotation());
+						dptModel *= glm::mat4_cast(rigidDynamic->GetCurrentRotation());*/
 
-						g_shaders.solidColorShader.setMat4("model", dptModel);
+						g_shaders.solidColorShader.setMat4("model", gameObject.GetModelMatrix());
 
 						Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 

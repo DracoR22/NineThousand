@@ -15,6 +15,18 @@ namespace nlohmann {
 		j.at("z").get_to(value.z);
 	}
 
+	void adl_serializer<glm::vec2>::to_json(nlohmann::json& j, const glm::vec2& value) {
+		j = nlohmann::json({
+			{"x", value.x},
+			{"y", value.y}
+			});
+	}
+
+	void adl_serializer<glm::vec2>::from_json(const nlohmann::json& j, glm::vec2& value) {
+		j.at("x").get_to(value.x);
+		j.at("y").get_to(value.y);
+	}
+
 	void adl_serializer<GameObjectCreateInfo>::to_json(nlohmann::json& j, const GameObjectCreateInfo& obj) {
 		j = {
 			{"name", obj.name},

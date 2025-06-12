@@ -43,6 +43,8 @@ namespace AssetManager {
 	void DrawModel(const std::string& name, Shader& shader);
 	void DrawModelInstanced(const std::string& name, Shader& shader, std::vector<glm::vec3> offsets);
     Model* GetModelByName(const std::string& name);
+	void ComputeModelAABB(Model& model);
+	std::vector<Model>& GetModels();
 	void CleanupModels();
 
 	// textures
