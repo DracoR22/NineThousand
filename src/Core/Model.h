@@ -12,7 +12,7 @@
 #include "../API/OpenGL/Mesh.h"
 #include "../API/OpenGL/Texture.h"
 
-#include "../Animations/AssimpGlmHelpers.hpp"
+#include "../Animation/AssimpGlmHelpers.hpp"
 
 #include "../Common/CreateInfo.hpp"
 

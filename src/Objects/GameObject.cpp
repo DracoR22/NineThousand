@@ -107,8 +107,7 @@ glm::mat4 GameObject::GetModelMatrix() const {
 	glm::mat4 model = glm::mat4(1.0f);
 
 	model = glm::translate(model, m_position);
-	glm::vec3 radians = glm::radians(m_eulerRotation);
-	model *= glm::mat4_cast(glm::quat(radians));
+	model *= m_rotationMatrix;
 	model = glm::scale(model, m_size);
 
 	return model;

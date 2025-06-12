@@ -14,8 +14,8 @@
 #include "../API/OpenGL/Mesh.h"
 #include "../API/OpenGL/Texture.h"
 
-#include "../Animations/Animation.hpp"
-#include "../Animations/Animator.hpp"
+#include "../Animation/Animation.hpp"
+#include "../Animation/Animator.hpp"
 
 #include "../Common/CreateInfo.hpp"
 

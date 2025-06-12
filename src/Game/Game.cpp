@@ -203,7 +203,7 @@ namespace Game {
 
 				if (rigidDynamic) {
 					gameObject.SetPosition(rigidDynamic->GetCurrentPosition());
-					gameObject.SetRotationEuler(glm::eulerAngles(rigidDynamic->GetCurrentRotation()));
+					gameObject.SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
 				}
 			}
 		}

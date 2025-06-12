@@ -19,6 +19,7 @@ public:
 
 	glm::vec3 GetCurrentPosition();
 	glm::quat GetCurrentRotation();
+	glm::mat4 GetCurrentRotationMatrix();
 
 	PxRigidDynamic* GetPxRigidDynamic();
 };

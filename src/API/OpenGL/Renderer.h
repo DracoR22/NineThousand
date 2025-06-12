@@ -16,8 +16,8 @@
 
 #include "../../Physics/Physics.h"
 
-#include "../../Animations/Animation.hpp"
-#include "../../Animations/Animator.hpp"
+#include "../../Animation/Animation.hpp"
+#include "../../Animation/Animator.hpp"
 
 #include "../../Game/Player.h"
 #include "../../Game/Game.h"

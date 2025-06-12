@@ -1,4 +1,5 @@
 #include "RigidDynamic.h"
+#include <glm/gtx/quaternion.hpp>
 
 RigidDynamic::~RigidDynamic() {
 	if (m_pxRigidDynamic) {
@@ -29,6 +30,14 @@ glm::quat RigidDynamic::GetCurrentRotation() {
 		return glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w);
 	}
 	return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+}
+
+glm::mat4 RigidDynamic::GetCurrentRotationMatrix() {
+	if (m_pxRigidDynamic) {
+		PxQuat q = m_pxRigidDynamic->getGlobalPose().q;
+		return glm::toMat4(glm::quat(q.w, q.x, q.y, q.z)); // note: glm::quat(w, x, y, z)
+	}
+	return glm::mat4(1.0f);
 }
 
 PxRigidDynamic* RigidDynamic::GetPxRigidDynamic() {
