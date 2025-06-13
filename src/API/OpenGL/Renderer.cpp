@@ -116,7 +116,7 @@ namespace OpenGLRenderer {
 		cubeLampLight.position = glm::vec3(10.0f, 5.0f, 5.0f);
 		cubeLampLight.color = glm::vec3(0.8f);
 		cubeLampLight.radius = 70.0f;
-		cubeLampLight.strength = 1.0f;
+		cubeLampLight.strength = 5.0f;
 		cubeLampLight.type = LightType::DIRECTIONAL_LIGHT;
 
 		LightCreateInfo cubeLampLight2;

@@ -177,11 +177,11 @@ void main() {
    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
  }
 
- vec3 ambient = vec3(0.02) * albedo * ao;
- vec3 color   = Lo;  
+ vec3 ambient = vec3(0.03) * albedo * ao;
+ vec3 color   =  Lo;  
 
   //color = uncharted2(color);
-  color = pow(color, vec3(1.0/2.2));
+  //color = pow(color, vec3(1.0/2.2));
 
  FragColor = vec4(color, 1.0);
 }

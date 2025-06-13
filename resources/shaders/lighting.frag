@@ -164,12 +164,12 @@ vec3 albedo = pow(texture(baseTexture, TexCoords).rgb, vec3(2.2));
    Lo *= (1.0 - shadow);
  }
 
- vec3 ambient = vec3(0.03) * albedo * ao;
+ vec3 ambient = vec3(0.02) * albedo * ao;
  //vec3 color   = ambient + Lo; 
  vec3 color = Lo;
 
   //color = uncharted2(color);
-  color = pow(color, vec3(1.0/2.2));
+  //color = pow(color, vec3(1.0/2.2));
 
   FragColor = vec4(color, 1.0);
 }
