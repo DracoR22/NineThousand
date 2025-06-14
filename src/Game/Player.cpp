@@ -83,6 +83,34 @@ bool Player::IsMoving() {
     return m_isMoving;
 }
 
+bool Player::CanReloadWeapon() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    WeaponState* weaponState = GetEquipedWeaponState();
+
+    if (!weaponState || !weaponInfo) {
+        return false;
+    }
+
+    if (weaponState->ammoInMag >= weaponInfo->magSize) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Player::CanAutoReloadWeapon() {
+    WeaponState* weaponState = GetEquipedWeaponState();
+
+    if (m_equippedWeapon->type == WeaponType::MELEE) {
+        return false;
+    }
+
+    // TODO: check for ammo reserves
+    return (weaponState->ammoInMag <= 0 &&
+        m_weaponAction != WeaponAction::RELOAD &&
+        m_weaponAction != WeaponAction::RELOAD_EMPTY);
+}
+
 bool Player::CanEnterADS() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
 
@@ -97,6 +125,10 @@ bool Player::CanEnterADS() {
 bool Player::CanFireWeapon() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     Animator* weaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+
+    if (GetEquipedWeaponState()->ammoInMag <= 0) {
+        return false;
+    }
 
     if (weaponInfo->type == WeaponType::MELEE) {
         return false;
@@ -121,8 +153,28 @@ void Player::EquipWeapon(std::string weaponName) {
     std::cout << "Equipped weapon: " << weapon->name << std::endl;
 }
 
+void Player::InitWeaponStates() {
+    // TODO: MANAGE PLAYER INVENTORY INSTEAD
+    std::vector<WeaponInfo>& allWeapons = WeaponManager::GetAllWeaponInfos();
+
+    for (WeaponInfo& weapon : allWeapons) {
+        WeaponState state;
+        state.ammoInMag = weapon.magSize;
+
+        m_weaponStates[weapon.name] = state;
+    }
+}
+
 WeaponInfo* Player::GetEquipedWeaponInfo() {
     return m_equippedWeapon;
+}
+
+WeaponState* Player::GetEquipedWeaponState() {
+    if (!m_equippedWeapon) return nullptr;
+
+    const std::string& weaponName = m_equippedWeapon->name;
+
+    return &m_weaponStates[weaponName];
 }
 
 WeaponAction Player::GetWeaponAction() {
@@ -193,37 +245,54 @@ bool Player::IsInADS() {
 
 void Player::ReloadWeapon() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    WeaponState* weaponState = GetEquipedWeaponState();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+    Animation* reloadAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.reload);
+    Animation* reloadEmptyAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.reloadEmpty);
     Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
 
     float animationSpeed = 1.0f;
 
-    currentWeaponAnimator->PlayAnimation(AssetManager::GetAnimationByName(weaponInfo->animations.reload), animationSpeed);
-    AudioManager::PlayAudio(weaponInfo->audioFiles.reload, 1.0f, 1.0f);
-    m_weaponAction = WeaponAction::RELOAD;  
-}
-
-void Player::FireWeapon() {
-    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
-    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
-   
-    Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
-
-
-    if (PressingFire() && CanFireWeapon()) {
-        if (PressingADS()) {
-            Animation* weaponADSFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSFire[0]);
-            currentWeaponAnimator->PlayAnimation(weaponADSFireAnimation);
-            m_weaponAction = WeaponAction::ADS_FIRE;
+    if (CanReloadWeapon()) {
+        if (weaponState->ammoInMag <= 0) {
+            m_weaponAction = WeaponAction::RELOAD_EMPTY;
+            currentWeaponAnimator->PlayAnimation(reloadEmptyAnimation, animationSpeed);
+            AudioManager::PlayAudio(weaponInfo->audioFiles.reloadEmpty, 1.0f, 1.0f);
         }
         else {
-            Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
-
-            currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
-            m_weaponAction = WeaponAction::FIRE;
+            m_weaponAction = WeaponAction::RELOAD;
+            currentWeaponAnimator->PlayAnimation(reloadAnimation, animationSpeed);
+            AudioManager::PlayAudio(weaponInfo->audioFiles.reload, 1.0f, 1.0f);
         }
 
-        m_muzzleFlashTimer = 6;
+        weaponState->waitingForReload = true;
+    }
+}
+
+    void Player::FireWeapon() {
+        WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+        Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+   
+        Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
+
+        if (PressingFire() && CanFireWeapon()) {
+            if (PressingADS()) {
+                Animation* weaponADSFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSFire[0]);
+                currentWeaponAnimator->PlayAnimation(weaponADSFireAnimation);
+                m_weaponAction = WeaponAction::ADS_FIRE;
+            }
+            else {
+                Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
+
+                currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+                m_weaponAction = WeaponAction::FIRE;
+            }
+
+            WeaponState* state = GetEquipedWeaponState();
+            if (state && state->ammoInMag > 0) {
+                state->ammoInMag -= 1;
+                m_muzzleFlashTimer = 6;
+            }
         
         int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
         AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
@@ -315,6 +384,7 @@ void Player::LeaveADS() {
 
 void Player::UpdateWeaponLogic() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    WeaponState* weaponState = GetEquipedWeaponState();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
 
     Animation* weaponIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.idle);
@@ -322,8 +392,14 @@ void Player::UpdateWeaponLogic() {
     Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);*/
     Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
 
-    if (PressedReload()) {
+    if (PressedReload() || CanAutoReloadWeapon()) {
         ReloadWeapon();
+    }
+
+    // only give the ammo after animation is completed
+    if (weaponState->waitingForReload && currentWeaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reload)) {
+        weaponState->ammoInMag = weaponInfo->magSize;
+        weaponState->waitingForReload = false;
     }
 
     // if player tries to reload while pressing ADS key

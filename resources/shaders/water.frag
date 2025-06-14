@@ -4,9 +4,15 @@ out vec4 FragColor;
 
 #define MAX_LIGHTS 20
 struct Light {
- vec3 position;
- vec3 color;
+ float posX;
+ float posY;
+ float posZ;
+ float colorR;
+
+ float colorG;
+ float colorB;
  float radius;
+ float _padding0;
 };
 
 in vec4 WorldPos;
@@ -49,13 +55,17 @@ void main() {
     vec3 specularHighlights = vec3(0.0);
    
    for(int i = 0; i < lightsNr; i++) {
-    float distanceToLight = length(lights[i].position - WorldPos.xyz);
-    float attenuation = smoothstep(lights[i].radius, 0, length(lights[i].position - WorldPos.xyz));
+    Light light = lights[i];
+    vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
+    vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
 
-    vec3 reflectedLight = reflect(normalize(WorldPos.xyz - lights[i].position), normal);
+    float distanceToLight = length(lightPosition - WorldPos.xyz);
+    float attenuation = smoothstep(light.radius, 0, length(lightPosition - WorldPos.xyz));
+
+    vec3 reflectedLight = reflect(normalize(WorldPos.xyz - lightPosition), normal);
 	float specular = max(dot(reflectedLight, viewVector), 0.0);
 	specular = pow(specular, shineDamper);
-	specularHighlights += lights[i].color * specular * reflectivity * attenuation;
+	specularHighlights += lightColor * specular * reflectivity * attenuation;
    }
 
     FragColor = texture(refractionColor, refractTexCoords);

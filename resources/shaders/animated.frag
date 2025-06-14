@@ -4,14 +4,20 @@ out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 20
 struct Light {
-    vec3 position;
-    
+    float posX;
+    float posY;
+    float posZ;
     float radius;
-    float strength;
 
-    vec3 color;
+    float strength;
+    float colorR;
+    float colorG;
+    float colorB;
 
     int type;
+    float _padding0;
+    float _padding1;
+    float _padding2;
 };
 
 in vec2 TexCoords;
@@ -142,20 +148,23 @@ void main() {
 
  for (int i = 0; i < noLights; ++i) {
    Light light = lights[i];
+   vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
+   vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
+
    vec3 L;
    float attenuation = 1.0;
    vec3 radiance;
 
   if (light.type == 0) { // Point light
-     L = normalize(light.position - WorldPos);
+     L = normalize(lightPosition - WorldPos);
 
-     float distance    = length(light.position - WorldPos);
-     attenuation =  smoothstep(light.radius, 0, length(light.position - WorldPos));    
-     radiance = light.color * attenuation * light.strength;
+     float distance    = length(lightPosition - WorldPos);
+     attenuation =  smoothstep(light.radius, 0, length(lightPosition - WorldPos));    
+     radiance = lightColor * attenuation * light.strength;
   } else { // Directional light
      L = normalize(-vec3(0.0, -1.0, 0.0)); 
 
-     radiance = light.color * light.strength;
+     radiance = lightColor * light.strength;
   }
 
    vec3 H = normalize(V + L);

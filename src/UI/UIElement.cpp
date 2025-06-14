@@ -1,39 +1,41 @@
 #include "UIElement.h"
 
 glm::vec2 UIElement::CalculatePosition() {
-    glm::vec2 pos;
-
     switch (m_alignment) {
     case UIAlignment::TopLeft:
-        pos = { 0.0f, 0.0f };
+        m_position = { 0.0f, 0.0f };
         break;
     case UIAlignment::TopRight:
-        pos = { Window::currentWidth - m_size.x, 0.0f };
+        m_position = { Window::currentWidth - m_size, 0.0f };
         break;
     case UIAlignment::BottomLeft:
-        pos = { 0.0f, Window::currentHeight - m_size.y };
+        m_position = { 0.0f, Window::currentHeight - m_size };
         break;
     case UIAlignment::BottomRight:
-        pos = { Window::currentWidth - m_size.x, Window::currentHeight - m_size.y };
+        m_position = { Window::currentWidth - m_size, Window::currentHeight - m_size };
         break;
     case UIAlignment::Center:
-        pos = { (Window::currentWidth - m_size.x) * 0.5f, (Window::currentHeight - m_size.y) * 0.5f };
+        m_position = { (Window::currentWidth - m_size) * 0.5f, (Window::currentHeight - m_size) * 0.5f };
         break;
     case UIAlignment::TopCenter:
-        pos = { (Window::currentWidth - m_size.x) * 0.5f, 0.0f };
+        m_position = { (Window::currentWidth - m_size) * 0.5f, 0.0f };
         break;
     case UIAlignment::BottomCenter:
-        pos = { (Window::currentWidth - m_size.x) * 0.5f, Window::currentHeight - m_size.y };
+        m_position = { (Window::currentWidth - m_size) * 0.5f, Window::currentHeight - m_size };
         break;
     }
 
-    return pos + m_offset;
+    m_position += m_aligmentOffset;
+
+    return m_position;
 }
 
 glm::mat4 UIElement::GetModelMatrix() {
-    glm::vec2 position = CalculatePosition();
+    if (m_useAligment) {
+        CalculatePosition();
+    }
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(position, 0.0f));
-    model = glm::scale(model, glm::vec3(m_size, 1.0f));
+    model = glm::translate(model, glm::vec3(m_position, 0.0f));
+    model = glm::scale(model, glm::vec3(m_size, m_size, 1.0f));
     return model;
 }

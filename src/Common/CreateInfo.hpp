@@ -11,6 +11,16 @@ enum class LightType {
 	DIRECTIONAL_LIGHT = 1
 };
 
+enum class UIAlignment {
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight,
+	Center,
+	TopCenter,
+	BottomCenter
+};
+
 struct GameObjectCreateInfo {
 	std::string name = "undefined";
 	std::string modelName = "undefined";
@@ -51,4 +61,17 @@ struct LevelCreateInfo {
 	std::string name;
 	std::vector<GameObjectCreateInfo> gameObjects;
 	std::vector<LightCreateInfo> lights;
+};
+
+struct UIElementCreateInfo {
+	UIAlignment aligment = UIAlignment::TopLeft;
+	bool useAligment = false;
+	bool isVisible = false;
+
+	glm::vec2 size = glm::vec2(1.0f);
+	glm::vec2 positionY = glm::vec2(1.0f);
+	glm::vec2 positionX = glm::vec2(1.0f);
+
+	glm::vec3 color = glm::vec3(1.0f);
+	std::string textureName = "undefined";
 };

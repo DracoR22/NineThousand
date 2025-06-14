@@ -36,6 +36,7 @@ namespace Game {
 		Animator* aks74uAnimator = AssetManager::GetAnimatorByName("AKS74UAnimator");
 
 		Animation* aks74uIdleAnimation = AssetManager::GetAnimationByName("AKS74U_Idle");
+		Animation* aks74uReloadEmptyAnimation = AssetManager::GetAnimationByName("AKS74U_ReloadEmpty");
 		Animation* aks74uDrawAnimation = AssetManager::GetAnimationByName("AKS74U_Draw");
 		Animation* aks74uWalkAnimation = AssetManager::GetAnimationByName("AKS74U_Walk");
 		Animation* aks74uADSInAnimation = AssetManager::GetAnimationByName("AKS74U_ADS_In");
@@ -186,7 +187,8 @@ namespace Game {
 			aks74uAnimator->GetCurrentAnimation() == aks74uADSInAnimation || 
 			aks74uAnimator->GetCurrentAnimation() == aks74uADSIdleAnimation ||
 			aks74uAnimator->GetCurrentAnimation() == aks74uADSOutAnimation ||
-			aks74uAnimator->GetCurrentAnimation() == aks74uADSWalkAnimation
+			aks74uAnimator->GetCurrentAnimation() == aks74uADSWalkAnimation ||
+			aks74uAnimator->GetCurrentAnimation() == aks74uReloadEmptyAnimation
 			) {
 			UpdateWeaponPositionByName(equipedWeapon->name, true);
 		}
@@ -212,6 +214,7 @@ namespace Game {
 	void CreatePlayers() {
 		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 4.7f, 75.0f);
 		player.EquipWeapon("Glock");
+		player.InitWeaponStates();
 
 		g_players.push_back(player);
 	}

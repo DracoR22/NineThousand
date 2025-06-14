@@ -25,16 +25,23 @@ private:
 
 	WeaponInfo* m_equippedWeapon = nullptr;
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
+	std::unordered_map<std::string, WeaponState> m_weaponStates;
 public:
+	Player() = default;
 	Player(glm::vec3 position, float height, float mass);
+
     void Update(double deltaTime);
 
 	glm::vec3 getPosition();
 	bool IsMoving();
 
-	WeaponInfo* GetEquipedWeaponInfo();
+	void InitWeaponStates();
 
-	bool CanReloadWeapon(); // TODO
+	WeaponInfo* GetEquipedWeaponInfo();
+	WeaponState* GetEquipedWeaponState();
+
+	bool CanReloadWeapon();	
+	bool CanAutoReloadWeapon();
 	bool CanEnterADS();
 	bool CanFireWeapon();
 	bool IsDrawingWeapon();  // TODO
@@ -52,6 +59,7 @@ public:
 	void MeleeHit();
 	void EnterADS();
 	void LeaveADS();
+
 	void EquipWeapon(std::string weaponName);
 	
 	void UpdateWeaponLogic();

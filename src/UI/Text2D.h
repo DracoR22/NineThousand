@@ -23,4 +23,6 @@ namespace Text2D {
     inline std::unordered_map<unsigned int, Character> m_characters;
 
     void LoadFont(const std::string& path);
+    float GetTextWidth(const std::string& text, float scale);
+    float GetTextHeight(float scale);
 }

@@ -1,6 +1,8 @@
 #include "Text2D.h"
 
 namespace Text2D {
+    float m_maxCharHeight = 0.0f;
+
     void LoadFont(const std::string& path) {
         std::ifstream file(path);
 
@@ -34,6 +36,10 @@ namespace Text2D {
                     else if (name == "xadvance") ch.xAdvance = std::stof(value);
                 }
 
+                if (ch.height > m_maxCharHeight) {
+                    m_maxCharHeight = ch.height;
+                }
+
                 m_characters[ch.id] = ch;
             }
 
@@ -51,5 +57,19 @@ namespace Text2D {
         }
 
         std::cout << "Loaded " << m_characters.size() << " characters.\n";
+    }
+
+    float GetTextWidth(const std::string& text, float scale) {
+        float width = 0.0f;
+        for (char c : text) {
+            if (m_characters.find(c) == m_characters.end()) continue;
+            const Character& ch = m_characters[c];
+            width += ch.xAdvance * scale;
+        }
+        return width;
+    }
+
+    float GetTextHeight(float scale) {
+        return m_maxCharHeight * scale;
     }
 }

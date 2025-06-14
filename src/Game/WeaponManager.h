@@ -64,9 +64,17 @@ struct WeaponInfo {
 	glm::vec3 muzzleFlashOffset = glm::vec3(0.0f);
 	float muzzleFlashSize = 0.0f;
 	WeaponType type;
+	int magSize = 0;
+	int maxAmmo = 0;	
+};
+
+struct WeaponState {
+	int ammoInMag = 0;
+	bool waitingForReload = false;
 };
 
 namespace WeaponManager {
 	void Init();
 	WeaponInfo* GetWeaponInfoByName(std::string& name);
+	std::vector<WeaponInfo>& GetAllWeaponInfos();
 }
