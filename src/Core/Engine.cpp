@@ -6,11 +6,14 @@ namespace Engine {
 		Physics::Init();
 		AudioManager::Init();
 		Game::Init();
+		UIManager::Init();
 		Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);
 
 		LoadResources();
+		Window::ShowWindow();
+
 		Scene::LoadSceneFromFile("resources/levels/test.json");
 		Scene::CreateWaterPlaneObjects();
 
@@ -57,6 +60,7 @@ namespace Engine {
 			AudioManager::Update();
 			EditorPanel::Update();
 			OpenGLRenderer::RenderFrame();
+			UIManager::Update();
 			EditorPanel::Render();
 			Window::ProcessEvents();
 		}

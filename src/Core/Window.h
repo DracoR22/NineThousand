@@ -24,6 +24,7 @@ namespace Window {
 	void Init();
 	void PrepareFrame();
 
+	void ShowWindow();
 	bool WindowShouldClose();
 	void SetWindowShouldClose(bool shouldClose);
 

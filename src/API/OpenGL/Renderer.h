@@ -30,6 +30,7 @@
 #include "../../Common/AABB.h"
 
 #include "../../UI/UIElement.h"
+#include "../../UI/UIManager.h"
 
 #include "../../Utils/Utils.h"
 

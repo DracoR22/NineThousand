@@ -633,77 +633,18 @@ namespace OpenGLRenderer {
 		// ------ UI PASS -------------
 		glDisable(GL_DEPTH_TEST);
 		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::currentWidth, (float)Window::currentHeight, 0.0f);
-
-		UIElement ammoCounterElement;
-		ammoCounterElement.m_useAligment = false;
-		ammoCounterElement.m_size = 0.50f;
-		WeaponState* weaponState = player.GetEquipedWeaponState();
-
-		std::ostringstream oss;
-		oss << std::setw(3) << std::setfill('0') << weaponState->ammoInMag;
-		ammoCounterElement.m_text = oss.str();
-
-		float textWidth = Text2D::GetTextWidth(ammoCounterElement.m_text, 0.70f);
-		float textHeight = Text2D::GetTextHeight(0.50f);
-
-		ammoCounterElement.m_position = glm::vec2(
-			Window::currentWidth - textWidth - 30.0f,
-			Window::currentHeight - textHeight - 50.0f
-		);
-
-		g_shaders.uiShader.activate();
-		g_shaders.uiShader.setMat4("projection", UiProjection);
-		g_shaders.uiShader.setMat4("model", glm::mat4(1.0f));
-
 		Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
-
-		g_renderData.textMesh.RenderText(ammoCounterElement.m_text, ammoCounterElement.m_position.x, ammoCounterElement.m_position.y, ammoCounterElement.m_size, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
-
-		UIElement fpsTextElement;
-		fpsTextElement.m_alignment = UIAlignment::TopLeft;
-		fpsTextElement.m_size = 1.0f;
-
 		g_shaders.uiShader.activate();
-		g_shaders.uiShader.setMat4("projection", UiProjection);
-	
-		float fpsTextX = 10.0f;  // offset from the left
-		float fpsTextY = 30.0f;
-		float debugFontSize = 0.45f;  
+		for (UITextElement& uiTextElement : UIManager::GetTextElements()) {
+			g_shaders.uiShader.setMat4("projection", UiProjection);
+			g_shaders.uiShader.setMat4("model", glm::mat4(1.0f));
 
-		float posTextX = 10.0f;
-		float posTextY = 45.0f;
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
 
-		glm::mat4 uiModel = glm::mat4(1.0f);
-		uiModel = glm::translate(uiModel, glm::vec3(fpsTextX, fpsTextY, 0.0f));
-		uiModel = glm::scale(uiModel, glm::vec3(debugFontSize, debugFontSize, 1.0f));
-		g_shaders.uiShader.setMat4("model", uiModel);
-
-		/*Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");*/
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
-
-		g_renderData.textMesh.RenderText("FPS: " + std::to_string(Window::GetFPSCount()), fpsTextX, fpsTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
-
-		std::string playerPosText = "Player Position: (" +
-			std::to_string(CameraManager::GetActiveCamera()->cameraPos.x) + ", " +
-			std::to_string(CameraManager::GetActiveCamera()->cameraPos.y) + ", " +
-			std::to_string(CameraManager::GetActiveCamera()->cameraPos.z) + ")";
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sansFontTexture->m_id);
-
-		g_shaders.uiShader.activate();
-		g_shaders.uiShader.setMat4("projection", UiProjection);
-		glm::mat4 posModel = glm::mat4(1.0f);
-		posModel = glm::translate(posModel, glm::vec3(posTextX, posTextY, 0.0f));
-		posModel = glm::scale(posModel, glm::vec3(debugFontSize, debugFontSize, 1.0f));
-		g_shaders.uiShader.setMat4("model", posModel);
-
-		g_renderData.textMesh.RenderText(playerPosText, posTextX, posTextY, debugFontSize, glm::vec3(1.0f, 1.0f, 1.0f), g_shaders.uiShader);
+			g_renderData.textMesh.RenderText(uiTextElement.text, uiTextElement.posX, uiTextElement.posY, uiTextElement.size, uiTextElement.fontColor, g_shaders.uiShader);
+		}
 
 		// CROSSHAIR DOT PASS
 		UIElement crosshairElement;

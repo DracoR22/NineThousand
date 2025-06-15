@@ -8,17 +8,13 @@
 #include <GLFW/glfw3.h>
 
 #include "../UI/Text2D.h"
+#include "../UI/UIManager.h"
 #include "../Editor/EditorPanel.h"
 #include "../Editor/Editor.h"
 
 #include "../Core/Window.h"
 #include "../Core/AssetManager.h"
 
-
-#include "../API/OpenGL/Shader.h"
-#include "../API/OpenGL/Cubemap.h"
-#include "../API/OpenGL/ShadowMap.h"
-#include "../API/OpenGL/FrameBuffer.h"
 #include "../API/OpenGL/Renderer.h"
 
 #include "../Camera/Camera.h"
