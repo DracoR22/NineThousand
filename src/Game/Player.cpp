@@ -182,7 +182,7 @@ WeaponAction Player::GetWeaponAction() {
 }
 
 bool Player::PressingFire() {
-    if (Mouse::button(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (Mouse::ButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
         return true;
     }
     else {
@@ -191,7 +191,7 @@ bool Player::PressingFire() {
 }
 
 bool Player::PressedFire() {
-    if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (Mouse::ButtonJustPressed(GLFW_MOUSE_BUTTON_LEFT)) {
         return true;
     }
     else {
@@ -200,7 +200,7 @@ bool Player::PressedFire() {
 }
 
 bool Player::PressingADS() {
-    if (Mouse::button(GLFW_MOUSE_BUTTON_RIGHT)) {
+    if (Mouse::ButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
     }
     else {
@@ -209,7 +209,7 @@ bool Player::PressingADS() {
 }
 
 bool Player::PressedADS() {
-    if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+    if (Mouse::ButtonJustPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
     }
     else {
@@ -227,7 +227,7 @@ bool Player::PressedReload() {
 }
 
 bool Player::ReleasedADS() {
-    if (Mouse::buttonWentUp(GLFW_MOUSE_BUTTON_RIGHT)) {
+    if (Mouse::ButtonJustReleased(GLFW_MOUSE_BUTTON_RIGHT)) {
         return true;
     }
     else {

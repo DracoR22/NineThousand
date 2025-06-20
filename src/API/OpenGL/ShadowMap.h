@@ -10,7 +10,9 @@ private:
 	const unsigned int m_SHADOW_WIDTH = 1024, m_SHADOW_HEIGHT = 1024;
 public:
 	void Init();
+	void InitCubeMap();
 	void Cleanup();
 	void Unbind();
 	void Clear();
+	unsigned int GetTextureID() const { return m_depthTexture; };
 };

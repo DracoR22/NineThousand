@@ -129,32 +129,6 @@ namespace Window {
 		if (Keyboard::KeyPressed(GLFW_KEY_ESCAPE)) {
 			SetWindowShouldClose(true);
 		}
-
-		// move camera
-	/*	if (Keyboard::KeyPressed(GLFW_KEY_W)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::FORWARD, dt);
-		}
-		if (Keyboard::KeyPressed(GLFW_KEY_S)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::BACKWARD, dt);
-		}
-		if (Keyboard::KeyPressed(GLFW_KEY_D)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::RIGHTWARD, dt);
-		}
-		if (Keyboard::KeyPressed(GLFW_KEY_A)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::LEFTWARD, dt);
-		}
-		if (Keyboard::KeyPressed(GLFW_KEY_SPACE)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::UPWARD, dt);
-		}
-		if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-			Camera::defaultCamera.updateCameraPos(CameraDirection::DOWNWARD, dt);
-		}
-
-		double dx = Mouse::getDX(), dy = Mouse::getDY();
-		float sensitivity = 0.1f;
-		if (dx != 0 || dy != 0) {
-			Camera::defaultCamera.updateCameraDirection(dx * sensitivity, dy * sensitivity);
-		}*/
 	}
 
 }

@@ -40,9 +40,6 @@ namespace Engine {
 			Window::ProcessInput(Window::GetDeltaTime());
 			Physics::Simulate(Window::GetDeltaTime());
 
-			CameraManager::UpdateViewMatrix();
-			CameraManager::UpdateProjectionMatrix();
-
 			if (Game::GetGameState() == Game::GameState::PLAYING) {
 				CameraManager::SetActiveCamera(0);
 				player.Update(Window::GetDeltaTime());
@@ -59,7 +56,8 @@ namespace Engine {
 			Window::PrepareFrame();
 			AudioManager::Update();
 			EditorPanel::Update();
-			OpenGLRenderer::RenderFrame();
+			CameraManager::Update();
+			OpenGLRenderer::Render();
 			UIManager::Update();
 			EditorPanel::Render();
 			Window::ProcessEvents();

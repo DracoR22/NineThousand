@@ -21,10 +21,8 @@ struct Light {
 };
 
 in vec2 TexCoords;
-in vec3 Normal;
-in vec3 WorldPos;
-in mat3 TBN;
-in vec4 WorldPosLight;
+
+//in vec4 WorldPosLight;
 
 uniform Light lights[MAX_POINT_LIGHTS];
 uniform int noLights;
@@ -35,17 +33,14 @@ uniform samplerCube shadowCubemap;
 
 uniform float farPlane;
 
+uniform sampler2D gPosition;
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D rmaTexture;
 
 const float PI = 3.14159265359;
 
-vec3 getNormalFromMap()
-{
-    vec3 tangentNormal = texture(normalTexture, TexCoords).xyz * 2.0 - 1.0;
-    return normalize(TBN * tangentNormal);
-}
+
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
   return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
@@ -134,13 +129,14 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, Light light, vec3 w
 }  
 
 void main() {
+ vec3 WorldPos = texture(gPosition, TexCoords).rgb;
  vec3 albedo = pow(texture(baseTexture, TexCoords).rgb, vec3(2.2));
  vec3 rma = texture(rmaTexture, TexCoords).rgb;
  float roughness = rma.r;
  float metallic  = rma.g;
  float ao        = rma.b;
 
- vec3 N = getNormalFromMap();
+ vec3 N = texture(normalTexture, TexCoords).rgb;
  vec3 V = normalize(camPos - WorldPos);
 
  vec3 Lo = vec3(0.0);
@@ -188,6 +184,7 @@ void main() {
    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 
    // calculate shadows
+   vec4 WorldPosLight = vec4(1.0);
    float shadow = ShadowCalculation(WorldPosLight, N, lights[i], WorldPos);
    //float shadow = ShadowCalculationPointLight(WorldPos, lights[i]);
    Lo *= (1.0 - shadow);

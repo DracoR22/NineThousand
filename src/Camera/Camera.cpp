@@ -13,6 +13,12 @@ cameraFront(glm::vec3(1.0f, 0.0f, 0.0f)) {
 	updateCameraVectors();
 }
 
+void Camera::Update() {
+    m_viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    m_projectionMatrix = glm::perspective(glm::radians(zoom), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 500.0f);
+    m_frustum.Update(m_projectionMatrix * m_viewMatrix);
+}
+
 // change camera direction (mouse movement)
 void Camera::updateCameraDirection(double dx, double dy) {
     yaw += dx;
@@ -58,8 +64,12 @@ void Camera::updateCameraPos(CameraDirection direction, double dt) {
     }
 }
 
-glm::mat4 Camera::getViewMatrix() {
-    return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+glm::mat4 Camera::GetViewMatrix() {
+    return m_viewMatrix;
+}
+
+glm::mat4 Camera::GetProjectionMatrix() {
+    return m_projectionMatrix;
 }
 
 // get zoom value for camera

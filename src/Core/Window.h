@@ -6,11 +6,8 @@
 #include <iostream>
 #include <string>
 
-#include "../Camera/Camera.h"
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
-
-#include "../Game/Game.h"
 
 namespace Window {
  extern	const int SCR_WIDTH;

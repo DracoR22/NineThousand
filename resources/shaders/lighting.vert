@@ -25,7 +25,7 @@ void main() {
 
     WorldPosLight = lightProjection * vec4(WorldPos, 1.0);
 
-    vec3 N = normalize(mat3(transpose(inverse(model))) * aNormal);
+    vec3 N = normalize(Normal);
     vec3 T = normalize(mat3(model) * aTangent);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);

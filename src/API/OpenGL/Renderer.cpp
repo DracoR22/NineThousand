@@ -3,10 +3,14 @@
 
 namespace OpenGLRenderer {
 
+	RendererType g_rendererType = RendererType::FORWARD;
+
+	std::unordered_map<std::string, Shader> g_Shaders;
+	std::unordered_map<std::string, FrameBuffer> g_frameBuffers;
+	ShadowMap g_shadowMap;
+
 	struct Shaders {
-		Shader skyboxShader;
 		Shader animationShader;
-		Shader shadowMapShader;
 		Shader sobelEdgesShader;
 		Shader postProcessShader;
 		Shader solidColorShader;
@@ -18,6 +22,8 @@ namespace OpenGLRenderer {
 		Shader waterShader;
 		Shader simpleTextureShader;
 		Shader outlineAnimatedShader;
+		Shader shadowCubeMapShader;
+		Shader deferredLightingShader;
 	} g_shaders;
 
 	struct RenderData {
@@ -27,7 +33,8 @@ namespace OpenGLRenderer {
 		std::vector<LightCreateInfo> sceneLights = {};
 		std::vector<CubeMap> cubeMaps = {};
 
-		ShadowMap shadowMap;
+		
+		ShadowMap cubeMapShadowMap;
 
 		Mesh2D textMesh;
 		Mesh2D crossHairMesh;
@@ -43,18 +50,20 @@ namespace OpenGLRenderer {
 		FrameBuffer postProcessingFrameBuffer;
 		FrameBuffer mssaFrameBuffer;
 		FrameBuffer refractionFrameBuffer;
-		FrameBuffer gBuffer;
+		
 
 		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
 	} g_renderFrameBuffers;
+
+	unsigned int lightQuadVAO = 0;
+	unsigned int lightQuadVBO;
 
 	void Init() {
 		Player& player = Game::GetPLayerByIndex(0);
 
 		// load shaders
-		g_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
+		
 		g_shaders.animationShader.load("animated.vert", "animated.frag");
-		g_shaders.shadowMapShader.load("shadow_map.vert", "shadow_map.frag");
 		g_shaders.sobelEdgesShader.load("sobel_edges.vert", "sobel_edges.frag");
 		g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 		g_shaders.solidColorShader.load("solid_color.vert", "solid_color.frag");
@@ -66,6 +75,30 @@ namespace OpenGLRenderer {
 		g_shaders.waterShader.load("water.vert", "water.frag");
 		g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 		g_shaders.outlineAnimatedShader.load("outline_animated.vert", "outline_animated.frag");
+		g_shaders.shadowCubeMapShader.load("shadow_cube_map.vert", "shadow_cube_map.frag", "shadow_cube_map.geom");
+	
+		g_shaders.deferredLightingShader.load("deferred_lighting.vert", "deferred_lighting.frag");
+
+
+	/*	
+		g_Shaders["Animation"].load("animated.vert", "animated.frag");
+		g_Shaders["SobelEdges"].load("sobel_edges.vert", "sobel_edges.frag");
+		g_Shaders["PostProcess"].load("post_process.vert", "post_process.frag");
+		g_Shaders["SolidColor"].load("solid_color.vert", "solid_color.frag");
+		g_Shaders["Instanced"].load("instanced.vert", "instanced.frag");
+		g_Shaders["UI"].load("ui.vert", "ui.frag");
+		g_Shaders["Blur"].load("blur.vert", "blur.frag");
+		g_Shaders["Lighting"].load("lighting.vert", "lighting.frag");
+		g_Shaders["MuzzleFlash"].load("muzzle_flash.vert", "muzzle_flash.frag");
+		g_Shaders["Water"].load("water.vert", "water.frag");
+		g_Shaders["SimpleTexture"].load("simple_texture.vert", "simple_texture.frag");
+		g_Shaders["OutlineAnimated"].load("outline_animated.vert", "outline_animated.frag");
+		g_Shaders["ShadowCubeMap"].load("shadow_cube_map.vert", "shadow_cube_map.frag", "shadow_cube_map.geom");
+		g_Shaders["DeferredLighting"].load("deferred_lighting.vert", "deferred_lighting.frag");*/
+
+		g_Shaders["Skybox"].load("skybox.vert", "skybox.frag");
+		g_Shaders["ShadowMap"].load("shadow_map.vert", "shadow_map.frag");
+		g_Shaders["GBuffer"].load("g_buffer.vert", "g_buffer.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -127,18 +160,22 @@ namespace OpenGLRenderer {
 		cubeLampLight2.type = LightType::POINT_LIGHT;
 
 		g_renderData.sceneLights.push_back(cubeLampLight);
-		g_renderData.sceneLights.push_back(cubeLampLight2);
+		
+			g_renderData.sceneLights.push_back(cubeLampLight2);
+		
 
 		// Load frame buffers
-		/*g_renderFrameBuffers.gBuffer.Create(Window::currentWidth, Window::currentHeight);
-		g_renderFrameBuffers.gBuffer.Bind();
-		g_renderFrameBuffers.gBuffer.CreateAttachment("WorldPosition", GL_RGBA16F);
-		g_renderFrameBuffers.gBuffer.CreateAttachment("BaseColor", GL_RGBA8);
-		g_renderFrameBuffers.gBuffer.CreateAttachment("Normal", GL_RGBA16F);
-		g_renderFrameBuffers.gBuffer.CreateAttachment("RMA", GL_RGBA8);
-		g_renderFrameBuffers.gBuffer.CreateDepthAttachment();
-		g_renderFrameBuffers.gBuffer.DrawBuffers();
-		g_renderFrameBuffers.gBuffer.Unbind();*/
+		if (g_rendererType == RendererType::DEFERRED) {
+			g_frameBuffers["GBuffer"] = FrameBuffer(Window::currentWidth, Window::currentHeight);
+			g_frameBuffers["GBuffer"].Bind();
+			g_frameBuffers["GBuffer"].CreateAttachment("WorldPosition", GL_RGBA16F);
+			g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
+			g_frameBuffers["GBuffer"].CreateAttachment("Normal", GL_RGBA16F);
+			g_frameBuffers["GBuffer"].CreateAttachment("RMA", GL_RGBA8);
+			g_frameBuffers["GBuffer"].CreateDepthAttachment();
+			g_frameBuffers["GBuffer"].DrawBuffers();
+			g_frameBuffers["GBuffer"].Unbind();
+		}
 
 		g_renderFrameBuffers.postProcessingFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
 		g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
@@ -160,7 +197,6 @@ namespace OpenGLRenderer {
 		g_renderFrameBuffers.mssaFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.mssaFrameBuffer.Unbind();
 
-
 		/*g_renderFrameBuffers.pingPongFrameBuffers.resize(2);
 		for (int i = 0; i < 2; i++) {
 			g_renderFrameBuffers.pingPongFrameBuffers[i].Create(Window::currentWidth, Window::currentHeight);
@@ -170,14 +206,15 @@ namespace OpenGLRenderer {
 			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
 		}*/
 
-		// Load shadow map
-		g_renderData.shadowMap.Init();
+		// Load shadow maps
+		g_shadowMap.Init();
+		//g_renderData.cubeMapShadowMap.InitCubeMap();
+
 	}
 
-	void RenderFrame() {
+	void Render() {
 		// Hotload shaders
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
-			g_shaders.skyboxShader.load("skybox.vert", "skybox.frag");
 			g_shaders.animationShader.load("animated.vert", "animated.frag");
 			g_shaders.sobelEdgesShader.load("sobel_edges.vert", "sobel_edges.frag");
 			g_shaders.solidColorShader.load("solid_color.vert", "solid_color.frag");
@@ -193,69 +230,35 @@ namespace OpenGLRenderer {
 		}
 
 		Player& player = Game::GetPLayerByIndex(0);
+		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
+		glm::mat4 viewMatrix = CameraManager::GetActiveCamera()->GetViewMatrix();
 
-		Animator* dEagleAnimator = AssetManager::GetAnimatorByName("DEAGLEAnimator");
-
-		/*	dEagleAnimator->UpdateAnimation(Window::GetDeltaTime());
-			if (Keyboard::KeyJustPressed(GLFW_KEY_V)) {
-				dEagleAnimator->PlayAnimation(AssetManager::GetAnimationByName("DEAGLE_Walk"));
-			}*/
-
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
-
-		view = CameraManager::GetActiveCamera()->getViewMatrix();
-		projection = glm::perspective(glm::radians(CameraManager::GetActiveCamera()->getZoom()), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 500.0f);
-
-		float fovY = glm::radians(CameraManager::GetActiveCamera()->getZoom());
 		float aspect = static_cast<float>(Window::currentWidth) / static_cast<float>(Window::currentHeight);
-		float zNear = 0.1f;
-		float zFar = 500.0f;
 
-		Frustum camFrustum;
-		camFrustum.Update(projection * view);
+		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
+		
+		if (g_rendererType == RendererType::DEFERRED) {
+			GBufferPass();
+		}
 
-		// ------ SHADOW PASS --------
+		ShadowPass();
+
+
+		// WATER REFRACTION PASS 
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 		glm::mat4 lightView = glm::mat4(1.0f);
-
-		if (g_renderData.sceneLights.empty()) {
-			lightView = glm::mat4(1.0f);
-		}
-		else {
+		if (!g_renderData.sceneLights.empty()) {
 			lightView = glm::lookAt(g_renderData.sceneLights[0].position, Scene::GetGameObjectByName("Cube0")->GetPosition(), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		glm::mat4 lightProjection = orthogonalProjection * lightView;
-
-		g_renderData.shadowMap.Clear();
-
-		glCullFace(GL_FRONT);
-
-		g_shaders.shadowMapShader.activate();
-		g_shaders.shadowMapShader.setMat4("lightProjection", lightProjection);
-
-		/*glm::mat4 smodel = glm::mat4(1.0f);
-		smodel = glm::translate(smodel, Scene::GetGameObjectByName("Cube0")->GetPosition());
-		smodel = glm::scale(smodel, Scene::GetGameObjectByName("Cube0")->GetSize());
-		smodel *= Scene::GetGameObjectByName("Cube0")->GetRotationMatrix();*/
-		g_shaders.shadowMapShader.setMat4("model", Scene::GetGameObjectByName("Cube0")->GetModelMatrix());
-		AssetManager::DrawModel("Cube", g_shaders.shadowMapShader);
-
-		glCullFace(GL_BACK);
-
-		g_renderData.shadowMap.Unbind();
-		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		// REFRACTION PASS 
+		float far = 25.0f;
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		g_shaders.lightingShader.activate();
-		g_shaders.lightingShader.setMat4("view", view);
-		g_shaders.lightingShader.setMat4("projection", projection);
+		g_shaders.lightingShader.setMat4("view", viewMatrix);
+		g_shaders.lightingShader.setMat4("projection", projectionMatrix);
 
 		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
@@ -273,13 +276,12 @@ namespace OpenGLRenderer {
 		}
 		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
 		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, g_renderData.cubeMapShadowMap.GetTextureID());
+		g_shaders.lightingShader.setFloat("farPlane", far);
 		g_shaders.lightingShader.setInt("shadowMap", 3);
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
 			if (gameObject.GetName() == "Plane0") {
-				/*glm::mat4 rmodel = glm::mat4(1.0f);
-				rmodel = glm::translate(rmodel, gameObject.GetPosition());
-				rmodel = glm::scale(rmodel, gameObject.GetSize());
-				rmodel *= gameObject.GetRotationMatrix();*/
 				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
 				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
 
@@ -295,10 +297,14 @@ namespace OpenGLRenderer {
 		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() != Window::currentWidth || g_renderFrameBuffers.postProcessingFrameBuffer.GetHeight() != Window::currentHeight) {
 			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
 			g_renderFrameBuffers.refractionFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
-			g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(Window::currentWidth, Window::currentHeight);
+			if (g_rendererType == RendererType::FORWARD) {
+				g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(Window::currentWidth, Window::currentHeight);
+			}
 		}
 
-		g_renderFrameBuffers.mssaFrameBuffer.Bind();
+		if (g_rendererType == RendererType::FORWARD) {
+			g_renderFrameBuffers.mssaFrameBuffer.Bind();
+		}
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -311,8 +317,8 @@ namespace OpenGLRenderer {
 
 		// ANIMATION PASS
 		g_shaders.animationShader.activate();
-		g_shaders.animationShader.setMat4("view", view);
-		g_shaders.animationShader.setMat4("projection", projection);
+		g_shaders.animationShader.setMat4("view", viewMatrix);
+		g_shaders.animationShader.setMat4("projection", projectionMatrix);
 		g_shaders.animationShader.setMat4("lightProjection", lightProjection);
 		g_shaders.animationShader.setInt("noLights", g_renderData.sceneLights.size());
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
@@ -342,74 +348,128 @@ namespace OpenGLRenderer {
 		}
 		AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, g_shaders.animationShader);
 
-		/*glm::mat4 bmodel = glm::mat4(1.0f);
-		bmodel = glm::translate(bmodel, glm::vec3(0.0f, 2.0f, 0.0f));
-		bmodel = glm::scale(bmodel, glm::vec3(0.05f));
-		bmodel *= glm::mat4(1.0f);
-		g_shaders.animationShader.setMat4("model", bmodel);
 
-		auto& etransforms = dEagleAnimator->GetFinalBoneMatrices();
-		for (int i = 0; i < etransforms.size(); ++i) {
-			g_shaders.animationShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", etransforms[i]);
+		// DEFERRED LIGHTING PASS
+		if (g_rendererType == RendererType::DEFERRED) {
+			FrameBuffer* gBuffer = GetFrameBufferByName("GBuffer");
+			g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			g_shaders.deferredLightingShader.activate();
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(0));
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(1));
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(2));
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(3));
+			g_shaders.deferredLightingShader.setInt("gPosition", 0);
+			g_shaders.deferredLightingShader.setInt("baseTexture", 1);
+			g_shaders.deferredLightingShader.setInt("normalTexture", 2);
+			g_shaders.deferredLightingShader.setInt("rmaTexture", 3);
+			g_shaders.deferredLightingShader.setMat4("lightProjection", lightProjection);
+			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+				std::string lightUniform = "lights[" + std::to_string(i) + "]";
+
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
+				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
+				g_shaders.deferredLightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+			}
+			g_shaders.deferredLightingShader.setInt("noLights", g_renderData.sceneLights.size());
+			g_shaders.deferredLightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
+			g_shaders.deferredLightingShader.setInt("shadowMap", 3);
+			if (lightQuadVAO == 0)
+			{
+				float quadVertices[] = {
+					// positions        // texture Coords
+					-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+					 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+					 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+				};
+				// setup plane VAO
+				glGenVertexArrays(1, &lightQuadVAO);
+				glGenBuffers(1, &lightQuadVBO);
+				glBindVertexArray(lightQuadVAO);
+				glBindBuffer(GL_ARRAY_BUFFER, lightQuadVBO);
+				glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+				glEnableVertexAttribArray(0);
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+				glEnableVertexAttribArray(1);
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+			}
+			glBindVertexArray(lightQuadVAO);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glBindVertexArray(0);
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer->GetFBO());
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
+			glBlitFramebuffer(
+				0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
+				0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
+				GL_DEPTH_BUFFER_BIT, GL_NEAREST
+			);
+			glBindFramebuffer(GL_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
 		}
-		AssetManager::DrawModel("DEAGLE", g_shaders.animationShader);*/
+	
 
 		// LIGHTING PASS
-		g_shaders.lightingShader.activate();
-		g_shaders.lightingShader.setMat4("view", view);
-		g_shaders.lightingShader.setMat4("projection", projection);
-		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
+		if (g_rendererType == RendererType::FORWARD) {
+			g_shaders.lightingShader.activate();
+			g_shaders.lightingShader.setMat4("view", viewMatrix);
+			g_shaders.lightingShader.setMat4("projection", projectionMatrix);
+			g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
+			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
+				std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			g_shaders.lightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-			g_shaders.lightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-			g_shaders.lightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+				g_shaders.lightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
+				g_shaders.lightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
+				g_shaders.lightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
+				g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
+				g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
+				g_shaders.lightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
+				g_shaders.lightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
+				g_shaders.lightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
+				g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
+			}
+			g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
+			g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
+			g_shaders.lightingShader.setInt("shadowMap", 3);
+
+			for (GameObject& gameObject : Scene::GetGameObjects()) {
+
+
+				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
+				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
+
+				if (gameObject.IsSelected()) {
+					glStencilFunc(GL_ALWAYS, 1, 0xFF);
+					glStencilMask(0xFF);
+				}
+				else {
+					glStencilMask(0x00);
+				}
+
+				Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
+				AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
+
+				glm::mat4 modelMatrix = gameObject.GetModelMatrix();
+				AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
+
+				if (camFrustum.IntersectsAABB(worldAABB)) {
+					AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
+				}
+
+			}
+			glStencilMask(0x00);
 		}
-		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-		g_shaders.lightingShader.setInt("shadowMap", 3);
-
-		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			/*glm::mat4 cmodel = glm::mat4(1.0f);
-
-			cmodel = glm::translate(cmodel, gameObject.GetPosition());
-			cmodel = glm::scale(cmodel, gameObject.GetSize());
-			cmodel *= gameObject.GetRotationMatrix();*/
-
-			g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
-			g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
-
-			if (gameObject.IsSelected()) {
-				glStencilFunc(GL_ALWAYS, 1, 0xFF);
-				glStencilMask(0xFF);
-			}
-			else {
-				glStencilMask(0x00);
-			}
-
-			Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
-			AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
-
-			glm::mat4 modelMatrix = gameObject.GetModelMatrix();
-			AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
-
-			if (camFrustum.IntersectsAABB(worldAABB)) {
-				AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
-			}
-
-		}
-		glStencilMask(0x00);
-
-
-		//AssetManager::DrawModel("Plane", g_shaders.lightingShader);
-		//AssetManager::DrawModel("Cube", g_shaders.lightingShader);
 
 		// WATER PASS
 		static float moveFactor = 0.0f;
@@ -419,8 +479,8 @@ namespace OpenGLRenderer {
 			moveFactor -= 1.0f;
 
 		g_shaders.waterShader.activate();
-		g_shaders.waterShader.setMat4("view", view);
-		g_shaders.waterShader.setMat4("projection", projection);
+		g_shaders.waterShader.setMat4("view", viewMatrix);
+		g_shaders.waterShader.setMat4("projection", projectionMatrix);
 		g_shaders.waterShader.setVec3("camPos", CameraManager::GetActiveCamera()->cameraPos);
 
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
@@ -458,8 +518,8 @@ namespace OpenGLRenderer {
 		// DEBUG LIGHTS
 		g_shaders.solidColorShader.activate();
 		g_shaders.solidColorShader.set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
-		g_shaders.solidColorShader.setMat4("view", view);
-		g_shaders.solidColorShader.setMat4("projection", projection);
+		g_shaders.solidColorShader.setMat4("view", viewMatrix);
+		g_shaders.solidColorShader.setMat4("projection", projectionMatrix);
 		g_shaders.solidColorShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
 		glm::mat4 lmodel = glm::mat4(1.0f);
@@ -478,7 +538,7 @@ namespace OpenGLRenderer {
 		//AssetManager::DrawModelInstanced("Bullet", g_shaders.instancedShader, bulletCreateInfo.instanceOffsets);	
 
 		// ------ CUBEMAP PASS -------------
-		g_renderData.cubeMaps[0].Draw(g_shaders.skyboxShader, CameraManager::GetActiveCamera()->getViewMatrix(), projection);
+		g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), projectionMatrix);
 
 		// OUTLINE PASS
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
@@ -486,8 +546,8 @@ namespace OpenGLRenderer {
 		glDisable(GL_DEPTH_TEST);
 
 		g_shaders.outlineAnimatedShader.activate();
-		g_shaders.outlineAnimatedShader.setMat4("view", view);
-		g_shaders.outlineAnimatedShader.setMat4("projection", projection);
+		g_shaders.outlineAnimatedShader.setMat4("view", viewMatrix);
+		g_shaders.outlineAnimatedShader.setMat4("projection", projectionMatrix);
 		g_shaders.outlineAnimatedShader.setFloat("outlineThickness", 0.02f);
 
 		static float accumulatedTime = 0.0f;
@@ -533,8 +593,8 @@ namespace OpenGLRenderer {
 
 			g_shaders.solidColorShader.activate();
 			g_shaders.solidColorShader.set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
-			g_shaders.solidColorShader.setMat4("view", view);
-			g_shaders.solidColorShader.setMat4("projection", projection);
+			g_shaders.solidColorShader.setMat4("view", viewMatrix);
+			g_shaders.solidColorShader.setMat4("projection", projectionMatrix);
 			g_shaders.solidColorShader.setVec3("lightColor", 0.0f, 1.0f, 0.9f);
 
 			for (GameObject& gameObject : Scene::GetGameObjects()) {
@@ -608,7 +668,7 @@ namespace OpenGLRenderer {
 
 		muzzleFlashModel = glm::translate(muzzleFlashModel, glm::vec3(worldBarrelPos));
 
-		muzzleFlashModel *= glm::inverse(glm::mat4(glm::mat3(view)));
+		muzzleFlashModel *= glm::inverse(glm::mat4(glm::mat3(viewMatrix)));
 		muzzleFlashModel = glm::scale(muzzleFlashModel, glm::vec3(4.0f));
 
 		float randomAngle = Utils::RandomFloat(0.0f, glm::two_pi<float>());
@@ -616,8 +676,8 @@ namespace OpenGLRenderer {
 		g_shaders.muzzleFlashShader.activate();
 
 		g_shaders.muzzleFlashShader.setMat4("model", muzzleFlashModel);
-		g_shaders.muzzleFlashShader.setMat4("view", view);
-		g_shaders.muzzleFlashShader.setMat4("projection", projection);
+		g_shaders.muzzleFlashShader.setMat4("view", viewMatrix);
+		g_shaders.muzzleFlashShader.setMat4("projection", projectionMatrix);
 		g_shaders.muzzleFlashShader.setFloat("rotation", randomAngle);
 
 		Texture* muzzleFlashTexture = AssetManager::GetTextureByName("MuzzleFlash.png");
@@ -668,9 +728,11 @@ namespace OpenGLRenderer {
 
 
 		// ------ POST PROCESS PASS -----------
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
+		if (g_rendererType == RendererType::FORWARD) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
+		}
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-		if (g_renderFrameBuffers.mssaFrameBuffer.GetWidth() == Window::currentWidth && g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == Window::currentWidth) {
+		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == Window::currentWidth) {
 			glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 
@@ -735,6 +797,20 @@ namespace OpenGLRenderer {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+	Shader* GetShaderByName(const std::string& name) {
+		auto it = g_Shaders.find(std::string{ name });
+		return (it != g_Shaders.end()) ? &it->second : nullptr;
+	}
+
+	FrameBuffer* GetFrameBufferByName(const std::string& name) {
+		auto it = g_frameBuffers.find(std::string{ name });
+		return (it != g_frameBuffers.end()) ? &it->second : nullptr;
+	}
+
+	ShadowMap& GetShadowMap() {
+		return g_shadowMap;
+	}
+
 	RendererCommon::PostProcessMode GetPostProcessMode() {
 		return g_renderData.currentMode;
 	}
@@ -775,13 +851,16 @@ namespace OpenGLRenderer {
 	}
 
 	void Cleanup() {
-		g_renderData.shadowMap.Cleanup();
+		g_shadowMap.Cleanup();
 		g_renderData.textMesh.Cleanup();
 
 		for (CubeMap cubeMap : g_renderData.cubeMaps) {
 			cubeMap.Cleanup();
 		};
 
+		for (auto& [name, framebuffer] : g_frameBuffers) {
+			framebuffer.Cleanup();
+		}
 		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
 		g_renderFrameBuffers.refractionFrameBuffer.Cleanup();
 		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();

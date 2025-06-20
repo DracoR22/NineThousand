@@ -18,10 +18,10 @@ public:
 	static double getScrollDX();
 	static double getScrollDY();
 
-	static bool button(int button);
-	static bool buttonChanged(int button);
-	static bool buttonWentUp(int button);
-	static bool buttonWentDown(int button);
+	static bool ButtonPressed(int button);
+	static bool ButtonChanged(int button);
+	static bool ButtonJustReleased(int button);
+	static bool ButtonJustPressed(int button);
 
 private:
 	static double x;

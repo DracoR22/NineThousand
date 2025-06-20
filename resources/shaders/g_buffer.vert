@@ -19,7 +19,7 @@ void main() {
     TexCoords = aTexCoord;
     Normal = mat3(transpose(inverse(model))) * aNormal;
 
-    vec3 N = normalize(mat3(transpose(inverse(model))) * aNormal);
+    vec3 N = normalize(Normal);
     vec3 T = normalize(mat3(model) * aTangent);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);

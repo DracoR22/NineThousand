@@ -3,15 +3,15 @@
 // constructor
 Shader::Shader() {};
 
-void Shader::load(const char* vertexShaderPath, const char* fragmentShaderPath) {
+void Shader::load(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath) {
 	if (id != 0) {
 		glDeleteProgram(id);  
 	}
 
-	generate(vertexShaderPath, fragmentShaderPath);
+	generate(vertexShaderPath, fragmentShaderPath, geometryShaderPath);
 }
 
-void Shader::generate(const char* vertexShaderPath, const char* fragmentShaderPath) {
+void Shader::generate(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath) {
 	int success;
 	char infolog[512];
 
@@ -24,10 +24,20 @@ void Shader::generate(const char* vertexShaderPath, const char* fragmentShaderPa
 	GLuint vertexShader = compileShader(vertexShaderFile.c_str(), GL_VERTEX_SHADER);
 	GLuint fragShader = compileShader(fragmentShaderFile.c_str(), GL_FRAGMENT_SHADER);
 
+	GLuint geometryShader = 0;
+
+	if (geometryShaderPath != nullptr) {
+		std::string geometryShaderFile = std::string(debugShaderPathPrefix) + geometryShaderPath;
+		geometryShader = compileShader(geometryShaderFile.c_str(), GL_GEOMETRY_SHADER);
+	}
+
 	id = glCreateProgram();
 
 	glAttachShader(id, vertexShader);
 	glAttachShader(id, fragShader);
+	if (geometryShaderPath != nullptr) {
+		glAttachShader(id, geometryShader);
+	}
 
 	glLinkProgram(id);
 
@@ -41,6 +51,9 @@ void Shader::generate(const char* vertexShaderPath, const char* fragmentShaderPa
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragShader);
+	if (geometryShaderPath != nullptr) {
+		glDeleteShader(geometryShader);
+	}
 }
 
 void Shader::activate() {

@@ -4,7 +4,7 @@
 #include "./UIElement.h"
 #include "../Camera/CameraManager.h"
 #include "./Text2D.h"
-#include "../Game/Player.h"
+#include "../Game/Game.h"
 
 struct UITextElement {
 	float size = 1.0f;

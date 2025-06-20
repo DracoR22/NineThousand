@@ -46,7 +46,7 @@ namespace Editor {
 			g_camera.updateCameraPos(CameraDirection::DOWNWARD, Window::GetDeltaTime());
 		}
 
-		if (Mouse::button(GLFW_MOUSE_BUTTON_MIDDLE)) {
+		if (Mouse::ButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE)) {
 			static glm::vec2 smoothedDelta = glm::vec2(0.0f);
 			const float smoothingFactor = 0.55f;
 
@@ -63,15 +63,17 @@ namespace Editor {
 	}
 
 	void UpdateMouseRays() {
+		glm::mat4 viewMatrx = CameraManager::GetActiveCamera()->GetViewMatrix();
+		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
 		float x = (2.0f * Mouse::getMouseX()) / Window::currentWidth -1.0f;
 		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::currentHeight;
 		glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
 
-		glm::vec4 rayEye = glm::inverse(CameraManager::GetProjectionMatrix()) * rayClip;
+		glm::vec4 rayEye = glm::inverse(projectionMatrix) * rayClip;
 		rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
-		g_rayDirection = glm::normalize(glm::vec3(glm::inverse(CameraManager::GetViewMatrix()) * rayEye));
-		g_rayOrigin = glm::vec3(glm::inverse(CameraManager::GetViewMatrix())[3]);
+		g_rayDirection = glm::normalize(glm::vec3(glm::inverse(viewMatrx) * rayEye));
+		g_rayOrigin = glm::vec3(glm::inverse(viewMatrx)[3]);
 	}
 
 	glm::vec3 GetMouseRayPlaneIntersection(glm::vec3 planeOrigin, glm::vec3 planeNormal) {

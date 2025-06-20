@@ -17,9 +17,9 @@ public:
 
 	Shader();
 
-	void generate(const char* vertexShaderPath, const char* fragmentShaderPath);
+	void generate(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath);
 
-	void load(const char* vertexShaderPath, const char* fragmentShaderPath);
+	void load(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath = nullptr);
 
 	/*static void hotLoadShaders(std::vector<Shader*>& shaders);*/
 

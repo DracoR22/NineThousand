@@ -3,7 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "./Frustum.h"
 #include "../Input/Keyboard.h"
+#include "../Core/Window.h"
 
 enum class CameraDirection {
 	NONE,
@@ -16,6 +18,10 @@ enum class CameraDirection {
 };
 
 class Camera {
+private:
+	glm::mat4 m_viewMatrix;
+	glm::mat4 m_projectionMatrix;
+	Frustum m_frustum;
 public:
 	Camera() = default;
 	Camera(glm::vec3 position);
@@ -33,6 +39,8 @@ public:
 	float speed;
 	float zoom;
 
+	void Update();
+
 	void updateCameraDirection(double dx, double dy);
 	void updateCameraPos(CameraDirection dir, double dt);
 	void updateCameraZoom(double dy);
@@ -41,7 +49,9 @@ public:
 
 	float getZoom();
 
-	glm::mat4 getViewMatrix();
+	glm::mat4 GetViewMatrix();
+	glm::mat4 GetProjectionMatrix();
+	Frustum& GetFrustum() { return m_frustum; };
 
 	static Camera defaultCamera;
 

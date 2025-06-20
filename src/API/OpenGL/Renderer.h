@@ -9,7 +9,6 @@
 
 #include "../../Camera/Camera.h"
 #include "../../Camera/CameraManager.h"
-#include "../../Camera/Frustum.h"
 
 #include "../../Input/Keyboard.h"
 #include "../../Input/Mouse.h"
@@ -34,20 +33,23 @@
 
 #include "../../Utils/Utils.h"
 
-#define GLCheckError() \
-{ \
-    GLenum err; \
-    while ((err = glGetError()) != GL_NO_ERROR) \
-        std::cerr << "OpenGL Error: " << err << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-}
+enum class RendererType {
+	FORWARD,
+	DEFERRED
+};
 
 namespace OpenGLRenderer {
 	void Init();
-	void RenderFrame();
+	void Render();
 
 	// render passes
-	void ShadowPass(); // TODO!
+	void GBufferPass();
+	void ShadowPass();
 	void WaterRefractionPass(); // TODO!
+
+	Shader* GetShaderByName(const std::string& name);
+	FrameBuffer* GetFrameBufferByName(const std::string& name);
+	ShadowMap& GetShadowMap();
 
 	// stuff for the editor
 	RendererCommon::PostProcessMode GetPostProcessMode();
@@ -55,6 +57,7 @@ namespace OpenGLRenderer {
 
 	float GetExposure();
 	void SetExposureValue(float value);
+
 	float GetGammaValue();
 	void ChangeGammaValue(float value);
 
