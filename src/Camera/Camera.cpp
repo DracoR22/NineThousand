@@ -15,7 +15,7 @@ cameraFront(glm::vec3(1.0f, 0.0f, 0.0f)) {
 
 void Camera::Update() {
     m_viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    m_projectionMatrix = glm::perspective(glm::radians(zoom), (float)Window::currentWidth / (float)Window::currentHeight, 0.1f, 500.0f);
+    m_projectionMatrix = glm::perspective(glm::radians(zoom), (float)Window::currentWidth / (float)Window::currentHeight, m_nearPlane, m_farPlane);
     m_frustum.Update(m_projectionMatrix * m_viewMatrix);
 }
 
@@ -72,7 +72,6 @@ glm::mat4 Camera::GetProjectionMatrix() {
     return m_projectionMatrix;
 }
 
-// get zoom value for camera
 float Camera::getZoom() {
     return zoom;
 }

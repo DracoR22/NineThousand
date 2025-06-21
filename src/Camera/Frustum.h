@@ -23,6 +23,8 @@ public:
     float SignedDistance(const glm::vec3& point, const FrustumPlane& plane) const;
     bool IntersectsAABB(const AABB& aabb);
     bool IntersectsAABBFast(const AABB& aabb);
+
+    std::vector<glm::vec4> GetFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
 };
 
 

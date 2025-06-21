@@ -113,3 +113,28 @@ glm::vec3 Frustum::IntersectPlanes(const glm::vec3& n1, float d1, const glm::vec
     glm::vec3 result = -(d1 * crossN2N3 + d2 * glm::cross(n3, n1) + d3 * glm::cross(n1, n2)) / denom;
     return result;
 }
+
+std::vector<glm::vec4> Frustum::GetFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
+{
+    const auto inv = glm::inverse(proj * view);
+
+    std::vector<glm::vec4> frustumCorners;
+    for (unsigned int x = 0; x < 2; ++x)
+    {
+        for (unsigned int y = 0; y < 2; ++y)
+        {
+            for (unsigned int z = 0; z < 2; ++z)
+            {
+                const glm::vec4 pt =
+                    inv * glm::vec4(
+                        2.0f * x - 1.0f,
+                        2.0f * y - 1.0f,
+                        2.0f * z - 1.0f,
+                        1.0f);
+                frustumCorners.push_back(pt / pt.w);
+            }
+        }
+    }
+
+    return frustumCorners;
+}

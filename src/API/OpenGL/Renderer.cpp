@@ -22,7 +22,6 @@ namespace OpenGLRenderer {
 		Shader waterShader;
 		Shader simpleTextureShader;
 		Shader outlineAnimatedShader;
-		Shader shadowCubeMapShader;
 		Shader deferredLightingShader;
 	} g_shaders;
 
@@ -58,6 +57,11 @@ namespace OpenGLRenderer {
 	unsigned int lightQuadVAO = 0;
 	unsigned int lightQuadVBO;
 
+	unsigned int lightFBO;
+	unsigned int lightDepthMaps;
+	constexpr unsigned int depthMapResolution = 4096;
+	
+
 	void Init() {
 		Player& player = Game::GetPLayerByIndex(0);
 
@@ -75,7 +79,6 @@ namespace OpenGLRenderer {
 		g_shaders.waterShader.load("water.vert", "water.frag");
 		g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 		g_shaders.outlineAnimatedShader.load("outline_animated.vert", "outline_animated.frag");
-		g_shaders.shadowCubeMapShader.load("shadow_cube_map.vert", "shadow_cube_map.frag", "shadow_cube_map.geom");
 	
 		g_shaders.deferredLightingShader.load("deferred_lighting.vert", "deferred_lighting.frag");
 
@@ -99,6 +102,7 @@ namespace OpenGLRenderer {
 		g_Shaders["Skybox"].load("skybox.vert", "skybox.frag");
 		g_Shaders["ShadowMap"].load("shadow_map.vert", "shadow_map.frag");
 		g_Shaders["GBuffer"].load("g_buffer.vert", "g_buffer.frag");
+		g_Shaders["CSM"].load("csm_depth.vert", "csm_depth.frag", "csm_depth.geom");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
@@ -206,10 +210,40 @@ namespace OpenGLRenderer {
 			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
 		}*/
 
+		////////////// REFACTOR //////////////////
+		
+		/*
+		glGenFramebuffers(1, &lightFBO);
+		glGenTextures(1, &lightDepthMaps);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, lightDepthMaps);
+		glTexImage3D(
+			GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, depthMapResolution, depthMapResolution, int(shadowCascadeLevels.size()) + 1,
+			0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+		constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lightDepthMaps, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+
+		int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!";
+			throw 0;
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
 		// Load shadow maps
 		g_shadowMap.Init();
-		//g_renderData.cubeMapShadowMap.InitCubeMap();
-
 	}
 
 	void Render() {
@@ -236,6 +270,8 @@ namespace OpenGLRenderer {
 		float aspect = static_cast<float>(Window::currentWidth) / static_cast<float>(Window::currentHeight);
 
 		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
+		Camera* camera = CameraManager::GetActiveCamera();
+		std::vector<float> shadowCascadeLevels{ camera->GetFarPlane() / 50.0f, camera->GetFarPlane() / 25.0f, camera->GetFarPlane() / 10.0f, camera->GetFarPlane() / 2.0f };
 		
 		if (g_rendererType == RendererType::DEFERRED) {
 			GBufferPass();
@@ -243,15 +279,34 @@ namespace OpenGLRenderer {
 
 		ShadowPass();
 
-
-		// WATER REFRACTION PASS 
 		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
 		glm::mat4 lightView = glm::mat4(1.0f);
 		if (!g_renderData.sceneLights.empty()) {
-			lightView = glm::lookAt(g_renderData.sceneLights[0].position, Scene::GetGameObjectByName("Cube0")->GetPosition(), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+				glm::vec3(0.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		glm::mat4 lightProjection = orthogonalProjection * lightView;
-		float far = 25.0f;
+		float far = 7.5f;
+
+		/*Shader* csmDepthShader = GetShaderByName("CSM");
+
+		glEnable(GL_DEPTH_TEST);
+		glViewport(0, 0, depthMapResolution, depthMapResolution);
+		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glCullFace(GL_FRONT);  
+		csmDepthShader->activate();
+		csmDepthShader->setMat4("model", Scene::GetGameObjectByName("Cube0")->GetModelMatrix());
+		AssetManager::DrawModel("Cube", *csmDepthShader);
+		glCullFace(GL_BACK);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+
+		// WATER REFRACTION PASS 
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
 		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -276,8 +331,8 @@ namespace OpenGLRenderer {
 		}
 		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
 		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, g_renderData.cubeMapShadowMap.GetTextureID());
+		/*glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, g_renderData.cubeMapShadowMap.GetTextureID());*/
 		g_shaders.lightingShader.setFloat("farPlane", far);
 		g_shaders.lightingShader.setInt("shadowMap", 3);
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
@@ -441,11 +496,15 @@ namespace OpenGLRenderer {
 			}
 			g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
 			g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
+			g_shaders.lightingShader.setFloat("farPlane", far);
+			//g_shaders.lightingShader.setInt("cascadeCount", shadowCascadeLevels.size());
+			/*for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+			{
+				g_shaders.lightingShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
+			}*/
 			g_shaders.lightingShader.setInt("shadowMap", 3);
 
 			for (GameObject& gameObject : Scene::GetGameObjects()) {
-
-
 				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
 				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
 
@@ -864,5 +923,61 @@ namespace OpenGLRenderer {
 		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
 		g_renderFrameBuffers.refractionFrameBuffer.Cleanup();
 		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();
+	}
+
+	 glm::mat4 GetLightSpaceMatrix(const float nearPlane, const float farPlane) {
+		Frustum& frustum = CameraManager::GetActiveCamera()->GetFrustum();
+		const auto proj = CameraManager::GetActiveCamera()->GetProjectionMatrix();
+		const auto corners = frustum.GetFrustumCornersWorldSpace(proj, CameraManager::GetActiveCamera()->GetViewMatrix());
+
+		glm::vec3 center = glm::vec3(0, 0, 0);
+		for (const auto& v : corners)
+		{
+			center += glm::vec3(v);
+		}
+		center /= corners.size();
+
+		glm::vec3 lightDir = glm::normalize(glm::vec3(2.0f, -4.0f, 1.0f));
+
+		const auto lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		float minX = std::numeric_limits<float>::max();
+		float maxX = std::numeric_limits<float>::lowest();
+		float minY = std::numeric_limits<float>::max();
+		float maxY = std::numeric_limits<float>::lowest();
+		float minZ = std::numeric_limits<float>::max();
+		float maxZ = std::numeric_limits<float>::lowest();
+		for (const auto& v : corners)
+		{
+			const auto trf = lightView * v;
+			minX = std::min(minX, trf.x);
+			maxX = std::max(maxX, trf.x);
+			minY = std::min(minY, trf.y);
+			maxY = std::max(maxY, trf.y);
+			minZ = std::min(minZ, trf.z);
+			maxZ = std::max(maxZ, trf.z);
+		}
+
+		// Tune this parameter according to the scene
+		constexpr float zMult = 10.0f;
+		if (minZ < 0)
+		{
+			minZ *= zMult;
+		}
+		else
+		{
+			minZ /= zMult;
+		}
+		if (maxZ < 0)
+		{
+			maxZ /= zMult;
+		}
+		else
+		{
+			maxZ *= zMult;
+		}
+
+		const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		return lightProjection * lightView;
 	}
 }
