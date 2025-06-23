@@ -17,11 +17,12 @@ namespace Engine {
 		Scene::LoadSceneFromFile("resources/levels/test.json");
 		Scene::CreateWaterPlaneObjects();
 
+		CameraManager::AddCamera(&player.m_camera);
+
 		OpenGLRenderer::Init();
 		Editor::Init();
 		EditorPanel::Init();
 
-		CameraManager::AddCamera(&player.m_camera);
 		CameraManager::AddCamera(&Editor::GetCamera());
 
 		while (!Window::WindowShouldClose()) {

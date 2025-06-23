@@ -49,6 +49,7 @@ namespace OpenGLRenderer {
 
 	Shader* GetShaderByName(const std::string& name);
 	FrameBuffer* GetFrameBufferByName(const std::string& name);
+	ShadowMap* GetShadowMapByName(const std::string& name);
 	ShadowMap& GetShadowMap();
 
 	// stuff for the editor

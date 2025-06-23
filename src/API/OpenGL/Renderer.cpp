@@ -7,6 +7,8 @@ namespace OpenGLRenderer {
 
 	std::unordered_map<std::string, Shader> g_Shaders;
 	std::unordered_map<std::string, FrameBuffer> g_frameBuffers;
+	std::unordered_map<std::string, ShadowMap> g_shadowMaps;
+
 	ShadowMap g_shadowMap;
 
 	struct Shaders {
@@ -59,14 +61,14 @@ namespace OpenGLRenderer {
 
 	unsigned int lightFBO;
 	unsigned int lightDepthMaps;
-	constexpr unsigned int depthMapResolution = 4096;
-	
+	constexpr unsigned int depthMapResolution = 1024;
+	std::vector<float> g_shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
+	unsigned int matricesUBO;
 
 	void Init() {
 		Player& player = Game::GetPLayerByIndex(0);
 
 		// load shaders
-		
 		g_shaders.animationShader.load("animated.vert", "animated.frag");
 		g_shaders.sobelEdgesShader.load("sobel_edges.vert", "sobel_edges.frag");
 		g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
@@ -164,8 +166,7 @@ namespace OpenGLRenderer {
 		cubeLampLight2.type = LightType::POINT_LIGHT;
 
 		g_renderData.sceneLights.push_back(cubeLampLight);
-		
-			g_renderData.sceneLights.push_back(cubeLampLight2);
+	    g_renderData.sceneLights.push_back(cubeLampLight2);
 		
 
 		// Load frame buffers
@@ -210,40 +211,17 @@ namespace OpenGLRenderer {
 			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
 		}*/
 
-		////////////// REFACTOR //////////////////
-		
-		/*
-		glGenFramebuffers(1, &lightFBO);
-		glGenTextures(1, &lightDepthMaps);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, lightDepthMaps);
-		glTexImage3D(
-			GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, depthMapResolution, depthMapResolution, int(shadowCascadeLevels.size()) + 1,
-			0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	
 
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		// load shadow maps
+		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));
 
-		constexpr float bordercolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, bordercolor);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lightDepthMaps, 0);
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-
-		int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE)
-		{
-			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!";
-			throw 0;
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
-
-		// Load shadow maps
-		g_shadowMap.Init();
+		// load ubos
+		glGenBuffers(1, &matricesUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	void Render() {
@@ -267,44 +245,24 @@ namespace OpenGLRenderer {
 		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
 		glm::mat4 viewMatrix = CameraManager::GetActiveCamera()->GetViewMatrix();
 
-		float aspect = static_cast<float>(Window::currentWidth) / static_cast<float>(Window::currentHeight);
-
 		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
 		Camera* camera = CameraManager::GetActiveCamera();
-		std::vector<float> shadowCascadeLevels{ camera->GetFarPlane() / 50.0f, camera->GetFarPlane() / 25.0f, camera->GetFarPlane() / 10.0f, camera->GetFarPlane() / 2.0f };
 		
 		if (g_rendererType == RendererType::DEFERRED) {
 			GBufferPass();
 		}
 
-		ShadowPass();
-
-		glm::mat4 orthogonalProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-		glm::mat4 lightView = glm::mat4(1.0f);
-		if (!g_renderData.sceneLights.empty()) {
-
-			lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
-				glm::vec3(0.0f, 0.0f, 0.0f),
-				glm::vec3(0.0f, 1.0f, 0.0f));
+		// 0. UBO setup
+		const auto lightMatrices = Utils::GetLightSpaceMatrices(camera->GetNearPlane(), camera->GetFarPlane(), g_shadowCascadeLevels, (float)Window::currentWidth, (float)Window::currentHeight, camera->getZoom(), camera->GetViewMatrix());
+		glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
+		for (size_t i = 0; i < lightMatrices.size(); ++i)
+		{
+			glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
 		}
-		glm::mat4 lightProjection = orthogonalProjection * lightView;
-		float far = 7.5f;
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		/*Shader* csmDepthShader = GetShaderByName("CSM");
 
-		glEnable(GL_DEPTH_TEST);
-		glViewport(0, 0, depthMapResolution, depthMapResolution);
-		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glCullFace(GL_FRONT);  
-		csmDepthShader->activate();
-		csmDepthShader->setMat4("model", Scene::GetGameObjectByName("Cube0")->GetModelMatrix());
-		AssetManager::DrawModel("Cube", *csmDepthShader);
-		glCullFace(GL_BACK);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+		ShadowPass();
 
 		// WATER REFRACTION PASS 
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
@@ -315,7 +273,6 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.setMat4("view", viewMatrix);
 		g_shaders.lightingShader.setMat4("projection", projectionMatrix);
 
-		g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
@@ -333,7 +290,7 @@ namespace OpenGLRenderer {
 		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 		/*glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, g_renderData.cubeMapShadowMap.GetTextureID());*/
-		g_shaders.lightingShader.setFloat("farPlane", far);
+		g_shaders.lightingShader.setFloat("farPlane", camera->GetFarPlane());
 		g_shaders.lightingShader.setInt("shadowMap", 3);
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
 			if (gameObject.GetName() == "Plane0") {
@@ -374,7 +331,6 @@ namespace OpenGLRenderer {
 		g_shaders.animationShader.activate();
 		g_shaders.animationShader.setMat4("view", viewMatrix);
 		g_shaders.animationShader.setMat4("projection", projectionMatrix);
-		g_shaders.animationShader.setMat4("lightProjection", lightProjection);
 		g_shaders.animationShader.setInt("noLights", g_renderData.sceneLights.size());
 		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
@@ -423,7 +379,6 @@ namespace OpenGLRenderer {
 			g_shaders.deferredLightingShader.setInt("baseTexture", 1);
 			g_shaders.deferredLightingShader.setInt("normalTexture", 2);
 			g_shaders.deferredLightingShader.setInt("rmaTexture", 3);
-			g_shaders.deferredLightingShader.setMat4("lightProjection", lightProjection);
 			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 				std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
@@ -476,11 +431,12 @@ namespace OpenGLRenderer {
 	
 
 		// LIGHTING PASS
+		ShadowMap* csmDepth = GetShadowMapByName("CSM");
+
 		if (g_rendererType == RendererType::FORWARD) {
 			g_shaders.lightingShader.activate();
 			g_shaders.lightingShader.setMat4("view", viewMatrix);
 			g_shaders.lightingShader.setMat4("projection", projectionMatrix);
-			g_shaders.lightingShader.setMat4("lightProjection", lightProjection);
 			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
 				std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
@@ -495,13 +451,16 @@ namespace OpenGLRenderer {
 				g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
 			}
 			g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-			g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-			g_shaders.lightingShader.setFloat("farPlane", far);
-			//g_shaders.lightingShader.setInt("cascadeCount", shadowCascadeLevels.size());
-			/*for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
+			g_shaders.lightingShader.set3Float("camPos", camera->cameraPos);
+			g_shaders.lightingShader.setVec3("lightDir", glm::normalize(glm::vec3(20.0f, 50, 20.0f)));
+			g_shaders.lightingShader.setFloat("farPlane", camera->GetFarPlane());
+			g_shaders.lightingShader.setInt("cascadeCount", g_shadowCascadeLevels.size());
+			for (size_t i = 0; i < g_shadowCascadeLevels.size(); ++i)
 			{
-				g_shaders.lightingShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
-			}*/
+				g_shaders.lightingShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", g_shadowCascadeLevels[i]);
+			}
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, csmDepth->GetTextureID());
 			g_shaders.lightingShader.setInt("shadowMap", 3);
 
 			for (GameObject& gameObject : Scene::GetGameObjects()) {
@@ -866,6 +825,11 @@ namespace OpenGLRenderer {
 		return (it != g_frameBuffers.end()) ? &it->second : nullptr;
 	}
 
+	ShadowMap* GetShadowMapByName(const std::string& name) {
+		auto it = g_shadowMaps.find(std::string{ name });
+		return (it != g_shadowMaps.end()) ? &it->second : nullptr;
+	}
+
 	ShadowMap& GetShadowMap() {
 		return g_shadowMap;
 	}
@@ -923,61 +887,5 @@ namespace OpenGLRenderer {
 		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
 		g_renderFrameBuffers.refractionFrameBuffer.Cleanup();
 		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();
-	}
-
-	 glm::mat4 GetLightSpaceMatrix(const float nearPlane, const float farPlane) {
-		Frustum& frustum = CameraManager::GetActiveCamera()->GetFrustum();
-		const auto proj = CameraManager::GetActiveCamera()->GetProjectionMatrix();
-		const auto corners = frustum.GetFrustumCornersWorldSpace(proj, CameraManager::GetActiveCamera()->GetViewMatrix());
-
-		glm::vec3 center = glm::vec3(0, 0, 0);
-		for (const auto& v : corners)
-		{
-			center += glm::vec3(v);
-		}
-		center /= corners.size();
-
-		glm::vec3 lightDir = glm::normalize(glm::vec3(2.0f, -4.0f, 1.0f));
-
-		const auto lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		float minX = std::numeric_limits<float>::max();
-		float maxX = std::numeric_limits<float>::lowest();
-		float minY = std::numeric_limits<float>::max();
-		float maxY = std::numeric_limits<float>::lowest();
-		float minZ = std::numeric_limits<float>::max();
-		float maxZ = std::numeric_limits<float>::lowest();
-		for (const auto& v : corners)
-		{
-			const auto trf = lightView * v;
-			minX = std::min(minX, trf.x);
-			maxX = std::max(maxX, trf.x);
-			minY = std::min(minY, trf.y);
-			maxY = std::max(maxY, trf.y);
-			minZ = std::min(minZ, trf.z);
-			maxZ = std::max(maxZ, trf.z);
-		}
-
-		// Tune this parameter according to the scene
-		constexpr float zMult = 10.0f;
-		if (minZ < 0)
-		{
-			minZ *= zMult;
-		}
-		else
-		{
-			minZ /= zMult;
-		}
-		if (maxZ < 0)
-		{
-			maxZ /= zMult;
-		}
-		else
-		{
-			maxZ *= zMult;
-		}
-
-		const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-		return lightProjection * lightView;
 	}
 }
