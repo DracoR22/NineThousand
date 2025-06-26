@@ -1,4 +1,4 @@
-#include "../Renderer.h"
+#include "./Renderer.h"
 
 void OpenGLRenderer::GBufferPass() {
 	Shader* gBufferShader = GetShaderByName("GBuffer");

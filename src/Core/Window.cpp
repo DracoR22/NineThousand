@@ -1,11 +1,11 @@
 #include "Window.h"
 
 namespace Window {
-	const int SCR_WIDTH = 1280;
-	const int SCR_HEIGHT = 720;
+   const int SCR_WIDTH = 1280;
+   const int SCR_HEIGHT = 720;
 
-	int currentWidth = SCR_WIDTH;
-	int currentHeight = SCR_HEIGHT;
+	int m_windowWidth = SCR_WIDTH;
+	int m_windowHeight = SCR_HEIGHT;
 
 	GLFWwindow* window = nullptr;
 
@@ -33,7 +33,7 @@ namespace Window {
 		}
 
 		glfwMakeContextCurrent(window);
-		/*glfwSwapInterval(1);*/
+		glfwSwapInterval(0);
 		glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
 		// inputs
@@ -114,8 +114,8 @@ namespace Window {
 	}
 
 	void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
-		currentWidth = width;
-		currentHeight = height;
+		m_windowWidth = width;
+		m_windowHeight = height;
 
 		glViewport(0, 0, width, height);
 	}
@@ -130,5 +130,4 @@ namespace Window {
 			SetWindowShouldClose(true);
 		}
 	}
-
 }

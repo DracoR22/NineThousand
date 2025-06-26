@@ -15,7 +15,7 @@
 #include "../Core/Window.h"
 #include "../Core/AssetManager.h"
 
-#include "../API/OpenGL/Renderer.h"
+#include "../API/OpenGL/Renderer/Renderer.h"
 
 #include "../Camera/Camera.h"
 #include "../Camera/CameraManager.h"

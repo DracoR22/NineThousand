@@ -6,6 +6,24 @@ namespace EditorPanel {
 	std::string g_selectedObjectName = "None";
 	int g_selectedModelIndex = 0;
 
+	const char* g_resolutionOptions[] = {
+	"1280 x 720",
+	"1600 x 900",
+	"1920 x 1080",
+	"2560 x 1440",
+	"3840 x 2160"
+	};
+
+	glm::vec2 g_resolutionValues[] = {
+		{1280, 720},
+		{1600, 900},
+		{1920, 1080},
+		{2560, 1440},
+		{3840, 2160}
+	};
+
+	int g_currentResolutionIndex = 0;
+
 	void Init() {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -88,6 +106,22 @@ namespace EditorPanel {
 					}
 					if (ImGui::Selectable("Sharpen", postProcessMode == RendererCommon::PostProcessMode::SHARPEN)) {
 						OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::SHARPEN);
+					}
+					ImGui::EndCombo();
+				}
+
+				glm::vec2 renderResolution = OpenGLRenderer::GetRenderResolution();
+				if (ImGui::BeginCombo("Render Resolution", g_resolutionOptions[g_currentResolutionIndex])) {
+					for (int i = 0; i < IM_ARRAYSIZE(g_resolutionOptions); i++) {
+						bool isSelected = (g_currentResolutionIndex == i);
+						if (ImGui::Selectable(g_resolutionOptions[i], isSelected)) {
+							g_currentResolutionIndex = i;
+
+							// Apply the selected resolution
+							OpenGLRenderer::SetRenderResolution(g_resolutionValues[i].x, g_resolutionValues[i].y);
+						}
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
 				}

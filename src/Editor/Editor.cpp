@@ -65,8 +65,8 @@ namespace Editor {
 	void UpdateMouseRays() {
 		glm::mat4 viewMatrx = CameraManager::GetActiveCamera()->GetViewMatrix();
 		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
-		float x = (2.0f * Mouse::getMouseX()) / Window::currentWidth -1.0f;
-		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::currentHeight;
+		float x = (2.0f * Mouse::getMouseX()) / Window::m_windowWidth -1.0f;
+		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::m_windowHeight;
 		glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
 
 		glm::vec4 rayEye = glm::inverse(projectionMatrix) * rayClip;

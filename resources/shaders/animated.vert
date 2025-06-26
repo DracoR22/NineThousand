@@ -16,6 +16,7 @@ out mat3 TBN;
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
+uniform mat3 normalMatrix;
 
 uniform mat4 lightProjection;
 
@@ -24,8 +25,8 @@ const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 finalBonesMatrices[MAX_BONES];
 
 void main() {
-  vec4 totalPosition = vec4(0.0f);
-  vec3 totalNormal = vec3(0.0f);
+  vec4 totalPosition = vec4(0.0);
+  vec3 totalNormal = vec3(0.0);
   vec3 totalTangent = vec3(0.0);
 
     for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
@@ -49,17 +50,17 @@ void main() {
    }
 
     WorldPos = vec3(model * totalPosition);
-    Normal = normalize(totalNormal);
     TexCoords = aTex;
 
     WorldPosLight = lightProjection * vec4(WorldPos, 1.0);
 
-    vec3 N = Normal;
-    vec3 T = normalize(totalTangent);
-    T = normalize(T - dot(T, N) * N);
-    vec3 B = cross(N, T);
+    //mat3 normalMatrix = transpose(inverse(mat3(model)));
+    Normal = normalize(normalMatrix * totalNormal);
+    vec3 T = normalize(mat3(model) * totalTangent);
+    T = normalize(T - dot(T, Normal) * Normal);
+    vec3 B = cross(Normal, T);
 
-    TBN = mat3(T, B, N);
+    TBN = mat3(T, B, Normal);
 
     mat4 viewModel = view * model;
     gl_Position = projection * viewModel * totalPosition;

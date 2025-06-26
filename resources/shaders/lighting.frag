@@ -70,18 +70,19 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
     }
   
     vec3 normal = normalize(Normal);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount) {
-        bias *= 1 / (farPlane * biasModifier);
+        bias *= 1.0 / (farPlane * biasModifier);
     }
     else {
-        bias *= 1 / (cascadePlaneDistances[layer] * biasModifier);
+        bias *= 1.0 / (cascadePlaneDistances[layer] * biasModifier);
     }
 
     // PCF
     float shadow = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+    float diskRadius = 1.0;
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
@@ -90,14 +91,8 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
             shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
         }    
     }
-    shadow /= 9.0;
+    shadow /= 20.0;
 
-    // correct shadow color
-    shadow *= 0.8;
-
-    if(projCoords.z > 1.0) {
-      shadow = 0.0;
-    }
     
     return shadow;
 }

@@ -52,7 +52,7 @@ namespace Utils {
 		return frustumCorners;
 	}
 
-	glm::mat4 GetLightSpaceMatrix(const float nearPlane, const float farPlane, float windowWidth, float windowHeight, float fov, glm::mat4 viewMatrix) {
+	glm::mat4 GetLightSpaceMatrix(const float nearPlane, const float farPlane, float windowWidth, float windowHeight, float fov, glm::mat4& viewMatrix) {
 		glm::mat4 cascadeProj = glm::perspective(
 			glm::radians(fov),
 			windowWidth / windowHeight,
@@ -72,7 +72,7 @@ namespace Utils {
 
 		const int shadowMapResolution = 1024;
 
-		const auto lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		float minX = std::numeric_limits<float>::max();
 		float maxX = std::numeric_limits<float>::lowest();
@@ -101,16 +101,17 @@ namespace Utils {
 		float snapMinY = std::floor(minY / texelSizeY) * texelSizeY;
 		float snapMaxY = snapMinY + std::ceil(height / texelSizeY) * texelSizeY;
 
-		constexpr float zMult = 10.0f;
+		constexpr float zMult = 20.0f;
 		float zNear = (minZ < 0 ? minZ * zMult : minZ / zMult);
 		float zFar = (maxZ < 0 ? maxZ / zMult : maxZ * zMult);
 
-		const glm::mat4 lightProjection = glm::ortho(snapMinX, snapMaxX, snapMinY, snapMaxY, zNear, zFar);
-		return lightProjection * lightView;
+		glm::mat4 lightProjection = glm::ortho(snapMinX, snapMaxX, snapMinY, snapMaxY, zNear, zFar);
+		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+		
+		return lightSpaceMatrix;
 	}
 
-	std::vector<glm::mat4> GetLightSpaceMatrices(const float nearPlane, const float farPlane, std::vector<float>& shadowCascadeLevels, float windowWidth, float windowHeight, float fov, glm::mat4 viewMatrix)
-	{
+	std::vector<glm::mat4> GetLightSpaceMatrices(const float nearPlane, const float farPlane, std::vector<float>& shadowCascadeLevels, float windowWidth, float windowHeight, float fov, glm::mat4& viewMatrix) {
 		std::vector<glm::mat4> ret;
 		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 		{

@@ -54,11 +54,11 @@ namespace UIManager {
 			g_uiTextElements[2].text = currentAmmoOss.str();
 			float textWidth = Text2D::GetTextWidth(g_uiTextElements[2].text, g_uiTextElements[2].size);
 			float textHeight = Text2D::GetTextHeight(g_uiTextElements[2].size);
-			g_uiTextElements[2].posX = Window::currentWidth - textWidth - 103.0f;
-			g_uiTextElements[2].posY = Window::currentHeight - textHeight - 70.0f;
+			g_uiTextElements[2].posX = Window::m_windowWidth - textWidth - 103.0f;
+			g_uiTextElements[2].posY = Window::m_windowHeight - textHeight - 70.0f;
 
-			g_uiTextElements[3].posX = Window::currentWidth - textWidth - 30.0f;
-			g_uiTextElements[3].posY = Window::currentHeight - textHeight - 50.0f;
+			g_uiTextElements[3].posX = Window::m_windowWidth - textWidth - 30.0f;
+			g_uiTextElements[3].posY = Window::m_windowHeight - textHeight - 50.0f;
 		}
 	}
 

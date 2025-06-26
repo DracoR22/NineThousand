@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+
 #include <iostream>
 #include <string>
 
@@ -13,8 +15,8 @@ namespace Window {
  extern	const int SCR_WIDTH;
  extern	const int SCR_HEIGHT;
 
- extern	int currentWidth;
- extern	int currentHeight;
+ extern	int m_windowWidth;
+ extern	int m_windowHeight;
 
  extern	GLFWwindow* window;
 

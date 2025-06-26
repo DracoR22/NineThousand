@@ -283,10 +283,6 @@ namespace Game {
 		}
 		gunRotation = gunRotation * localRotationFix;
 
-		// TODO: use a game object: model + physics collition
-		/*weaponModel->setPosition(gunPosition);
-		weaponModel->setRotation(gunRotation);*/
-		
 		g_players[0].m_currentWeaponGameObject.SetPosition(gunPosition);
 		g_players[0].m_currentWeaponGameObject.SetRotationMatrix(gunRotation);
 	}

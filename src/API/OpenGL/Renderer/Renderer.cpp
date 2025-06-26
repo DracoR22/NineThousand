@@ -8,6 +8,7 @@ namespace OpenGLRenderer {
 	std::unordered_map<std::string, Shader> g_Shaders;
 	std::unordered_map<std::string, FrameBuffer> g_frameBuffers;
 	std::unordered_map<std::string, ShadowMap> g_shadowMaps;
+	std::unordered_map<std::string, UBO> g_ubos;
 
 	ShadowMap g_shadowMap;
 
@@ -59,11 +60,9 @@ namespace OpenGLRenderer {
 	unsigned int lightQuadVAO = 0;
 	unsigned int lightQuadVBO;
 
-	unsigned int lightFBO;
-	unsigned int lightDepthMaps;
-	constexpr unsigned int depthMapResolution = 1024;
 	std::vector<float> g_shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
-	unsigned int matricesUBO;
+
+	glm::vec2 g_renderResolution = { 1280, 720 };
 
 	void Init() {
 		Player& player = Game::GetPLayerByIndex(0);
@@ -168,10 +167,11 @@ namespace OpenGLRenderer {
 		g_renderData.sceneLights.push_back(cubeLampLight);
 	    g_renderData.sceneLights.push_back(cubeLampLight2);
 		
+		glm::vec2 viewPortResolution = GetRenderResolution();
 
 		// Load frame buffers
 		if (g_rendererType == RendererType::DEFERRED) {
-			g_frameBuffers["GBuffer"] = FrameBuffer(Window::currentWidth, Window::currentHeight);
+			g_frameBuffers["GBuffer"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 			g_frameBuffers["GBuffer"].Bind();
 			g_frameBuffers["GBuffer"].CreateAttachment("WorldPosition", GL_RGBA16F);
 			g_frameBuffers["GBuffer"].CreateAttachment("BaseColor", GL_RGBA8);
@@ -182,21 +182,21 @@ namespace OpenGLRenderer {
 			g_frameBuffers["GBuffer"].Unbind();
 		}
 
-		g_renderFrameBuffers.postProcessingFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.postProcessingFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
 		g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
 		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment("hdrAttachment", GL_RGBA16F);
 		g_renderFrameBuffers.postProcessingFrameBuffer.CreateDepthAttachment();
 		g_renderFrameBuffers.postProcessingFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.postProcessingFrameBuffer.Unbind();
 
-		g_renderFrameBuffers.refractionFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.refractionFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
 		g_renderFrameBuffers.refractionFrameBuffer.CreateAttachment("refractionAttachment", GL_RGBA16F);
 		g_renderFrameBuffers.refractionFrameBuffer.CreateDepthTextureAttachment();
 		g_renderFrameBuffers.refractionFrameBuffer.DrawBuffer();
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
 
-		g_renderFrameBuffers.mssaFrameBuffer.Create(Window::currentWidth, Window::currentHeight);
+		g_renderFrameBuffers.mssaFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
 		g_renderFrameBuffers.mssaFrameBuffer.Bind();
 		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment("msaaAttachment");
 		g_renderFrameBuffers.mssaFrameBuffer.DrawBuffer();
@@ -211,17 +211,12 @@ namespace OpenGLRenderer {
 			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
 		}*/
 
-	
-
 		// load shadow maps
 		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));
 
 		// load ubos
-		glGenBuffers(1, &matricesUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		g_ubos["CSM"] = UBO(sizeof(glm::mat4) * 16, 0);
+
 	}
 
 	void Render() {
@@ -252,21 +247,11 @@ namespace OpenGLRenderer {
 			GBufferPass();
 		}
 
-		// 0. UBO setup
-		const auto lightMatrices = Utils::GetLightSpaceMatrices(camera->GetNearPlane(), camera->GetFarPlane(), g_shadowCascadeLevels, (float)Window::currentWidth, (float)Window::currentHeight, camera->getZoom(), camera->GetViewMatrix());
-		glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-		for (size_t i = 0; i < lightMatrices.size(); ++i)
-		{
-			glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
-		}
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-
 		ShadowPass();
 
 		// WATER REFRACTION PASS 
 		g_renderFrameBuffers.refractionFrameBuffer.Bind();
-		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+		glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		g_shaders.lightingShader.activate();
@@ -302,22 +287,30 @@ namespace OpenGLRenderer {
 		}
 
 		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
-		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+		glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// ------ BIND FRAME BUFFERS -------
-		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() != Window::currentWidth || g_renderFrameBuffers.postProcessingFrameBuffer.GetHeight() != Window::currentHeight) {
-			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
-			g_renderFrameBuffers.refractionFrameBuffer.Resize(Window::currentWidth, Window::currentHeight);
+		/*if (g_renderFrameBuffers.refractionFrameBuffer.GetWidth() != Window::m_windowWidth) {
+			g_renderFrameBuffers.refractionFrameBuffer.Resize(Window::m_windowWidth, Window::m_windowHeight);
+		}*/
+
+	/*	if (Keyboard::KeyJustPressed(GLFW_KEY_4)) {
+			glm::vec2 newViewPort = glm::vec2(1920, 1080);
+			
+			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(newViewPort.x, newViewPort.y);
 			if (g_rendererType == RendererType::FORWARD) {
-				g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(Window::currentWidth, Window::currentHeight);
+				g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(newViewPort.x, newViewPort.y);
 			}
-		}
+
+			SetRenderResolution(newViewPort.x, newViewPort.y);
+		}*/
 
 		if (g_rendererType == RendererType::FORWARD) {
 			g_renderFrameBuffers.mssaFrameBuffer.Bind();
 		}
-		glViewport(0, 0, Window::currentWidth, Window::currentHeight);
+
+		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// STENCIL STUFF
@@ -352,6 +345,7 @@ namespace OpenGLRenderer {
 		amodel = glm::scale(amodel, player.m_currentWeaponGameObject.GetSize());
 		amodel *= player.m_currentWeaponGameObject.GetRotationMatrix();
 		g_shaders.animationShader.setMat4("model", amodel);
+		g_shaders.lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(amodel))));
 
 		auto& transforms = AssetManager::GetAnimatorByName(player.GetEquipedWeaponInfo()->name + "Animator")->GetFinalBoneMatrices();
 		for (int i = 0; i < transforms.size(); ++i) {
@@ -466,6 +460,7 @@ namespace OpenGLRenderer {
 			for (GameObject& gameObject : Scene::GetGameObjects()) {
 				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
 				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
+				g_shaders.lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
 
 				if (gameObject.IsSelected()) {
 					glStencilFunc(GL_ALWAYS, 1, 0xFF);
@@ -710,7 +705,7 @@ namespace OpenGLRenderer {
 
 		// ------ UI PASS -------------
 		glDisable(GL_DEPTH_TEST);
-		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::currentWidth, (float)Window::currentHeight, 0.0f);
+		glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::m_windowWidth, (float)Window::m_windowHeight, 0.0f);
 		Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");
 
 		g_shaders.uiShader.activate();
@@ -750,40 +745,16 @@ namespace OpenGLRenderer {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
 		}
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == Window::currentWidth) {
-			glBlitFramebuffer(0, 0, Window::currentWidth, Window::currentHeight, 0, 0, Window::currentWidth, Window::currentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == GetRenderResolution().x) {
+			glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
 
-		/*GLuint bloomTexture = g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(1);*/
-	/*	bool horizontal = true;
-		int blurIterations = 10;
 
-		_shaders.blurShader.activate(); 
-		_shaders.blurShader.setInt("image", 0);
-		glActiveTexture(GL_TEXTURE0);
-		for (int i = 0; i < blurIterations; i++) {
-			g_renderFrameBuffers.pingPongFrameBuffers[horizontal].Bind();
-			
-			
-			_shaders.blurShader.setBool("horizontal", horizontal);
-
-			glBindTexture(GL_TEXTURE_2D, i == 0 ? bloomTexture : g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));
-
-			glBindVertexArray(g_renderData.frameBufferQuadVAO);
-			glDisable(GL_DEPTH_TEST);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			g_renderFrameBuffers.pingPongFrameBuffers[horizontal].Unbind();
-
-			horizontal = !horizontal;
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
-
-		switch (g_renderData.currentMode)
-		{
+		switch (g_renderData.currentMode) {
 		case RendererCommon::PostProcessMode::NONE:
 			g_shaders.postProcessShader.activate();
 			g_shaders.postProcessShader.setInt("screenTexture", 0);
@@ -808,9 +779,6 @@ namespace OpenGLRenderer {
 		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
-		//*glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.pingPongFrameBuffers[!horizontal].GetColorAttachmentTextureIdByIndex(0));*/
-		//*g_renderFrameBuffers.postProcessingFrameBuffer.BindTextures();*/
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
@@ -830,8 +798,13 @@ namespace OpenGLRenderer {
 		return (it != g_shadowMaps.end()) ? &it->second : nullptr;
 	}
 
-	ShadowMap& GetShadowMap() {
-		return g_shadowMap;
+	UBO* GetUBOByName(const std::string& name) {
+		auto it = g_ubos.find(std::string{ name });
+		return (it != g_ubos.end()) ? &it->second : nullptr;
+	}
+
+	std::vector<float>& GetShadowCascadeLevels() {
+		return g_shadowCascadeLevels;
 	}
 
 	RendererCommon::PostProcessMode GetPostProcessMode() {
@@ -871,6 +844,20 @@ namespace OpenGLRenderer {
 
 	void UpdateLightPosition(int index, glm::vec3 newPosition) {
 		g_renderData.sceneLights[index].position = newPosition;
+	}
+
+	glm::vec2 GetRenderResolution() {
+		return g_renderResolution;
+	}
+
+	void SetRenderResolution(int x, int y) {
+		g_renderFrameBuffers.postProcessingFrameBuffer.Resize(x, y);
+		if (g_rendererType == RendererType::FORWARD) {
+			g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(x, y);
+		}
+
+		g_renderResolution.x = x;
+		g_renderResolution.y = y;
 	}
 
 	void Cleanup() {

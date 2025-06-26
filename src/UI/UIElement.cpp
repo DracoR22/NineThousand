@@ -6,22 +6,22 @@ glm::vec2 UIElement::CalculatePosition() {
         m_position = { 0.0f, 0.0f };
         break;
     case UIAlignment::TopRight:
-        m_position = { Window::currentWidth - m_size, 0.0f };
+        m_position = { Window::m_windowWidth - m_size, 0.0f };
         break;
     case UIAlignment::BottomLeft:
-        m_position = { 0.0f, Window::currentHeight - m_size };
+        m_position = { 0.0f, Window::m_windowHeight - m_size };
         break;
     case UIAlignment::BottomRight:
-        m_position = { Window::currentWidth - m_size, Window::currentHeight - m_size };
+        m_position = { Window::m_windowWidth - m_size, Window::m_windowHeight - m_size };
         break;
     case UIAlignment::Center:
-        m_position = { (Window::currentWidth - m_size) * 0.5f, (Window::currentHeight - m_size) * 0.5f };
+        m_position = { (Window::m_windowWidth - m_size) * 0.5f, (Window::m_windowHeight - m_size) * 0.5f };
         break;
     case UIAlignment::TopCenter:
-        m_position = { (Window::currentWidth - m_size) * 0.5f, 0.0f };
+        m_position = { (Window::m_windowWidth - m_size) * 0.5f, 0.0f };
         break;
     case UIAlignment::BottomCenter:
-        m_position = { (Window::currentWidth - m_size) * 0.5f, Window::currentHeight - m_size };
+        m_position = { (Window::m_windowWidth - m_size) * 0.5f, Window::m_windowHeight - m_size };
         break;
     }
 

@@ -6,7 +6,7 @@
 
 #include "../Core/Window.h"
 #include "../Common/RendererCommon.h"
-#include "../API/OpenGL/Renderer.h"
+#include "../API/OpenGL/Renderer/Renderer.h"
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
 #include "../Utils/JSON.h"

@@ -57,7 +57,7 @@ void Player::Update(double deltaTime) {
 
      // Handle mouse input for camera rotation
      static glm::vec2 smoothedDelta = glm::vec2(0.0f);
-     const float smoothingFactor = 0.75f; // Lower = smoother, but more latency
+     const float smoothingFactor = 0.95f; // Lower = smoother, but more latency
 
      double dx = Mouse::getDX();
      double dy = Mouse::getDY();
@@ -66,13 +66,16 @@ void Player::Update(double deltaTime) {
      smoothedDelta.x += (dx - smoothedDelta.x) * smoothingFactor;
      smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
 
-     float sensitivity = 0.01f;
+     float sensitivity = 0.007f;
      m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
      physx::PxExtendedVec3 playerPos = Physics::GetCharacterControllerPosition();
-     glm::vec3 targetPosition(playerPos.x, playerPos.y + (m_height * 0.8f), playerPos.z);
+     glm::vec3 currentCamPos = m_camera.cameraPos; 
+     glm::vec3 targetCamPos = glm::vec3(playerPos.x, playerPos.y + m_height * 0.8f, playerPos.z);
 
-     m_camera.setPosition(targetPosition); 
+     float camSmoothFactor = 10.0f; // tweak as needed
+     m_camera.setPosition(glm::mix(currentCamPos, targetCamPos, camSmoothFactor * static_cast<float>(deltaTime)));
+
 }
 
 glm::vec3 Player::getPosition() {
