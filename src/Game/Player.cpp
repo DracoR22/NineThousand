@@ -94,6 +94,10 @@ bool Player::CanReloadWeapon() {
         return false;
     }
 
+    if (m_weaponAction == WeaponAction::RELOAD || m_weaponAction == WeaponAction::RELOAD_EMPTY) {
+        return false;
+    }
+
     if (weaponState->ammoInMag >= weaponInfo->magSize) {
         return false;
     }
@@ -117,7 +121,7 @@ bool Player::CanAutoReloadWeapon() {
 bool Player::CanEnterADS() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
 
-    if (weaponInfo->name == "Katana") {
+    if (weaponInfo->type == WeaponType::MELEE) {
         return false;
     }
     else {
@@ -138,10 +142,12 @@ bool Player::CanFireWeapon() {
     }
 
     if (
+        m_weaponAction == WeaponAction::ADS_IDLE ||
+        m_weaponAction == WeaponAction::ADS_WALK ||
+        m_weaponAction == WeaponAction::ADS_FIRE && weaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.fire) ||
         m_weaponAction == WeaponAction::IDLE ||
         m_weaponAction == WeaponAction::WALK ||
-        m_weaponAction == WeaponAction::FIRE &&
-        weaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.fire)
+        m_weaponAction == WeaponAction::FIRE && weaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.fire)
         ) {
         return true;
     }
@@ -278,7 +284,6 @@ void Player::ReloadWeapon() {
    
         Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
 
-        if (PressingFire() && CanFireWeapon()) {
             if (PressingADS()) {
                 Animation* weaponADSFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSFire[0]);
                 currentWeaponAnimator->PlayAnimation(weaponADSFireAnimation);
@@ -286,7 +291,6 @@ void Player::ReloadWeapon() {
             }
             else {
                 Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[0]);
-
                 currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
                 m_weaponAction = WeaponAction::FIRE;
             }
@@ -327,8 +331,6 @@ void Player::ReloadWeapon() {
                 float impulseStrength = 500.0f;  // bullet force
                 dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
             }
-
-        }
     }
 }
 
@@ -362,7 +364,7 @@ void Player::EnterADS() {
     Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
 
     if (PressedADS()) {
-        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
+        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 2.0f);
         SetWeaponAction(WeaponAction::ADS_IN);
     }
 
@@ -375,7 +377,8 @@ void Player::EnterADS() {
 }
 
 void Player::LeaveADS() {
-    if (ReleasedADS()) {
+    if (ReleasedADS() && m_weaponAction != WeaponAction::RELOAD && m_weaponAction != WeaponAction::RELOAD_EMPTY) {
+        std::cout << "RELEASEDD" << std::endl;
         WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
         Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
         Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
@@ -394,6 +397,10 @@ void Player::UpdateWeaponLogic() {
   /*  Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
     Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);*/
     Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
+
+    if (PressingFire() && CanFireWeapon()) {
+        FireWeapon();
+    }
 
     if (PressedReload() || CanAutoReloadWeapon()) {
         ReloadWeapon();

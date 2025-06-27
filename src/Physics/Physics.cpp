@@ -109,7 +109,7 @@ namespace Physics {
         desc.height = 1.8f;       
         desc.radius = 0.3f;         
         desc.material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
-        desc.position = PxExtendedVec3(0, 5, 0); 
+        desc.position = PxExtendedVec3(-40.0f, 15.8f, 46.0f);
         desc.slopeLimit = 0.707f;    
         desc.stepOffset = 0.5f;      
         desc.upDirection = PxVec3(0, 1, 0);

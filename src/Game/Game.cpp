@@ -60,7 +60,7 @@ namespace Game {
 		static bool isDrawing = false;
 		static bool isInADS = false;
 
-		g_players[0].FireWeapon();
+		//g_players[0].FireWeapon();
 
 		if (equipedWeapon->type == WeaponType::MELEE) {
 			g_players[0].MeleeHit();
@@ -212,7 +212,7 @@ namespace Game {
 	}
 
 	void CreatePlayers() {
-		Player player(glm::vec3(0.0f, 1.8f, 0.0f), 4.7f, 75.0f);
+		Player player(glm::vec3(-40.0f, 15.8f, 46.0f), 4.7f, 75.0f);
 		player.EquipWeapon("Glock");
 		player.InitWeaponStates();
 
@@ -235,7 +235,7 @@ namespace Game {
 		if (name == "Glock") {
 			gunPosition = g_players[0].getPosition() +
 				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
-				(g_players[0].m_camera.cameraUp * -4.10f);    // Offset downward
+				(g_players[0].m_camera.cameraUp * -4.20f);    // Offset downward
 		} else if (name == "AKS74U") {
 			gunPosition = g_players[0].getPosition() +
 				(g_players[0].m_camera.cameraFront * 0.7f) +   // Offset forward
