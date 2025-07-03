@@ -20,6 +20,28 @@ Player::Player(glm::vec3 position, float height, float mass)
 }
 
 void Player::Update(double deltaTime) {
+    std::vector<WaterObject>& waterObjects = Scene::GetWaterPlaneObjects();
+  
+    glm::vec3 playerPos = m_camera.cameraPos;
+
+    if (waterObjects.empty()) {
+        m_isOnWaterSurface = false;
+    }
+    else {
+        glm::vec3 waterPos = waterObjects[0].GetPosition();
+        glm::vec3 waterSize = waterObjects[0].GetSize() * 0.5f;
+
+        bool insideXZ = playerPos.x >= (waterPos.x - waterSize.x) && playerPos.x <= (waterPos.x + waterSize.x) &&
+            playerPos.z >= (waterPos.z - waterSize.z) && playerPos.z <= (waterPos.z + waterSize.z);
+
+        // TODO: CHECK PLAYER FEET POSITION
+        bool aboveWater = playerPos.y >= waterPos.y;
+
+        m_isOnWaterSurface = insideXZ && aboveWater;
+    }
+
+    UpdateAudio(deltaTime);
+
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(m_camera.cameraFront.x, 0.0f, m_camera.cameraFront.z));
     glm::vec3 horizontalRight = glm::normalize(glm::vec3(m_camera.cameraRight.x, 0.0f, m_camera.cameraRight.z));
     
@@ -37,6 +59,7 @@ void Player::Update(double deltaTime) {
     if (Keyboard::KeyPressed(GLFW_KEY_A)) {
         moveDirection -= horizontalRight;
     }
+
     float currentSpeed = m_speed;
     if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
         currentSpeed *= 2.0f;
@@ -69,13 +92,42 @@ void Player::Update(double deltaTime) {
      float sensitivity = 0.007f;
      m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
-     physx::PxExtendedVec3 playerPos = Physics::GetCharacterControllerPosition();
+     physx::PxExtendedVec3 characterControllerPos = Physics::GetCharacterControllerPosition();
      glm::vec3 currentCamPos = m_camera.cameraPos; 
-     glm::vec3 targetCamPos = glm::vec3(playerPos.x, playerPos.y + m_height * 0.8f, playerPos.z);
+     glm::vec3 targetCamPos = glm::vec3(characterControllerPos.x, characterControllerPos.y + m_height * 0.8f, characterControllerPos.z);
 
      float camSmoothFactor = 10.0f; // tweak as needed
      m_camera.setPosition(glm::mix(currentCamPos, targetCamPos, camSmoothFactor * static_cast<float>(deltaTime)));
+}
 
+void Player::UpdateAudio(double deltaTime) {
+    const std::vector<const char*> sloshFootSteps = {
+        "slosh1.wav",
+        "slosh2.wav",
+        "slosh3.wav",
+         "slosh4.wav"
+    };
+
+    static float m_footstepTimer = 0.0f;
+    static float m_footstepInterval = 0.4f;
+
+    if (m_isMoving && m_isOnWaterSurface) {
+        m_footstepTimer -= static_cast<float>(deltaTime);
+
+        if (m_footstepTimer <= 0.0f) {
+            int randAudio = std::rand() % sloshFootSteps.size();
+            AudioManager::PlayAudio(sloshFootSteps[randAudio], 0.5f, 1.0f);
+
+            m_footstepTimer = m_footstepInterval;
+
+            if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+                m_footstepTimer *= 0.85f; // Faster footsteps when sprinting
+            }
+        }
+    }
+    else {
+        m_footstepTimer = 0.0f;
+    }
 }
 
 glm::vec3 Player::getPosition() {

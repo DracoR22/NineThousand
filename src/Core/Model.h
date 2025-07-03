@@ -56,7 +56,9 @@ private:
 	unsigned int m_instanceOffsetVBO;
 
 	glm::vec3 m_aabbMin = glm::vec3(0);
-	glm::vec3 m_aabbMax = glm::vec3(0);;
+	glm::vec3 m_aabbMax = glm::vec3(0);
+
+	std::vector<int> meshMaterialIndices;
 public:
 	std::vector<Mesh> meshes;
 public:

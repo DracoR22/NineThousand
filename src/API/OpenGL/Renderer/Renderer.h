@@ -42,17 +42,23 @@ namespace OpenGLRenderer {
 	void Init();
 	void Render();
 
-	// render passes
 	void GBufferPass();
 	void ShadowPass();
-	void RefractionPass(); // TODO!
+	void PreWaterPass();
+	void WaterPass();
+	void AnimationPass();
+	void LightingPass();
+	void ForwardLightingPass();
+	void DeferredLightingPass();
+
+	void UpdateFBOs();
 
 	Shader* GetShaderByName(const std::string& name);
 	FrameBuffer* GetFrameBufferByName(const std::string& name);
 	ShadowMap* GetShadowMapByName(const std::string& name);
 	UBO* GetUBOByName(const std::string& name);
-	
 	std::vector<float>& GetShadowCascadeLevels();
+	RendererType GetRenderType();
 
 	// stuff for the editor
 	RendererCommon::PostProcessMode GetPostProcessMode();

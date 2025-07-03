@@ -24,7 +24,7 @@ void CubeMap::LoadTextures(std::vector<Texture>& faceTextures) {
 		glGetTexImage(GL_TEXTURE_2D, 0, externalFormat, GL_UNSIGNED_BYTE, pixels.data());
 		
 		// I flip this one manually
-		if (tex.m_path == "SkyRight.jpg") {
+		if (tex.m_file == "SkyRight.jpg") {
 			FlipImageHorizontally(pixels.data(), tex.m_width, tex.m_height, numChannels);
 		}
 

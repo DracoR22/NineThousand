@@ -22,4 +22,7 @@ public:
 	glm::mat4 GetCurrentRotationMatrix();
 
 	PxRigidDynamic* GetPxRigidDynamic();
+
+	glm::vec3 m_previousPosition;
+	glm::mat4 m_previousRotation;
 };

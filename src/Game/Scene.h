@@ -15,7 +15,6 @@ namespace Scene {
 	std::vector<GameObject>& GetGameObjects();
 	GameObject* GetGameObjectByName(const std::string& name);
 
-	void CreateWaterPlaneObjects();
 	std::vector<WaterObject>& GetWaterPlaneObjects();
 
 	void LoadSceneFromFile(const std::string& filePath);

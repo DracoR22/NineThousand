@@ -3,7 +3,7 @@
 #include <iostream>
 
 Texture::Texture(std::string dir, std::string path, aiTextureType type)
-	: m_file(dir), m_path(path), m_type(type) {
+	: m_file(path), m_path(dir), m_type(type) {
 	Generate();
 }
 

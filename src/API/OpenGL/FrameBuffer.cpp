@@ -143,6 +143,21 @@ void FrameBuffer::ResizeMSAA(unsigned int width, unsigned int height) {
 		std::cout << "ERROR::FRAMEBUFFER::MSAA Resize failed! Incomplete framebuffer." << std::endl;
 }
 
+void FrameBuffer::ResizeRefraction(unsigned int width, unsigned int height) {
+	m_width = width;
+	m_height = height;
+
+	glViewport(0, 0, m_width, m_height);
+
+	for (auto& attachment : m_colorAttachments) {
+		glBindTexture(GL_TEXTURE_2D, attachment.textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, m_depthTextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+}
+
 void FrameBuffer::Cleanup() {
 	glDeleteFramebuffers(1, &m_fbo);
 	for (auto& attachment : m_colorAttachments) {

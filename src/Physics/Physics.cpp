@@ -19,6 +19,8 @@ namespace Physics {
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
 
     float g_ControllerVerticalVelocity = 0.0f;
+    double g_fixedTimestep = 1.0 / 60;
+    double g_accumulatedTime = 0.0;
 
     void Init() {
         g_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_allocator, g_errorCallback);
@@ -43,15 +45,12 @@ namespace Physics {
     }
 
     void Simulate(double deltaTime) {
-        const double fixedTimestep = 1.0 / 60; 
-        static double accumulatedTime = 0.0;
+        g_accumulatedTime += deltaTime;
 
-        accumulatedTime += deltaTime;
-
-        while (accumulatedTime >= fixedTimestep) {
-            g_scene->simulate(fixedTimestep);
+        while (g_accumulatedTime >= g_fixedTimestep) {
+            g_scene->simulate(g_fixedTimestep);
             g_scene->fetchResults(true);
-            accumulatedTime -= fixedTimestep;
+            g_accumulatedTime -= g_fixedTimestep;
         }
     }
 
@@ -109,7 +108,7 @@ namespace Physics {
         desc.height = 1.8f;       
         desc.radius = 0.3f;         
         desc.material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
-        desc.position = PxExtendedVec3(-40.0f, 15.8f, 46.0f);
+        desc.position = PxExtendedVec3(35.0f, 5.5f, 55.0f);
         desc.slopeLimit = 0.707f;    
         desc.stepOffset = 0.5f;      
         desc.upDirection = PxVec3(0, 1, 0);
@@ -118,12 +117,11 @@ namespace Physics {
     }
 
     void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
-
         g_ControllerVerticalVelocity -= 0.81f * deltaTime;
         
 
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.0f, deltaTime, nullptr);
+        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.001f, deltaTime, nullptr);
 
         if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
            g_ControllerVerticalVelocity = 0.0f;
@@ -276,6 +274,10 @@ namespace Physics {
         transformData.rotation = glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z);
 
         return transformData;
+    }
+
+    double GetInterpolationAlpha() {
+        return g_accumulatedTime / g_fixedTimestep;
     }
 
     void CleanupPhysX() {

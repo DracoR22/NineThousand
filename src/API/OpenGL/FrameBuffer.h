@@ -45,6 +45,7 @@ public:
 	void SetViewport();
 	void Resize(unsigned int width, unsigned int height);
 	void ResizeMSAA(unsigned int width, unsigned int height);
+	void ResizeRefraction(unsigned int width, unsigned int height);
 	void Cleanup();
 	unsigned int GetWidth() const;
 	unsigned int GetHeight() const;

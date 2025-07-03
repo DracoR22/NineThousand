@@ -204,6 +204,11 @@ namespace Game {
 				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
 
 				if (rigidDynamic) {
+					rigidDynamic->m_previousPosition = gameObject.GetPosition();
+					rigidDynamic->m_previousRotation = gameObject.GetRotationMatrix();
+
+					int smoothFactor = 10;
+
 					gameObject.SetPosition(rigidDynamic->GetCurrentPosition());
 					gameObject.SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
 				}
@@ -212,7 +217,7 @@ namespace Game {
 	}
 
 	void CreatePlayers() {
-		Player player(glm::vec3(-40.0f, 15.8f, 46.0f), 4.7f, 75.0f);
+		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 5.2f, 75.0f);
 		player.EquipWeapon("Glock");
 		player.InitWeaponStates();
 

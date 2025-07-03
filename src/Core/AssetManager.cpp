@@ -202,6 +202,72 @@ namespace AssetManager {
 		return nullptr;
 	}
 
+	Texture* GetTextureByIndex(int index) {
+		if (index != -1) {
+			return &g_textures[index];
+		}
+
+		std::cout << "AssetManager::GetTextureByIndex() failed because index was -1\n";
+		return nullptr;
+	}
+	
+	int GetTextureIndexByName(const std::string& name, bool ignoreWarning) {
+		auto it = g_textureIndexMap.find(name);
+		if (it != g_textureIndexMap.end()) {
+			return it->second;
+		}
+
+		if (!ignoreWarning) {
+			std::cout << "AssetManager::GetTextureIndexByName() failed because '" << name << "' does not exist!\n";
+		}
+		return -1;
+	}
+
+// Materials
+	void LoadMaterials() {
+		for (Texture& texture : g_textures) {
+			if (texture.m_file.find("_ALB") != std::string::npos) {
+				Material& material = g_materials.emplace_back();
+
+				material.name = GetMaterialNameFromTextureFile(texture.m_file);
+				int baseIndex = GetTextureIndexByName(material.name + "_ALB.png", true);
+				int normalIndex = GetTextureIndexByName(material.name + "_NRM.png", true);
+				int rmaIndex = GetTextureIndexByName(material.name + "_RMA.png", true);
+				material.baseTexture = baseIndex;
+				material.normalTexture = (normalIndex != -1) ? normalIndex : GetTextureIndexByName("Default_NRM.png");
+				material.rmaTexture = (rmaIndex != -1) ? rmaIndex : GetTextureIndexByName("Default_RMA.png");
+			}
+		}
+	}
+
+	std::string GetMaterialNameFromTextureFile(const std::string& filePath) {
+		std::filesystem::path path(filePath);
+		std::string filenameWithoutExtension = path.stem().string();
+
+		const std::string suffix = "_ALB";
+		if (filenameWithoutExtension.size() > suffix.size() &&
+			filenameWithoutExtension.compare(filenameWithoutExtension.size() - suffix.size(), suffix.size(), suffix) == 0) {
+			filenameWithoutExtension.erase(filenameWithoutExtension.size() - suffix.size(), suffix.size());
+		}
+
+		return filenameWithoutExtension;
+	}
+
+	Material* GetMaterialByName(const std::string& name) {
+		auto it = g_materialIndexMap.find(name);
+		if (it != g_materialIndexMap.end()) {
+			int index = it->second;
+			return &g_materials[index];
+		}
+
+		std::cout << "AssetManager::GetMaterialByName() failed because '" << name << "' does not exist!\n";
+		return nullptr;
+	}
+
+	std::vector<Material>& GetAllMaterials() {
+		return g_materials;
+	}
+
 // Animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
 		static bool reserved = false;

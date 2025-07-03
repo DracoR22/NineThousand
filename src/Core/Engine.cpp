@@ -14,8 +14,8 @@ namespace Engine {
 		LoadResources();
 		Window::ShowWindow();
 
-		Scene::LoadSceneFromFile("resources/levels/test.json");
-		Scene::CreateWaterPlaneObjects();
+		Scene::LoadSceneFromFile("resources/levels/poolrooms.json");
+		Scene::CreateHardcodedObjects();
 
 		CameraManager::AddCamera(&player.m_camera);
 
@@ -96,6 +96,10 @@ namespace Engine {
 		AudioManager::LoadAudio("NextWeapon.wav");
 		AudioManager::LoadAudio("Katana_Hit1.wav");
 		AudioManager::LoadAudio("Katana_Draw.wav");
+		AudioManager::LoadAudio("slosh1.wav");
+		AudioManager::LoadAudio("slosh2.wav");
+		AudioManager::LoadAudio("slosh3.wav");
+		AudioManager::LoadAudio("slosh4.wav");
 
 		// fonts
 		Text2D::LoadFont("resources/fonts/sans.fnt");
@@ -200,5 +204,11 @@ namespace Engine {
 		std::chrono::duration<double> duration = end - start;
 
 		std::cout << "Loaded animations in: " << duration.count() << " seconds\n";
+
+		AssetManager::LoadMaterials();
+
+		for (Material& material : AssetManager::GetAllMaterials()) {
+			std::cout << "MATERIAL AVAILABLE: " << material.name << std::endl;
+		}
 	}
 }

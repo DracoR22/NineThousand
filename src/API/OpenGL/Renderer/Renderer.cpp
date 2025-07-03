@@ -13,19 +13,15 @@ namespace OpenGLRenderer {
 	ShadowMap g_shadowMap;
 
 	struct Shaders {
-		Shader animationShader;
 		Shader sobelEdgesShader;
 		Shader postProcessShader;
 		Shader solidColorShader;
 		Shader instancedShader;
 		Shader uiShader;
 		Shader blurShader;
-		Shader lightingShader;
 		Shader muzzleFlashShader;
-		Shader waterShader;
 		Shader simpleTextureShader;
 		Shader outlineAnimatedShader;
-		Shader deferredLightingShader;
 	} g_shaders;
 
 	struct RenderData {
@@ -48,41 +44,23 @@ namespace OpenGLRenderer {
 		float exposure = 1.0f;;
 	} g_renderData;
 
-	struct RenderFrameBuffer {
-		FrameBuffer postProcessingFrameBuffer;
-		FrameBuffer mssaFrameBuffer;
-		FrameBuffer refractionFrameBuffer;
-		
-
-		/*std::vector<FrameBuffer> pingPongFrameBuffers;*/
-	} g_renderFrameBuffers;
-
-	unsigned int lightQuadVAO = 0;
-	unsigned int lightQuadVBO;
 
 	std::vector<float> g_shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
-
 	glm::vec2 g_renderResolution = { 1280, 720 };
 
 	void Init() {
 		Player& player = Game::GetPLayerByIndex(0);
 
 		// load shaders
-		g_shaders.animationShader.load("animated.vert", "animated.frag");
 		g_shaders.sobelEdgesShader.load("sobel_edges.vert", "sobel_edges.frag");
 		g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 		g_shaders.solidColorShader.load("solid_color.vert", "solid_color.frag");
 		g_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 		g_shaders.uiShader.load("ui.vert", "ui.frag");
 		g_shaders.blurShader.load("blur.vert", "blur.frag");
-		g_shaders.lightingShader.load("lighting.vert", "lighting.frag");
 		g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
-		g_shaders.waterShader.load("water.vert", "water.frag");
 		g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 		g_shaders.outlineAnimatedShader.load("outline_animated.vert", "outline_animated.frag");
-	
-		g_shaders.deferredLightingShader.load("deferred_lighting.vert", "deferred_lighting.frag");
-
 
 	/*	
 		g_Shaders["Animation"].load("animated.vert", "animated.frag");
@@ -92,22 +70,23 @@ namespace OpenGLRenderer {
 		g_Shaders["Instanced"].load("instanced.vert", "instanced.frag");
 		g_Shaders["UI"].load("ui.vert", "ui.frag");
 		g_Shaders["Blur"].load("blur.vert", "blur.frag");
-		g_Shaders["Lighting"].load("lighting.vert", "lighting.frag");
 		g_Shaders["MuzzleFlash"].load("muzzle_flash.vert", "muzzle_flash.frag");
-		g_Shaders["Water"].load("water.vert", "water.frag");
 		g_Shaders["SimpleTexture"].load("simple_texture.vert", "simple_texture.frag");
 		g_Shaders["OutlineAnimated"].load("outline_animated.vert", "outline_animated.frag");
 		g_Shaders["ShadowCubeMap"].load("shadow_cube_map.vert", "shadow_cube_map.frag", "shadow_cube_map.geom");
-		g_Shaders["DeferredLighting"].load("deferred_lighting.vert", "deferred_lighting.frag");*/
+		*/
 
 		g_Shaders["Skybox"].load("skybox.vert", "skybox.frag");
 		g_Shaders["ShadowMap"].load("shadow_map.vert", "shadow_map.frag");
 		g_Shaders["GBuffer"].load("g_buffer.vert", "g_buffer.frag");
 		g_Shaders["CSM"].load("csm_depth.vert", "csm_depth.frag", "csm_depth.geom");
+		g_Shaders["Lighting"].load("lighting.vert", "lighting.frag");
+		g_Shaders["DeferredLighting"].load("deferred_lighting.vert", "deferred_lighting.frag");
+		g_Shaders["Animation"].load("animated.vert", "animated.frag");
+		g_Shaders["Water"].load("water.vert", "water.frag");
 
 		// load skybox
 		g_renderData.cubeMaps.clear();
-
 		CubeMap& daySky = g_renderData.cubeMaps.emplace_back();
 
 		std::vector<Texture*> faceTextures = {
@@ -120,7 +99,6 @@ namespace OpenGLRenderer {
 		};
 
 		std::vector<Texture> faceTexturesCopy;
-
 		for (Texture* texture : faceTextures) {
 			if (texture) {
 				faceTexturesCopy.push_back(*texture);
@@ -154,11 +132,11 @@ namespace OpenGLRenderer {
 		cubeLampLight.position = glm::vec3(10.0f, 5.0f, 5.0f);
 		cubeLampLight.color = glm::vec3(0.8f);
 		cubeLampLight.radius = 70.0f;
-		cubeLampLight.strength = 5.0f;
+		cubeLampLight.strength = 1.0f;
 		cubeLampLight.type = LightType::DIRECTIONAL_LIGHT;
 
 		LightCreateInfo cubeLampLight2;
-		cubeLampLight2.position = glm::vec3(7.0f, 5.0f, 2.0f);
+		cubeLampLight2.position = glm::vec3(14.0f, 15.0f, 24.0f);
 		cubeLampLight2.color = glm::vec3(0.8f);
 		cubeLampLight2.radius = 100.0f;
 		cubeLampLight2.strength = 1.0f;
@@ -182,34 +160,25 @@ namespace OpenGLRenderer {
 			g_frameBuffers["GBuffer"].Unbind();
 		}
 
-		g_renderFrameBuffers.postProcessingFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
-		g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
-		g_renderFrameBuffers.postProcessingFrameBuffer.CreateAttachment("hdrAttachment", GL_RGBA16F);
-		g_renderFrameBuffers.postProcessingFrameBuffer.CreateDepthAttachment();
-		g_renderFrameBuffers.postProcessingFrameBuffer.DrawBuffer();
-		g_renderFrameBuffers.postProcessingFrameBuffer.Unbind();
+		g_frameBuffers["Refraction"] = FrameBuffer(Window::m_windowWidth, Window::m_windowHeight);
+		g_frameBuffers["Refraction"].Bind();
+		g_frameBuffers["Refraction"].CreateAttachment("refractionAttachment", GL_RGBA16F);
+		g_frameBuffers["Refraction"].CreateDepthTextureAttachment();
+		g_frameBuffers["Refraction"].DrawBuffer();
+		g_frameBuffers["Refraction"].Unbind();
 
-		g_renderFrameBuffers.refractionFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
-		g_renderFrameBuffers.refractionFrameBuffer.Bind();
-		g_renderFrameBuffers.refractionFrameBuffer.CreateAttachment("refractionAttachment", GL_RGBA16F);
-		g_renderFrameBuffers.refractionFrameBuffer.CreateDepthTextureAttachment();
-		g_renderFrameBuffers.refractionFrameBuffer.DrawBuffer();
-		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
+		g_frameBuffers["PostProcess"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["PostProcess"].Bind();
+		g_frameBuffers["PostProcess"].CreateAttachment("hdrAttachment", GL_RGBA16F);
+		g_frameBuffers["PostProcess"].CreateDepthAttachment();
+		g_frameBuffers["PostProcess"].DrawBuffer();
+		g_frameBuffers["PostProcess"].Unbind();
 
-		g_renderFrameBuffers.mssaFrameBuffer.Create(viewPortResolution.x, viewPortResolution.y);
-		g_renderFrameBuffers.mssaFrameBuffer.Bind();
-		g_renderFrameBuffers.mssaFrameBuffer.CreateMSAAAttachment("msaaAttachment");
-		g_renderFrameBuffers.mssaFrameBuffer.DrawBuffer();
-		g_renderFrameBuffers.mssaFrameBuffer.Unbind();
-
-		/*g_renderFrameBuffers.pingPongFrameBuffers.resize(2);
-		for (int i = 0; i < 2; i++) {
-			g_renderFrameBuffers.pingPongFrameBuffers[i].Create(Window::currentWidth, Window::currentHeight);
-			g_renderFrameBuffers.pingPongFrameBuffers[i].Bind();
-			g_renderFrameBuffers.pingPongFrameBuffers[i].CreateAttachment(("pingPong" + std::to_string(i)).c_str());
-			g_renderFrameBuffers.pingPongFrameBuffers[i].DrawBuffer();
-			g_renderFrameBuffers.pingPongFrameBuffers[i].Unbind();
-		}*/
+		g_frameBuffers["MSAA"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["MSAA"].Bind();
+		g_frameBuffers["MSAA"].CreateMSAAAttachment("msaaAttachment");
+		g_frameBuffers["MSAA"].DrawBuffer();
+		g_frameBuffers["MSAA"].Unbind();
 
 		// load shadow maps
 		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));
@@ -222,16 +191,13 @@ namespace OpenGLRenderer {
 	void Render() {
 		// Hotload shaders
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
-			g_shaders.animationShader.load("animated.vert", "animated.frag");
 			g_shaders.sobelEdgesShader.load("sobel_edges.vert", "sobel_edges.frag");
 			g_shaders.solidColorShader.load("solid_color.vert", "solid_color.frag");
 			g_shaders.instancedShader.load("instanced.vert", "instanced.frag");
 			g_shaders.postProcessShader.load("post_process.vert", "post_process.frag");
 			g_shaders.blurShader.load("blur.vert", "blur.frag");
-			g_shaders.lightingShader.load("lighting.vert", "lighting.frag");
 			g_shaders.uiShader.load("ui.vert", "ui.frag");
 			g_shaders.muzzleFlashShader.load("muzzle_flash.vert", "muzzle_flash.frag");
-			g_shaders.waterShader.load("water.vert", "water.frag");
 			g_shaders.simpleTextureShader.load("simple_texture.vert", "simple_texture.frag");
 			g_shaders.outlineAnimatedShader.load("outline_animated.vert", "outline_animated.frag");
 		}
@@ -242,291 +208,24 @@ namespace OpenGLRenderer {
 
 		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
 		Camera* camera = CameraManager::GetActiveCamera();
+
+		Shader* lightingShader = GetShaderByName("Lighting");
 		
 		if (g_rendererType == RendererType::DEFERRED) {
 			GBufferPass();
 		}
-
 		ShadowPass();
+		PreWaterPass();
+		UpdateFBOs();
+		AnimationPass();
+		LightingPass();
+		WaterPass();
 
-		// WATER REFRACTION PASS 
-		g_renderFrameBuffers.refractionFrameBuffer.Bind();
-		glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		g_shaders.lightingShader.activate();
-		g_shaders.lightingShader.setMat4("view", viewMatrix);
-		g_shaders.lightingShader.setMat4("projection", projectionMatrix);
-
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			g_shaders.lightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-			g_shaders.lightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-			g_shaders.lightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-			g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-			g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-			g_shaders.lightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-			g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
-		}
-		g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-		g_shaders.lightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-		/*glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, g_renderData.cubeMapShadowMap.GetTextureID());*/
-		g_shaders.lightingShader.setFloat("farPlane", camera->GetFarPlane());
-		g_shaders.lightingShader.setInt("shadowMap", 3);
-		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			if (gameObject.GetName() == "Plane0") {
-				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
-				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
-
-				AssetManager::DrawModel("Plane", g_shaders.lightingShader);
-			}
-		}
-
-		g_renderFrameBuffers.refractionFrameBuffer.Unbind();
-		glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// ------ BIND FRAME BUFFERS -------
-		/*if (g_renderFrameBuffers.refractionFrameBuffer.GetWidth() != Window::m_windowWidth) {
-			g_renderFrameBuffers.refractionFrameBuffer.Resize(Window::m_windowWidth, Window::m_windowHeight);
-		}*/
-
-	/*	if (Keyboard::KeyJustPressed(GLFW_KEY_4)) {
-			glm::vec2 newViewPort = glm::vec2(1920, 1080);
-			
-			g_renderFrameBuffers.postProcessingFrameBuffer.Resize(newViewPort.x, newViewPort.y);
-			if (g_rendererType == RendererType::FORWARD) {
-				g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(newViewPort.x, newViewPort.y);
-			}
-
-			SetRenderResolution(newViewPort.x, newViewPort.y);
-		}*/
-
-		if (g_rendererType == RendererType::FORWARD) {
-			g_renderFrameBuffers.mssaFrameBuffer.Bind();
-		}
-
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// STENCIL STUFF
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-		// ------ RENDER PASS ------
-
-		// ANIMATION PASS
-		g_shaders.animationShader.activate();
-		g_shaders.animationShader.setMat4("view", viewMatrix);
-		g_shaders.animationShader.setMat4("projection", projectionMatrix);
-		g_shaders.animationShader.setInt("noLights", g_renderData.sceneLights.size());
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			g_shaders.animationShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-			g_shaders.animationShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-			g_shaders.animationShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-			g_shaders.animationShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-			g_shaders.animationShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-			g_shaders.animationShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-			g_shaders.animationShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-			g_shaders.animationShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-			g_shaders.animationShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
-		}
-		g_shaders.animationShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-
-		glm::mat4 amodel = glm::mat4(1.0f);
-		amodel = glm::translate(amodel, player.m_currentWeaponGameObject.GetPosition());
-		amodel = glm::scale(amodel, player.m_currentWeaponGameObject.GetSize());
-		amodel *= player.m_currentWeaponGameObject.GetRotationMatrix();
-		g_shaders.animationShader.setMat4("model", amodel);
-		g_shaders.lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(amodel))));
-
-		auto& transforms = AssetManager::GetAnimatorByName(player.GetEquipedWeaponInfo()->name + "Animator")->GetFinalBoneMatrices();
-		for (int i = 0; i < transforms.size(); ++i) {
-			g_shaders.animationShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
-		}
-		AssetManager::DrawModel(player.GetEquipedWeaponInfo()->name, g_shaders.animationShader);
-
-
-		// DEFERRED LIGHTING PASS
-		if (g_rendererType == RendererType::DEFERRED) {
-			FrameBuffer* gBuffer = GetFrameBufferByName("GBuffer");
-			g_renderFrameBuffers.postProcessingFrameBuffer.Bind();
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			g_shaders.deferredLightingShader.activate();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(0));
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(1));
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(2));
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D, gBuffer->GetColorAttachmentTextureIdByIndex(3));
-			g_shaders.deferredLightingShader.setInt("gPosition", 0);
-			g_shaders.deferredLightingShader.setInt("baseTexture", 1);
-			g_shaders.deferredLightingShader.setInt("normalTexture", 2);
-			g_shaders.deferredLightingShader.setInt("rmaTexture", 3);
-			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-				std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-				g_shaders.deferredLightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-				g_shaders.deferredLightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
-			}
-			g_shaders.deferredLightingShader.setInt("noLights", g_renderData.sceneLights.size());
-			g_shaders.deferredLightingShader.set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-			g_shaders.deferredLightingShader.setInt("shadowMap", 3);
-			if (lightQuadVAO == 0)
-			{
-				float quadVertices[] = {
-					// positions        // texture Coords
-					-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-					-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-					 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-					 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-				};
-				// setup plane VAO
-				glGenVertexArrays(1, &lightQuadVAO);
-				glGenBuffers(1, &lightQuadVBO);
-				glBindVertexArray(lightQuadVAO);
-				glBindBuffer(GL_ARRAY_BUFFER, lightQuadVBO);
-				glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-				glEnableVertexAttribArray(1);
-				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-			}
-			glBindVertexArray(lightQuadVAO);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			glBindVertexArray(0);
-
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer->GetFBO());
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-			glBlitFramebuffer(
-				0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
-				0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
-				GL_DEPTH_BUFFER_BIT, GL_NEAREST
-			);
-			glBindFramebuffer(GL_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-		}
-	
-
-		// LIGHTING PASS
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
+		FrameBuffer* refractionFrameBuffer = GetFrameBufferByName("Refraction");
 
-		if (g_rendererType == RendererType::FORWARD) {
-			g_shaders.lightingShader.activate();
-			g_shaders.lightingShader.setMat4("view", viewMatrix);
-			g_shaders.lightingShader.setMat4("projection", projectionMatrix);
-			for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-				std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-				g_shaders.lightingShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-				g_shaders.lightingShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-				g_shaders.lightingShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-				g_shaders.lightingShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-				g_shaders.lightingShader.setFloat(lightUniform + ".strength", g_renderData.sceneLights[i].strength);
-				g_shaders.lightingShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-				g_shaders.lightingShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-				g_shaders.lightingShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-				g_shaders.lightingShader.setInt(lightUniform + ".type", static_cast<int>(g_renderData.sceneLights[i].type));
-			}
-			g_shaders.lightingShader.setInt("noLights", g_renderData.sceneLights.size());
-			g_shaders.lightingShader.set3Float("camPos", camera->cameraPos);
-			g_shaders.lightingShader.setVec3("lightDir", glm::normalize(glm::vec3(20.0f, 50, 20.0f)));
-			g_shaders.lightingShader.setFloat("farPlane", camera->GetFarPlane());
-			g_shaders.lightingShader.setInt("cascadeCount", g_shadowCascadeLevels.size());
-			for (size_t i = 0; i < g_shadowCascadeLevels.size(); ++i)
-			{
-				g_shaders.lightingShader.setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", g_shadowCascadeLevels[i]);
-			}
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D_ARRAY, csmDepth->GetTextureID());
-			g_shaders.lightingShader.setInt("shadowMap", 3);
-
-			for (GameObject& gameObject : Scene::GetGameObjects()) {
-				g_shaders.lightingShader.setMat4("model", gameObject.GetModelMatrix());
-				g_shaders.lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
-				g_shaders.lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
-
-				if (gameObject.IsSelected()) {
-					glStencilFunc(GL_ALWAYS, 1, 0xFF);
-					glStencilMask(0xFF);
-				}
-				else {
-					glStencilMask(0x00);
-				}
-
-				Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
-				AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
-
-				glm::mat4 modelMatrix = gameObject.GetModelMatrix();
-				AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
-
-				if (camFrustum.IntersectsAABB(worldAABB)) {
-					AssetManager::DrawModel(gameObject.GetModelName(), g_shaders.lightingShader);
-				}
-
-			}
-			glStencilMask(0x00);
-		}
-
-		// WATER PASS
-		static float moveFactor = 0.0f;
-		float waveSpeed = 0.03f;
-		moveFactor += waveSpeed * Window::GetDeltaTime();
-		if (moveFactor > 1.0f)
-			moveFactor -= 1.0f;
-
-		g_shaders.waterShader.activate();
-		g_shaders.waterShader.setMat4("view", viewMatrix);
-		g_shaders.waterShader.setMat4("projection", projectionMatrix);
-		g_shaders.waterShader.setVec3("camPos", CameraManager::GetActiveCamera()->cameraPos);
-
-		for (int i = 0; i < g_renderData.sceneLights.size(); i++) {
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			g_shaders.waterShader.setFloat(lightUniform + ".posX", g_renderData.sceneLights[i].position.x);
-			g_shaders.waterShader.setFloat(lightUniform + ".posY", g_renderData.sceneLights[i].position.y);
-			g_shaders.waterShader.setFloat(lightUniform + ".posZ", g_renderData.sceneLights[i].position.z);
-			g_shaders.waterShader.setFloat(lightUniform + ".colorR", g_renderData.sceneLights[i].color.r);
-			g_shaders.waterShader.setFloat(lightUniform + ".colorG", g_renderData.sceneLights[i].color.g);
-			g_shaders.waterShader.setFloat(lightUniform + ".colorB", g_renderData.sceneLights[i].color.b);
-			g_shaders.waterShader.setFloat(lightUniform + ".radius", g_renderData.sceneLights[i].radius);
-		}
-		g_shaders.waterShader.setInt("lightsNr", g_renderData.sceneLights.size());
-
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.refractionFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
-		g_shaders.waterShader.setInt("refractionColor", 4);
-
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.refractionFrameBuffer.GetDepthTextureAttachmentId());
-		g_shaders.waterShader.setInt("depthTexture", 5);
-
-		g_shaders.waterShader.setFloat("moveFactor", moveFactor);
-
-		for (WaterObject& waterPlaneObject : Scene::GetWaterPlaneObjects()) {
-			glm::mat4 lmodel = glm::mat4(1.0f);
-			lmodel = glm::translate(lmodel, waterPlaneObject.GetPosition());
-			lmodel = glm::scale(lmodel, waterPlaneObject.GetSize());
-			lmodel *= waterPlaneObject.GetRotation();
-			g_shaders.waterShader.setMat4("model", lmodel);
-			AssetManager::DrawModel("WaterPlane", g_shaders.waterShader);
-		}
+		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
+		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAA");
 
 		// DEBUG LIGHTS
 		g_shaders.solidColorShader.activate();
@@ -742,10 +441,10 @@ namespace OpenGLRenderer {
 
 		// ------ POST PROCESS PASS -----------
 		if (g_rendererType == RendererType::FORWARD) {
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_renderFrameBuffers.mssaFrameBuffer.GetFBO());
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFrameBuffer->GetFBO());
 		}
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_renderFrameBuffers.postProcessingFrameBuffer.GetFBO());
-		if (g_renderFrameBuffers.postProcessingFrameBuffer.GetWidth() == GetRenderResolution().x) {
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessingFrameBuffer->GetFBO());
+		if (postProcessingFrameBuffer->GetWidth() == GetRenderResolution().x) {
 			glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 			
 		}
@@ -778,9 +477,30 @@ namespace OpenGLRenderer {
 		glDisable(GL_DEPTH_TEST);
 		
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, g_renderFrameBuffers.postProcessingFrameBuffer.GetColorAttachmentTextureIdByIndex(0));
+		glBindTexture(GL_TEXTURE_2D, postProcessingFrameBuffer->GetColorAttachmentTextureIdByIndex(0));
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	void UpdateFBOs() {
+		FrameBuffer* refractionFrameBuffer = GetFrameBufferByName("Refraction");
+		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAA");
+
+		if (refractionFrameBuffer->GetWidth() != Window::m_windowWidth) {
+			refractionFrameBuffer->ResizeRefraction(Window::m_windowWidth, Window::m_windowHeight);
+		}
+
+		if (g_rendererType == RendererType::FORWARD) {
+			msaaFrameBuffer->Bind();
+		}
+
+		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// STENCIL STUFF
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
 	Shader* GetShaderByName(const std::string& name) {
@@ -805,6 +525,10 @@ namespace OpenGLRenderer {
 
 	std::vector<float>& GetShadowCascadeLevels() {
 		return g_shadowCascadeLevels;
+	}
+
+	RendererType GetRenderType() {
+		return g_rendererType;
 	}
 
 	RendererCommon::PostProcessMode GetPostProcessMode() {
@@ -851,9 +575,12 @@ namespace OpenGLRenderer {
 	}
 
 	void SetRenderResolution(int x, int y) {
-		g_renderFrameBuffers.postProcessingFrameBuffer.Resize(x, y);
+		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
+		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAA");
+
+		postProcessingFrameBuffer->Resize(x, y);
 		if (g_rendererType == RendererType::FORWARD) {
-			g_renderFrameBuffers.mssaFrameBuffer.ResizeMSAA(x, y);
+			msaaFrameBuffer->ResizeMSAA(x, y);
 		}
 
 		g_renderResolution.x = x;
@@ -871,8 +598,5 @@ namespace OpenGLRenderer {
 		for (auto& [name, framebuffer] : g_frameBuffers) {
 			framebuffer.Cleanup();
 		}
-		g_renderFrameBuffers.postProcessingFrameBuffer.Cleanup();
-		g_renderFrameBuffers.refractionFrameBuffer.Cleanup();
-		g_renderFrameBuffers.mssaFrameBuffer.Cleanup();
 	}
 }

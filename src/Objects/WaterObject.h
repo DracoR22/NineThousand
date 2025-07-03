@@ -17,12 +17,13 @@ public:
 	WaterObject(WaterObjectCreateInfo& createInfo);
 
 	void SetPosition(glm::vec3 position);
-	void SetRotation(glm::mat4 rotation);
+	void SetRotationMatrix(glm::mat4 rotation);
 	void SetSize(glm::vec3 size);
 
 	glm::vec3 GetPosition() const;
 	glm::vec3 GetSize() const;
-	glm::mat4 GetRotation() const;
+	glm::mat4 GetRotationMatrix() const;
+	glm::mat4 GetModelMatrix() const;
 	std::string GetModelName() const;
 	std::string GetName() const;
 };

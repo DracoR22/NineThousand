@@ -9,9 +9,11 @@
 #include "../Audio/AudioManager.h"
 
 #include "WeaponManager.h"
+#include "./Scene.h"
 
 #include "../Core/AssetManager.h"
 #include "../Objects/GameObject.h"
+#include "../Objects/WaterObject.h"
 
 
 class Player {
@@ -19,6 +21,7 @@ private:
 	bool m_isOnGround = true;
 	bool m_isMoving = false;
 	bool m_isAimingWeapon = false;
+	bool m_isOnWaterSurface = false;
 	
 	float m_speed = 0.0f;
 	float m_height = 0.0f;
@@ -31,6 +34,8 @@ public:
 	Player(glm::vec3 position, float height, float mass);
 
     void Update(double deltaTime);
+	void UpdateMovement(double deltaTime);
+	void UpdateAudio(double deltaTime);
 
 	glm::vec3 getPosition();
 	bool IsMoving();

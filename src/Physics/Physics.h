@@ -46,5 +46,7 @@ namespace Physics {
     glm::quat PxQuatToGlmQuat(PxQuat quat);
 
     PxScene* GetScene();
+
+    double GetInterpolationAlpha();
     void CleanupPhysX();
 }

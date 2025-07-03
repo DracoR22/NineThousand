@@ -14,7 +14,7 @@ void WaterObject::SetPosition(glm::vec3 position) {
 	m_position = position;
 }
 
-void WaterObject::SetRotation(glm::mat4 rotation) {
+void WaterObject::SetRotationMatrix(glm::mat4 rotation) {
 	m_rotation = rotation;
 }
 
@@ -30,8 +30,18 @@ glm::vec3 WaterObject::GetSize() const {
 	return m_size;
 }
 
-glm::mat4 WaterObject::GetRotation() const {
+glm::mat4 WaterObject::GetRotationMatrix() const {
 	return m_rotation;
+}
+
+glm::mat4 WaterObject::GetModelMatrix() const {
+	glm::mat4 model = glm::mat4(1.0f);
+
+	model = glm::translate(model, m_position);
+	model *= m_rotation;
+	model = glm::scale(model, m_size);
+
+	return model;
 }
 
 std::string WaterObject::GetModelName() const {

@@ -3,8 +3,10 @@
 namespace EditorPanel {
 	bool g_saveLevelPanel = false;
 	bool g_addModelPanel = false;
+
 	std::string g_selectedObjectName = "None";
 	int g_selectedModelIndex = 0;
+	int g_selectedLevelIndex = 0;
 
 	const char* g_resolutionOptions[] = {
 	"1280 x 720",
@@ -345,10 +347,30 @@ namespace EditorPanel {
 
 			ImGui::Begin("Save Current Level", &g_saveLevelPanel, windowFlags);
 
+			const std::vector<const char*> levels = {
+				"poolrooms",
+				"test"
+			};
+
+			if (ImGui::BeginCombo("Select Level", levels[g_selectedLevelIndex])) {
+				for (int i = 0; i < levels.size(); i++) {
+					bool isSelected = (i == g_selectedLevelIndex);
+
+					if (ImGui::Selectable(levels[i], isSelected)) {
+						g_selectedLevelIndex = i;
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
 			if (ImGui::Button("Save")) {
 				std::vector<GameObject> gameObjects = Scene::GetGameObjects();
 				LevelCreateInfo levelCreateInfo;
-				levelCreateInfo.name = "test";
+				levelCreateInfo.name = levels[g_selectedLevelIndex];
 				for (GameObject& object : gameObjects) {
 					levelCreateInfo.gameObjects.emplace_back(object.GetLatestCreateInfo());
 				}
