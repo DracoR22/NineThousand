@@ -11,24 +11,30 @@ private:
 	unsigned int m_VBO;
     unsigned int m_textureID;
 public: 
-	void Create() {
-        float vertices[] = {
-            // positions    // tex coords
-             0.0f, 0.0f,     0.0f, 0.0f,
-             1.0f, 0.0f,     1.0f, 0.0f,
-             1.0f, 1.0f,     1.0f, 1.0f,
+    Mesh2D() = default;
 
-             0.0f, 0.0f,     0.0f, 0.0f,
-             1.0f, 1.0f,     1.0f, 1.0f,
-             0.0f, 1.0f,     0.0f, 1.0f
-        };
+    Mesh2D(const float* vertices, size_t size) {
+        Create(vertices, size);
+    }
+
+	void Create(const float* vertices, size_t size) {
+        //float vertices[] = {
+        //    // positions    // tex coords
+        //     0.0f, 0.0f,     0.0f, 0.0f,
+        //     1.0f, 0.0f,     1.0f, 0.0f,
+        //     1.0f, 1.0f,     1.0f, 1.0f,
+
+        //     0.0f, 0.0f,     0.0f, 0.0f,
+        //     1.0f, 1.0f,     1.0f, 1.0f,
+        //     0.0f, 1.0f,     0.0f, 1.0f
+        //};
 
         glGenVertexArrays(1, &m_VAO);
         glGenBuffers(1, &m_VBO);
         glBindVertexArray(m_VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);

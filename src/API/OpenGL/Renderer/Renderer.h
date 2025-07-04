@@ -50,13 +50,20 @@ namespace OpenGLRenderer {
 	void LightingPass();
 	void ForwardLightingPass();
 	void DeferredLightingPass();
+	void DebugPass();
+	void OutlinePass();
+	void BillboardPass();
+	void UIPass();
+	void PostProcessingPass();
 
+	void LoadShaders();
 	void UpdateFBOs();
 
 	Shader* GetShaderByName(const std::string& name);
 	FrameBuffer* GetFrameBufferByName(const std::string& name);
 	ShadowMap* GetShadowMapByName(const std::string& name);
 	UBO* GetUBOByName(const std::string& name);
+	Mesh2D* GetQuadMeshByName(const std::string& name);
 	std::vector<float>& GetShadowCascadeLevels();
 	RendererType GetRenderType();
 
