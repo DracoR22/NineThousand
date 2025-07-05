@@ -28,7 +28,7 @@
 #include "../../../Common/RendererCommon.h"
 #include "../../../Common/AABB.h"
 
-#include "../../../UI/UIElement.h"
+#include "../../../UI/UITextureElement.h"
 #include "../../../UI/UIManager.h"
 
 #include "../../../Utils/Utils.h"

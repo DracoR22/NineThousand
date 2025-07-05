@@ -41,6 +41,10 @@ namespace AssetManager {
 	std::vector<Model>& GetModels();
 	void CleanupModels();
 
+	// meshes
+	Mesh* GetMeshByName(const std::string& name);
+	Mesh* GetMeshByIndex(int index);
+
 	// textures
 	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type);
 	void LoadTexture(const std::string& name, aiTextureType type);
@@ -54,7 +58,9 @@ namespace AssetManager {
 	// materials
 	void LoadMaterials();
 	std::string GetMaterialNameFromTextureFile(const std::string& filePath);
+	Material* GetDefaultMaterial();
 	Material* GetMaterialByName(const std::string& name);
+	Material* GetMaterialByIndex(int index);
 	std::vector<Material>& GetAllMaterials();
 
 	// animations

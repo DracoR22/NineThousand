@@ -66,11 +66,6 @@ namespace Game {
 			g_players[0].MeleeHit();
 		}
 
-		if (g_players[0].CanEnterADS()) {
-			g_players[0].EnterADS();
-		}
-
-		g_players[0].LeaveADS();
 		g_players[0].UpdateWeaponLogic();
 
 	
@@ -233,7 +228,6 @@ namespace Game {
 
 	void UpdateWeaponPositionByName(std::string name, bool flipRotation) {
 		Model* weaponModel = AssetManager::GetModelByName(name);
-
 
 		glm::vec3 gunPosition;
 

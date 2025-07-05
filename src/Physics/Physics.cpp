@@ -19,7 +19,7 @@ namespace Physics {
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
 
     float g_ControllerVerticalVelocity = 0.0f;
-    double g_fixedTimestep = 1.0 / 60;
+    double g_fixedDeltaTime = 1.0 / 60;
     double g_accumulatedTime = 0.0;
 
     void Init() {
@@ -47,10 +47,10 @@ namespace Physics {
     void Simulate(double deltaTime) {
         g_accumulatedTime += deltaTime;
 
-        while (g_accumulatedTime >= g_fixedTimestep) {
-            g_scene->simulate(g_fixedTimestep);
+        while (g_accumulatedTime >= g_fixedDeltaTime) {
+            g_accumulatedTime -= g_fixedDeltaTime;
+            g_scene->simulate(g_fixedDeltaTime);
             g_scene->fetchResults(true);
-            g_accumulatedTime -= g_fixedTimestep;
         }
     }
 
@@ -117,11 +117,10 @@ namespace Physics {
     }
 
     void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
-        g_ControllerVerticalVelocity -= 0.81f * deltaTime;
+        g_ControllerVerticalVelocity -= 0.81f * g_fixedDeltaTime;
         
-
         physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.001f, deltaTime, nullptr);
+        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.001f, g_fixedDeltaTime, nullptr);
 
         if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
            g_ControllerVerticalVelocity = 0.0f;
@@ -129,7 +128,7 @@ namespace Physics {
     }
 
     void UpdateCharacterControllerVerticalVelocity() {
-        float jumpVelocity = 0.15f; 
+        float jumpVelocity = 0.55f; 
         g_ControllerVerticalVelocity = jumpVelocity;
     }
 
@@ -277,7 +276,7 @@ namespace Physics {
     }
 
     double GetInterpolationAlpha() {
-        return g_accumulatedTime / g_fixedTimestep;
+        return g_accumulatedTime / g_fixedDeltaTime;
     }
 
     void CleanupPhysX() {

@@ -33,6 +33,7 @@ namespace WeaponManager {
 		glock.type = WeaponType::SEMI;
 		glock.magSize = 15;
 		glock.maxAmmo = 99;
+		glock.hasADS = true;
 
 		WeaponInfo& katana = g_weapons.emplace_back();
 		katana.name = "Katana";
@@ -48,6 +49,7 @@ namespace WeaponManager {
 		katana.audioFiles.draw = "Katana_Draw.wav";
 		katana.animationCancelFrames.fire = 13;
 		katana.type = WeaponType::MELEE;
+		katana.hasADS = false;
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
@@ -76,6 +78,7 @@ namespace WeaponManager {
 		p90.type = WeaponType::AUTO;
 		p90.magSize = 50;
 		p90.maxAmmo = 550;
+		p90.hasADS = true;
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -104,6 +107,7 @@ namespace WeaponManager {
 		aks74u.type = WeaponType::AUTO;
 		aks74u.magSize = 30;
 		aks74u.maxAmmo = 300;
+		aks74u.hasADS = true;
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string& name) {

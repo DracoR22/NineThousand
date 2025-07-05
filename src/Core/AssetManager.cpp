@@ -6,6 +6,7 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_animatorIndexMap;
 	std::unordered_map<std::string, int> g_textureIndexMap;
 	std::unordered_map<std::string, int> g_materialIndexMap;
+	std::unordered_map<std::string, int> g_meshIndexMap;
 
 	// Models
 	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
@@ -15,6 +16,12 @@ namespace AssetManager {
 
 		g_models.push_back(model);
 		g_modelIndexMap[name] = g_models.size() - 1;
+
+		// store meshes
+		for (Mesh& mesh : model.meshes) {
+			g_meshes.push_back(mesh);
+			g_meshIndexMap[mesh.m_Name] = g_meshes.size() - 1;
+		}
 	}
 
 	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
@@ -24,6 +31,12 @@ namespace AssetManager {
 
 		g_models.push_back(model);
 	    g_modelIndexMap[name] = g_models.size() - 1;
+
+		// store meshes
+		for (Mesh& mesh : model.meshes) {
+			g_meshes.push_back(mesh);
+			g_meshIndexMap[mesh.m_Name] = g_meshes.size() - 1;
+		}
 	}
 
 	void DrawModel(const std::string& name, Shader& shader) {
@@ -225,6 +238,13 @@ namespace AssetManager {
 
 // Materials
 	void LoadMaterials() {
+		Material& defaultMaterial = g_materials.emplace_back();
+		defaultMaterial.name = "Default";
+		defaultMaterial.baseTexture = GetTextureIndexByName("Default_ALB.png");
+		defaultMaterial.normalTexture = GetTextureIndexByName("Default_NRM.png");
+		defaultMaterial.rmaTexture = GetTextureIndexByName("Default_RMA.png");
+		g_materialIndexMap[defaultMaterial.name] = 0;
+
 		for (Texture& texture : g_textures) {
 			if (texture.m_file.find("_ALB") != std::string::npos) {
 				Material& material = g_materials.emplace_back();
@@ -236,6 +256,8 @@ namespace AssetManager {
 				material.baseTexture = baseIndex;
 				material.normalTexture = (normalIndex != -1) ? normalIndex : GetTextureIndexByName("Default_NRM.png");
 				material.rmaTexture = (rmaIndex != -1) ? rmaIndex : GetTextureIndexByName("Default_RMA.png");
+
+				g_materialIndexMap[material.name] = g_materials.size() - 1;
 			}
 		}
 	}
@@ -253,6 +275,15 @@ namespace AssetManager {
 		return filenameWithoutExtension;
 	}
 
+	Material* GetDefaultMaterial() {
+		if (!g_materials.empty()) {
+			return &g_materials[0];
+		}
+
+		std::cerr << "AssetManager:GetDefaultMaterial() error: g_materials is empty" << std::endl;
+		return nullptr;
+	}
+
 	Material* GetMaterialByName(const std::string& name) {
 		auto it = g_materialIndexMap.find(name);
 		if (it != g_materialIndexMap.end()) {
@@ -262,6 +293,15 @@ namespace AssetManager {
 
 		std::cout << "AssetManager::GetMaterialByName() failed because '" << name << "' does not exist!\n";
 		return nullptr;
+	}
+
+	Material* GetMaterialByIndex(int index) {
+		if (index >= 0 && index < g_materials.size()) {
+			return &g_materials[index];
+		}
+
+		std::cout << "AssetManager::GetMaterialByIndex() failed because index was -1\n";
+		return GetDefaultMaterial();
 	}
 
 	std::vector<Material>& GetAllMaterials() {

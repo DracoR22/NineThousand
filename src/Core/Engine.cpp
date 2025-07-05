@@ -129,12 +129,17 @@ namespace Engine {
 			"WaterNormal.png",
 		};
 
+		auto start = std::chrono::high_resolution_clock::now();
 		AssetManager::LoadAssimpModel("P90", "resources/models/P90.fbx", p90CreateInfo);
 		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
 		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74U_Simple.fbx", aks74uCreateInfo);
 		AssetManager::LoadAssimpModel("Katana", "resources/models/Katana.fbx", katanaCreateInfo);
 		AssetManager::LoadAssimpModel("DEAGLE", "resources/models/Deagle_Animation.fbx", aks74uCreateInfo);
 		AssetManager::LoadAssimpModel("PoolLadder", "resources/models/PoolLadder.obj", aks74uCreateInfo);
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> duration = end - start;
+
+		std::cout << "Loaded models in: " << duration.count() << " seconds\n";
 
 		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
 		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
@@ -148,7 +153,6 @@ namespace Engine {
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
 		Model* dEagleModel = AssetManager::GetModelByName("DEAGLE");
 
-		auto start = std::chrono::high_resolution_clock::now();
 
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);
@@ -199,11 +203,6 @@ namespace Engine {
 		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
 		AssetManager::LoadAnimator("DEAGLEAnimator", AssetManager::GetAnimationByName("DEAGLE_Walk"));
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
-
-		auto end = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> duration = end - start;
-
-		std::cout << "Loaded animations in: " << duration.count() << " seconds\n";
 
 		AssetManager::LoadMaterials();
 

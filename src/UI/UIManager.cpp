@@ -2,8 +2,10 @@
 
 namespace UIManager {
 	std::vector<UITextElement> g_uiTextElements;
+	std::vector<UITextureElement> g_uiTextureElements;
 
 	void Init() {
+		// text elements
 		g_uiTextElements.clear();
 
 		UITextElement& fpsText = g_uiTextElements.emplace_back();
@@ -33,11 +35,27 @@ namespace UIManager {
 		reserveAmmoText.posY = 50.0f;
 		reserveAmmoText.isVisible = true;
 		reserveAmmoText.text = "/ 999";
+
+		// texture elements
+		g_uiTextureElements.clear();
+
+		UITextureElement& crosshairDot = g_uiTextureElements.emplace_back();
+		crosshairDot.m_size = 50.0f;
+		crosshairDot.m_alignment = UIAlignment::Center;
+		crosshairDot.m_isVisible = false;
+		crosshairDot.m_textureName = "CrossHairDotOutline.png";
+
+		UITextureElement& crossHairArrow = g_uiTextureElements.emplace_back();
+		crossHairArrow.m_size = 50.0f;
+		crossHairArrow.m_alignment = UIAlignment::Center;
+		crossHairArrow.m_isVisible = false;
+		crossHairArrow.m_textureName = "CrossHairArrow.png";
 	}
 
 	void Update() {
+		Player& player = Game::GetPLayerByIndex(0);
+
 		if (g_uiTextElements.size() >= 4) {
-			Player& player = Game::GetPLayerByIndex(0);
 			WeaponState* weaponState = player.GetEquipedWeaponState();
 
 			int fps = Window::GetFPSCount();
@@ -60,6 +78,28 @@ namespace UIManager {
 			g_uiTextElements[3].posX = Window::m_windowWidth - textWidth - 30.0f;
 			g_uiTextElements[3].posY = Window::m_windowHeight - textHeight - 50.0f;
 		}
+
+		if (!g_uiTextureElements.empty()) {
+			// change crosshair to arrow when player is sprinting
+			if (player.IsSprinting()) {
+				g_uiTextureElements[0].m_isVisible = false;
+				g_uiTextureElements[1].m_isVisible = true;
+			}
+			else {
+				g_uiTextureElements[0].m_isVisible = true;
+				g_uiTextureElements[1].m_isVisible = false;
+			}
+
+			// hide crosshair when in ADS
+			if (player.IsInADS()) {
+				g_uiTextureElements[0].m_isVisible = false;
+				g_uiTextureElements[1].m_isVisible = false;
+			}
+		}
+	}
+
+	std::vector<UITextureElement>& GetTextureElements() {
+		return g_uiTextureElements;
 	}
 
 	std::vector<UITextElement>& GetTextElements() {

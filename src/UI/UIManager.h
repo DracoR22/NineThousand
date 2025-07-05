@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "./UIElement.h"
+#include "./UITextureElement.h"
 #include "../Camera/CameraManager.h"
 #include "./Text2D.h"
 #include "../Game/Game.h"
@@ -19,6 +19,7 @@ namespace UIManager {
 	void Init();
 	void Update();
 
+	std::vector<UITextureElement>& GetTextureElements();
 	std::vector<UITextElement>& GetTextElements();
 	UITextElement* GetTextElementByIndex(int index);
 }

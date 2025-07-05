@@ -2,6 +2,7 @@
 
 void OpenGLRenderer::UIPass() {
 	Shader* uiShader = GetShaderByName("UI");
+
 	Mesh2D* textMesh = GetQuadMeshByName("Text");
 	Mesh2D* textureMesh = GetQuadMeshByName("Texture");
 
@@ -20,25 +21,21 @@ void OpenGLRenderer::UIPass() {
 		textMesh->RenderText(uiTextElement.text, uiTextElement.posX, uiTextElement.posY, uiTextElement.size, uiTextElement.fontColor, *uiShader);
 	}
 
-	// CROSSHAIR DOT 
-	UIElement crosshairElement;
-	crosshairElement.m_size = 50.0f;
-	crosshairElement.m_useAligment = true;
-	crosshairElement.m_alignment = UIAlignment::Center;
-
 	uiShader->activate();
-	uiShader->setMat4("projection", UiProjection);
-	uiShader->setMat4("model", crosshairElement.GetModelMatrix());
-	uiShader->setInt("baseTexture", 0);
+	for (UITextureElement& uiTextureElement : UIManager::GetTextureElements()) {
+		uiShader->setMat4("projection", UiProjection);
+		uiShader->setMat4("model", uiTextureElement.GetModelMatrix());
+		uiShader->setInt("baseTexture", 0);
 
-	Texture* crosshairTexture = AssetManager::GetTextureByName("CrossHairDotOutline.png");
+		Texture* texture = AssetManager::GetTextureByName(uiTextureElement.m_textureName);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, crosshairTexture->m_id);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->m_id);
 
-
-	textureMesh->RenderTexture(*uiShader);
-
+		if (uiTextureElement.m_isVisible) {
+			textureMesh->RenderTexture(*uiShader);
+		}
+	}
 
 	glEnable(GL_DEPTH_TEST);
 }

@@ -20,6 +20,7 @@ class Player {
 private:
 	bool m_isOnGround = true;
 	bool m_isMoving = false;
+	bool m_isSprinting = false;
 	bool m_isAimingWeapon = false;
 	bool m_isOnWaterSurface = false;
 	
@@ -39,6 +40,7 @@ public:
 
 	glm::vec3 getPosition();
 	bool IsMoving();
+	bool IsSprinting();
 
 	void InitWeaponStates();
 
@@ -51,6 +53,7 @@ public:
 	bool CanFireWeapon();
 	bool IsDrawingWeapon();  // TODO
 
+	bool PressingSprintKey();
 	bool PressingFire();
 	bool PressedFire();
 	bool PressingADS();

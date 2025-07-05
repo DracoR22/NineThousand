@@ -1,6 +1,6 @@
-#include "UIElement.h"
+#include "UITextureElement.h"
 
-glm::vec2 UIElement::CalculatePosition() {
+glm::vec2 UITextureElement::CalculatePosition() {
     switch (m_alignment) {
     case UIAlignment::TopLeft:
         m_position = { 0.0f, 0.0f };
@@ -30,13 +30,11 @@ glm::vec2 UIElement::CalculatePosition() {
     return m_position;
 }
 
-glm::mat4 UIElement::GetModelMatrix() {
+glm::mat4 UITextureElement::GetModelMatrix() {
     glm::mat4 model = glm::mat4(1.0f);
 
-    if (m_useAligment) {
-        CalculatePosition();
-        model = glm::translate(model, glm::vec3(m_position, 0.0f));
-    }
+    CalculatePosition();
+    model = glm::translate(model, glm::vec3(m_position, 0.0f));
    
     model = glm::scale(model, glm::vec3(m_size, m_size, 1.0f));
     return model;

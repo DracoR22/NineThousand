@@ -66,6 +66,7 @@ struct WeaponInfo {
 	WeaponType type;
 	int magSize = 0;
 	int maxAmmo = 0;	
+	bool hasADS = false;
 };
 
 struct WeaponState {

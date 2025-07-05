@@ -120,8 +120,8 @@ void Player::UpdateAudio(double deltaTime) {
 
             m_footstepTimer = m_footstepInterval;
 
-            if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-                m_footstepTimer *= 0.85f; // Faster footsteps when sprinting
+            if (IsSprinting()) {
+                m_footstepTimer *= 0.85f; 
             }
         }
     }
@@ -136,6 +136,15 @@ glm::vec3 Player::getPosition() {
 
 bool Player::IsMoving() {
     return m_isMoving;
+}
+
+bool Player::IsSprinting() {
+    if (IsMoving() && PressingSprintKey()) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool Player::CanReloadWeapon() {
@@ -173,7 +182,7 @@ bool Player::CanAutoReloadWeapon() {
 bool Player::CanEnterADS() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
 
-    if (weaponInfo->type == WeaponType::MELEE) {
+    if (weaponInfo->type == WeaponType::MELEE || !weaponInfo->hasADS) {
         return false;
     }
     else {
@@ -240,6 +249,15 @@ WeaponState* Player::GetEquipedWeaponState() {
 
 WeaponAction Player::GetWeaponAction() {
     return m_weaponAction;
+}
+
+bool Player::PressingSprintKey() {
+    if (Keyboard::KeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool Player::PressingFire() {
@@ -389,24 +407,23 @@ void Player::ReloadWeapon() {
 void Player::MeleeHit() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
-    if (PressedFire()) {
-        Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
+   
+    Model* weaponModel = AssetManager::GetModelByName(weaponInfo->name);
 
-        static int currentFireAnimIndex = 0;
-        if (currentFireAnimIndex >= weaponInfo->animations.fire.size()) {
-            currentFireAnimIndex = 0;
-        }
+    static int currentFireAnimIndex = 0;
+    if (currentFireAnimIndex >= weaponInfo->animations.fire.size()) {
+        currentFireAnimIndex = 0;
+    }
 
-        Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[currentFireAnimIndex]);
+     Animation* weaponFireAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.fire[currentFireAnimIndex]);
 
-        currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
-        m_weaponAction = WeaponAction::FIRE;
+     currentWeaponAnimator->PlayAnimation(weaponFireAnimation);
+     m_weaponAction = WeaponAction::FIRE;
 
-        int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
-        AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
+     int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
+     AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
 
-        currentFireAnimIndex++;
-  }
+     currentFireAnimIndex++;
 }
 
 void Player::EnterADS() {
@@ -430,7 +447,6 @@ void Player::EnterADS() {
 
 void Player::LeaveADS() {
     if (ReleasedADS() && m_weaponAction != WeaponAction::RELOAD && m_weaponAction != WeaponAction::RELOAD_EMPTY) {
-        std::cout << "RELEASEDD" << std::endl;
         WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
         Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
         Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
@@ -454,6 +470,10 @@ void Player::UpdateWeaponLogic() {
         FireWeapon();
     }
 
+    if (PressedFire() && m_equippedWeapon->type == WeaponType::MELEE) {
+        MeleeHit();
+    }
+
     if (PressedReload() || CanAutoReloadWeapon()) {
         ReloadWeapon();
     }
@@ -464,11 +484,13 @@ void Player::UpdateWeaponLogic() {
         weaponState->waitingForReload = false;
     }
 
-    // if player tries to reload while pressing ADS key
-    /*if (PressingADS() && m_weaponAction == WeaponAction::RELOAD && currentWeaponAnimator->IsAnimationFinished()) {
-        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 1.5f);
-        SetWeaponAction(WeaponAction::ADS_IN);
-    }*/
+    if (CanEnterADS()) {
+        EnterADS();
+    }
+
+    if (IsInADS()) {
+        LeaveADS();
+    }
 
     // regular walk animation
     if (!PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
