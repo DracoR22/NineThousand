@@ -62,7 +62,8 @@ struct WeaponInfo {
 	WeaponAnimationCancelFrames animationCancelFrames;
 	WeaponAudio audioFiles;
 	glm::vec3 muzzleFlashOffset = glm::vec3(0.0f);
-	float muzzleFlashSize = 0.0f;
+	glm::vec3 ADSMuzzleFlashOffset = glm::vec3(0.0f);
+	glm::vec3 muzzleFlashSize = glm::vec3(0.0f);
 	WeaponType type;
 	int magSize = 0;
 	int maxAmmo = 0;	

@@ -105,6 +105,17 @@ namespace AssetManager {
 		g_textures.clear();
 	}
 
+	// Meshes
+	int GetMeshIndexByName(const std::string& name) {
+		auto it = g_meshIndexMap.find(name);
+		if (it != g_meshIndexMap.end()) {
+			return it->second;
+		}
+
+	    std::cout << "AssetManager::GetMeshIndexByName() failed because '" << name << "' does not exist!\n";
+		return -1;
+	}
+
 	// Textures
 	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type) {
 		stbi_set_flip_vertically_on_load(false);
@@ -308,6 +319,16 @@ namespace AssetManager {
 		return g_materials;
 	}
 
+	int GetMaterialIndexByName(const std::string& name) {
+		auto it = g_materialIndexMap.find(name);
+		if (it != g_materialIndexMap.end()) {
+			return it->second;
+		}
+
+		std::cout << "AssetManager::GetMaterialIndexByName() failed because '" << name << "' does not exist!\n";
+		return -1;
+	}
+		 
 // Animations
 	void LoadAnimation(const std::string& name, const std::string& path, Model* model) {
 		static bool reserved = false;

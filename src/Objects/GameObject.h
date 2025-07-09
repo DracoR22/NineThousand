@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Common/CreateInfo.hpp"
+#include "../Common/Types.hpp"
 #include "../Physics/Physics.h"
 
 #include <glm/gtx/quaternion.hpp>
@@ -16,6 +17,7 @@ private:
 	glm::vec2 m_textureScale;
 	GameObjectCreateInfo m_createInfo;
 	bool m_selected;
+	std::vector<MeshRenderingInfo> m_meshRenderingInfo;
 
 	uint64_t m_physicsId = 0;
 public:
@@ -38,6 +40,10 @@ public:
 	std::string GetName() const;
 	glm::vec2 GetTextureScale() const;
 	uint64_t GetPhysicsId() const { return m_physicsId; };
+	std::vector<MeshRenderingInfo> GetMeshRenderingInfo() { return m_meshRenderingInfo; };
+
+	void PushToMeshRenderingInfo(const std::string& meshName, const std::string& materialName);
+	void SetMeshRenderingMaterialByMeshName(const std::string& meshName, const std::string& materialName);
 
 	bool IsSelected() const;
 	void SetSelected(bool select);

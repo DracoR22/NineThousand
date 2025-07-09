@@ -28,8 +28,9 @@ namespace WeaponManager {
 		glock.audioFiles.reload = "Glock_Reload.wav";
 		glock.audioFiles.reloadEmpty = "Glock_ReloadEmpty.wav";
 		glock.audioFiles.draw = "NextWeapon.wav";
-		glock.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -15.0f);
-		glock.muzzleFlashSize = 4.0f;
+		glock.muzzleFlashOffset = glm::vec3(-1.7f, 2.6f, -3.7f);
+		glock.ADSMuzzleFlashOffset = glm::vec3(2.35f, 2.9f, 4.9f);
+		glock.muzzleFlashSize = glm::vec3(5.0f, 2.0f, 5.0f);
 		glock.type = WeaponType::SEMI;
 		glock.magSize = 15;
 		glock.maxAmmo = 99;
@@ -73,8 +74,9 @@ namespace WeaponManager {
 		p90.audioFiles.reload = "P90_Reload.wav";
 		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
 		p90.audioFiles.draw = "NextWeapon.wav";
-		p90.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, 15.0f);
-		p90.muzzleFlashSize = 4.0f;
+		p90.muzzleFlashOffset = glm::vec3(1.35f, 1.4f, 6.7f);
+		p90.ADSMuzzleFlashOffset = glm::vec3(2.35f, 2.9f, 6.7f);
+		p90.muzzleFlashSize = glm::vec3(5.0f, 2.0f, 5.0f);
 		p90.type = WeaponType::AUTO;
 		p90.magSize = 50;
 		p90.maxAmmo = 550;
@@ -102,8 +104,9 @@ namespace WeaponManager {
 		aks74u.audioFiles.reload = "AKS74U_Reload.wav";
 		aks74u.audioFiles.reloadEmpty = "AKS74U_ReloadEmpty.wav";
 		aks74u.audioFiles.draw = "NextWeapon.wav";
-		aks74u.muzzleFlashOffset = glm::vec3(0.0f, 0.0f, -20.0f);
-		aks74u.muzzleFlashSize = 4.0f;
+		aks74u.muzzleFlashOffset = glm::vec3(-1.8f, 2.8f, -3.7f);
+		aks74u.ADSMuzzleFlashOffset = glm::vec3(-2.35f, 2.9f, -3.7f);
+		aks74u.muzzleFlashSize = glm::vec3(5.0f, 2.0f, 5.0f);
 		aks74u.type = WeaponType::AUTO;
 		aks74u.magSize = 30;
 		aks74u.maxAmmo = 300;

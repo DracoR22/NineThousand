@@ -7,6 +7,7 @@ namespace EditorPanel {
 	std::string g_selectedObjectName = "None";
 	int g_selectedModelIndex = 0;
 	int g_selectedLevelIndex = 0;
+	int g_selectedMeshIndex = 0;
 
 	const char* g_resolutionOptions[] = {
 	"1280 x 720",
@@ -89,6 +90,7 @@ namespace EditorPanel {
 		ImGui::NewFrame();
 
 		if (Game::GetGameState() == Game::GameState::EDITOR) {
+			ImGui::SetNextWindowSize(ImVec2(300.0f, Window::m_windowHeight), ImGuiCond_Always);
 			ImGui::Begin("Game Editor");
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
@@ -189,6 +191,7 @@ namespace EditorPanel {
 							obj.SetSelected(false); // Deselect all
 
 						g_selectedObjectName = "None";
+						g_selectedMeshIndex = 0;
 					}
 					for (GameObject& gameObject : objects) {
 						bool isSelected = (g_selectedObjectName == gameObject.GetName()); // get only the first one selected
@@ -199,6 +202,7 @@ namespace EditorPanel {
 
 							gameObject.SetSelected(true);
 							g_selectedObjectName = gameObject.GetName();
+							g_selectedMeshIndex = 0;
 						}
 
 						if (isSelected) {
@@ -263,6 +267,50 @@ namespace EditorPanel {
 					int textureScaleYInt = static_cast<int>(textureScale.y);
 					if (ImGui::SliderInt("Texture Scale Y", &textureScaleYInt, 1, 10)) {
 						gameObject.SetTextureScale(glm::vec2(textureScale.x, static_cast<float>(textureScaleYInt)));
+					}
+
+					Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());
+					if (ImGui::BeginCombo("Mesh", gameObjectModel->meshes[g_selectedMeshIndex].m_Name.c_str())) {
+						for (int i = 0; i < gameObjectModel->meshes.size(); i++) {
+							bool isSelected = (i == g_selectedMeshIndex);
+
+							if (ImGui::Selectable(gameObjectModel->meshes[i].m_Name.c_str(), isSelected)) {
+								g_selectedMeshIndex = i;
+							}
+
+							if (isSelected)
+								ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::EndCombo();
+					}
+
+					std::vector<Material>& materials = AssetManager::GetAllMaterials();
+					if (g_selectedMeshIndex != -1 && g_selectedMeshIndex < gameObjectModel->meshes.size()) {
+						ImGui::Text("Mesh Material");
+
+						ImGui::BeginChild("MaterialPreview", ImVec2(0, 150), true);
+
+						for (int i = 0; i < materials.size(); i++) {
+							Material& material = materials[i];
+
+							Texture* baseTexture = AssetManager::GetTextureByIndex(material.baseTexture);
+
+							if (baseTexture) {
+								ImGui::PushID(i);
+
+								if (ImGui::ImageButton("##materialPreview", (ImTextureID)(intptr_t)baseTexture->m_id, ImVec2(64, 64))) {
+									gameObject.PushToMeshRenderingInfo(gameObjectModel->meshes[g_selectedMeshIndex].m_Name, material.name);
+								}
+
+								std::cout << "MeshMaterialName: " << material.name << std::endl;
+
+								ImGui::Text("%s", material.name.c_str());
+								ImGui::PopID();
+							}
+						}
+
+						ImGui::EndChild();
 					}
 
 					ImGui::Separator();

@@ -1,5 +1,6 @@
 #include "./GameObject.h"
 #include <glm/gtx/string_cast.hpp>
+#include "../Core/AssetManager.h"
 
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	glm::vec3 radians = glm::radians(createInfo.rotation);
@@ -131,6 +132,57 @@ std::string GameObject::GetName() const {
 
 glm::vec2 GameObject::GetTextureScale() const {
 	return m_textureScale;
+}
+
+void GameObject::PushToMeshRenderingInfo(const std::string& meshName, const std::string& materialName) {
+	int meshIndex = AssetManager::GetMeshIndexByName(meshName);
+	int materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+
+	if (meshIndex == -1) {
+		std::cerr << "GameObject::PushToMeshRenderingInfo() failed: mesh '" << meshName << "' not found.\n";
+		return;
+	}
+
+	if (materialIndex == -1) {
+		std::cerr << "GameObject::PushToMeshRenderingInfo() failed: material '" << materialName << "' not found.\n";
+		return;
+	}
+
+	for (auto& info : m_meshRenderingInfo) {
+		if (info.meshIndex == meshIndex) {
+			info.materialIndex = materialIndex;
+			return;
+		}
+	}
+
+	MeshRenderingInfo& info = m_meshRenderingInfo.emplace_back();
+	info.meshIndex = meshIndex;
+	info.materialIndex = materialIndex;
+}
+
+void GameObject::SetMeshRenderingMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
+	int meshIndex = AssetManager::GetMeshIndexByName(meshName);
+	int materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+
+	if (meshIndex == -1) {
+		std::cerr << "GameObject::SetMeshRenderingMaterialByMeshName() failed: mesh '" << meshName << "' not found.\n";
+		return;
+	}
+
+	if (materialIndex == -1) {
+		std::cerr << "GameObject::SetMeshRenderingMaterialByMeshName() failed: material '" << materialName << "' not found.\n";
+		return;
+	}
+
+
+	for (auto& info : m_meshRenderingInfo) {
+		if (info.meshIndex == meshIndex) {
+			info.materialIndex = materialIndex;
+			return;
+		}
+	}
+
+	std::cerr << "GameObject::SetMeshRenderingMaterialByMeshName() failed: mesh '" << meshName << "' not found in m_meshRenderingInfo.\n";
 }
 
 bool GameObject::IsSelected() const {

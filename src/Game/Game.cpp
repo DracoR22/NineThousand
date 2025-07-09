@@ -62,10 +62,6 @@ namespace Game {
 
 		//g_players[0].FireWeapon();
 
-		if (equipedWeapon->type == WeaponType::MELEE) {
-			g_players[0].MeleeHit();
-		}
-
 		g_players[0].UpdateWeaponLogic();
 
 	

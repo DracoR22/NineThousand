@@ -182,6 +182,10 @@ bool Player::CanAutoReloadWeapon() {
 bool Player::CanEnterADS() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
 
+    if (m_weaponAction == WeaponAction::RELOAD || m_weaponAction == WeaponAction::RELOAD_EMPTY) {
+        return false;
+    }
+
     if (weaponInfo->type == WeaponType::MELEE || !weaponInfo->hasADS) {
         return false;
     }
@@ -433,7 +437,7 @@ void Player::EnterADS() {
     Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
 
     if (PressedADS()) {
-        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 2.0f);
+        currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 2.5f);
         SetWeaponAction(WeaponAction::ADS_IN);
     }
 
@@ -451,7 +455,7 @@ void Player::LeaveADS() {
         Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
         Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
 
-        currentWeaponAnimator->PlayAnimation(weaponADSOutAnimation);
+        currentWeaponAnimator->PlayAnimation(weaponADSOutAnimation, 1.5f);
         SetWeaponAction(WeaponAction::ADS_OUT);
     }
 }
