@@ -5,28 +5,12 @@ Model::Model(const std::string& name, const ModelCreateInfo& createInfo)
 	: m_name(name) {}
 
 void Model::draw(Shader& shader) {
-	//glm::mat4 model = glm::mat4(1.0f);
-
-	//model = glm::translate(model, pos);
-	//model = glm::scale(model, size);
-	//model *= rotation;
-
-	//shader.setMat4("model", model);
-
 	for (unsigned int i = 0; i < meshes.size(); i++) {
 		meshes[i].Draw(shader);
 	}
 }
 
 void Model::DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets) {
-	/*glm::mat4 model = glm::mat4(1.0f);
-
-	model = glm::translate(model, pos);
-	model = glm::scale(model, size);
-	model *= rotation;
-
-	shader.setMat4("model", model);*/
-
 	int fixedOffsets = std::min(UPPER_BOUND, (int)offsets.size());
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_instanceOffsetVBO);
@@ -171,6 +155,13 @@ void Model::LoadModel(ModelType type, ModelCreateInfo& createInfo) {
 	}
 }
 
+void Model::CreateInstanceBuffers() {
+	glGenBuffers(1, &m_instanceOffsetVBO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_instanceOffsetVBO);
+	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
+}
+
 void Model::loadAssimpModel(std::string path) {
 	Assimp::Importer import;
 
@@ -186,13 +177,6 @@ void Model::loadAssimpModel(std::string path) {
 	m_directory = "resources/textures";
 
 	processNode(scene->mRootNode, scene);
-}
-
-void Model::CreateInstanceBuffers() {
-	glGenBuffers(1, &m_instanceOffsetVBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_instanceOffsetVBO);
-	glBufferData(GL_ARRAY_BUFFER, UPPER_BOUND * sizeof(glm::vec3), NULL, GL_DYNAMIC_DRAW);
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene) {
@@ -220,8 +204,6 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
-	/*std::string meshName = mesh->mName.C_Str();
-	std::cout << "Mesh " << " is named: " << meshName << std::endl;*/
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;

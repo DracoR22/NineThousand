@@ -1,17 +1,23 @@
 {
     "GameObjects": [
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "Default",
+                    "meshName": "Cube_Primitive_Mesh"
+                }
+            ],
             "modelName": "Cube",
             "name": "Cube0",
             "position": {
-                "x": -57.347633361816406,
-                "y": 0.37500348687171936,
-                "z": -20.31905746459961
+                "x": 33.34768295288086,
+                "y": 0.37499281764030457,
+                "z": 39.319122314453125
             },
             "rotation": {
-                "x": 0.03357739374041557,
-                "y": -86.88573455810547,
-                "z": 179.96580505371094
+                "x": 0.03195858746767044,
+                "y": -86.88800048828125,
+                "z": 179.9674072265625
             },
             "size": {
                 "x": 0.75,
@@ -24,6 +30,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "Default",
+                    "meshName": "Plane_Primitive_Mesh"
+                }
+            ],
             "modelName": "Plane",
             "name": "Plane0",
             "position": {
@@ -47,6 +59,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Plane_Primitive_Mesh"
+                }
+            ],
             "modelName": "Plane",
             "name": "Plane2",
             "position": {
@@ -61,7 +79,7 @@
             },
             "size": {
                 "x": 15.859000205993652,
-                "y": 15.859000205993652,
+                "y": 1.0,
                 "z": 100.0
             },
             "textureScale": {
@@ -70,6 +88,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Plane_Primitive_Mesh"
+                }
+            ],
             "modelName": "Plane",
             "name": "Plane3",
             "position": {
@@ -84,7 +108,7 @@
             },
             "size": {
                 "x": 100.0,
-                "y": 15.850000381469727,
+                "y": 1.0,
                 "z": 15.850000381469727
             },
             "textureScale": {
@@ -93,6 +117,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Cube_Primitive_Mesh"
+                }
+            ],
             "modelName": "Cube",
             "name": "Cube2",
             "position": {
@@ -108,7 +138,7 @@
             "size": {
                 "x": 15.859000205993652,
                 "y": 15.859000205993652,
-                "z": 15.859000205993652
+                "z": 17.87700080871582
             },
             "textureScale": {
                 "x": 1.0,
@@ -116,12 +146,18 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Cube_Primitive_Mesh"
+                }
+            ],
             "modelName": "Cube",
             "name": "Cube3",
             "position": {
                 "x": -3.0,
                 "y": 3.0,
-                "z": 7.0
+                "z": 10.0
             },
             "rotation": {
                 "x": 0.0,
@@ -129,16 +165,22 @@
                 "z": 0.0
             },
             "size": {
-                "x": 30.718000411987305,
-                "y": 15.859000205993652,
-                "z": 30.7189998626709
+                "x": 33.512001037597656,
+                "y": 33.512001037597656,
+                "z": 33.512001037597656
             },
             "textureScale": {
-                "x": 1.0,
-                "y": 1.0
+                "x": 2.0,
+                "y": 2.0
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Plane_Primitive_Mesh"
+                }
+            ],
             "modelName": "Plane",
             "name": "Plane6",
             "position": {
@@ -153,7 +195,7 @@
             },
             "size": {
                 "x": 100.0,
-                "y": 15.850000381469727,
+                "y": 1.0,
                 "z": 15.850000381469727
             },
             "textureScale": {
@@ -162,6 +204,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "Default",
+                    "meshName": "Plane_Primitive_Mesh"
+                }
+            ],
             "modelName": "Plane",
             "name": "Plane7",
             "position": {
@@ -185,6 +233,12 @@
             }
         },
         {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "PoolTile",
+                    "meshName": "Cube_Primitive_Mesh"
+                }
+            ],
             "modelName": "Cube",
             "name": "Cube4",
             "position": {
@@ -198,9 +252,9 @@
                 "z": 0.0
             },
             "size": {
-                "x": 9.095999717712402,
+                "x": 14.682000160217285,
                 "y": 19.523000717163086,
-                "z": 32.904998779296875
+                "z": 26.201000213623047
             },
             "textureScale": {
                 "x": 1.0,

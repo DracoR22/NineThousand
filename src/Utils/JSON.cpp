@@ -1,5 +1,7 @@
 #include "JSON.h"
 
+#include "../Core/AssetManager.h"
+
 namespace nlohmann {
 	void adl_serializer<glm::vec3>::to_json(nlohmann::json& j, const glm::vec3& value) {
 		j = nlohmann::json({
@@ -27,13 +29,38 @@ namespace nlohmann {
 		j.at("y").get_to(value.y);
 	}
 
+	void adl_serializer<MeshRenderingInfo>::to_json(nlohmann::json& j, const MeshRenderingInfo& value) {
+		Material* material = AssetManager::GetMaterialByIndex(value.materialIndex);
+		Mesh* mesh = AssetManager::GetMeshByIndex(value.meshIndex);
+
+		if (!material) return;
+		if (!mesh) return;
+
+		j = nlohmann::json{
+	       {"meshName", mesh->m_Name},
+	       {"materialName", material->name}
+		};
+	}
+
+	void adl_serializer<MeshRenderingInfo>::from_json(const nlohmann::json& j, MeshRenderingInfo& value) {
+		std::string meshName;
+		std::string materialName;
+
+		j.at("meshName").get_to(meshName);
+		j.at("materialName").get_to(materialName);
+
+		value.meshIndex = AssetManager::GetMeshIndexByName(meshName);
+		value.materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+	}
+
 	void adl_serializer<GameObjectCreateInfo>::to_json(nlohmann::json& j, const GameObjectCreateInfo& obj) {
 		j = {
 			{"name", obj.name},
 			{"modelName", obj.modelName},
 			{"position", obj.position},
 			{"rotation", obj.rotation},
-			{"textureScale", obj.textureScale}
+			{"textureScale", obj.textureScale},
+			{"meshRenderingInfo", obj.meshRenderingInfo}
 		};
 	}
 
@@ -87,7 +114,8 @@ namespace JSON {
 				{ "position", createInfo.position },
 				{ "size", createInfo.size },
 				{ "rotation", createInfo.rotation },
-		    	{ "textureScale", createInfo.textureScale }
+		    	{ "textureScale", createInfo.textureScale },
+				{ "meshRenderingInfo", createInfo.meshRenderingInfo }
 				});
 		}
 
@@ -113,6 +141,7 @@ namespace JSON {
 			createInfo.rotation = jsonObject["rotation"];
 			createInfo.size = jsonObject["size"];
 			createInfo.textureScale = jsonObject["textureScale"];
+			createInfo.meshRenderingInfo = jsonObject["meshRenderingInfo"];
 		}
 
 		return levelCreateInfo;

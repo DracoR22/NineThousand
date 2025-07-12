@@ -9,8 +9,8 @@ Player::Player(glm::vec3 position, float height, float mass)
     Physics::CreateCharacterController();
 
     GameObjectCreateInfo gunCreateInfo{
-            "", 
-            "",
+            "Player1Glock", 
+            "Glock",
             glm::vec3(0.0f, 5.0f, 1.0f),
             glm::vec3(0.05f),
             glm::vec3(0.0f),
@@ -372,7 +372,7 @@ void Player::ReloadWeapon() {
             WeaponState* state = GetEquipedWeaponState();
             if (state && state->ammoInMag > 0) {
                 state->ammoInMag -= 1;
-                m_muzzleFlashTimer = 6;
+                m_muzzleFlashTimer = 5;
             }
         
         int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();

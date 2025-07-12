@@ -57,7 +57,7 @@ namespace AssetManager {
 	int GetTextureIndexByName(const std::string& name, bool ignoreWarning = false);
 
 	// materials
-	void LoadMaterials();
+	void BuildMaterials();
 	std::string GetMaterialNameFromTextureFile(const std::string& filePath);
 	Material* GetDefaultMaterial();
 	Material* GetMaterialByName(const std::string& name);

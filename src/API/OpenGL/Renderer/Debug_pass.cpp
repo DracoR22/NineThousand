@@ -76,8 +76,6 @@ void OpenGLRenderer::DebugPass() {
 					glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
 					glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-					gameObject.SetSize(glmExtents * 2.0f);
-					gameObject.SetPosition(glmCenter);
 					solidColorShader->setMat4("model", gameObject.GetModelMatrix());
 
 					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());

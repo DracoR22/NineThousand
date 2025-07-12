@@ -46,6 +46,7 @@ namespace Scene {
 		LevelCreateInfo levelCreateInfo = JSON::LoadLevel(filePath);
 
 		g_gameObjects.clear();
+		
 		for (GameObjectCreateInfo& createInfo : levelCreateInfo.gameObjects) {
 			g_gameObjects.emplace_back(createInfo);
 		}

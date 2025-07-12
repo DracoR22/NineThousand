@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "../Common/CreateInfo.hpp"
 
+
 namespace nlohmann {
     template <>
     struct adl_serializer<glm::vec3> {
@@ -16,6 +17,11 @@ namespace nlohmann {
     struct adl_serializer<glm::vec2> {
         static void to_json(nlohmann::json& j, const glm::vec2& value);
         static void from_json(const nlohmann::json& j, glm::vec2& value);
+    };
+    template <>
+    struct adl_serializer<MeshRenderingInfo> {
+        static void to_json(nlohmann::json& j, const MeshRenderingInfo& value);
+        static void from_json(const nlohmann::json& j, MeshRenderingInfo& value);
     };
     template <>
     struct adl_serializer<GameObjectCreateInfo> {

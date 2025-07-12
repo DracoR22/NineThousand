@@ -90,7 +90,7 @@ namespace EditorPanel {
 		ImGui::NewFrame();
 
 		if (Game::GetGameState() == Game::GameState::EDITOR) {
-			ImGui::SetNextWindowSize(ImVec2(300.0f, Window::m_windowHeight), ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2(400.0f, Window::m_windowHeight), ImGuiCond_Always);
 			ImGui::Begin("Game Editor");
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
@@ -173,7 +173,7 @@ namespace EditorPanel {
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Objects")) {
+			if (ImGui::CollapsingHeader("Game Objects")) {
 				int index = 1000;
 
 				std::vector<GameObject>& objects = Scene::GetGameObjects();
@@ -219,8 +219,8 @@ namespace EditorPanel {
 
 					ImGui::PushID(index++);
 
-					ImGui::Text("%s", gameObject.GetName().c_str());
-
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					ImGui::Text("Transform");
 					glm::vec3 objectSize = gameObject.GetSize();
 					if (ImGui::SliderFloat("Size XYZ", &objectSize.x, 0.0f, 100.0f)) {
 						gameObject.SetSize(glm::vec3(objectSize.x, objectSize.x, objectSize.x));
@@ -258,17 +258,21 @@ namespace EditorPanel {
 						gameObject.SetRotationEuler(objectEulerRotation);
 					}
 
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					ImGui::Text("Texture Scale");
 					glm::vec2 textureScale = gameObject.GetTextureScale();
 					int textureScaleXInt = static_cast<int>(textureScale.x);
-					if (ImGui::SliderInt("Texture Scale X", &textureScaleXInt, 1, 10)) {
+					if (ImGui::SliderInt("Scale X", &textureScaleXInt, 1, 10)) {
 						gameObject.SetTextureScale(glm::vec2(static_cast<float>(textureScaleXInt), textureScale.y));
 					}
 
 					int textureScaleYInt = static_cast<int>(textureScale.y);
-					if (ImGui::SliderInt("Texture Scale Y", &textureScaleYInt, 1, 10)) {
+					if (ImGui::SliderInt("Scale Y", &textureScaleYInt, 1, 10)) {
 						gameObject.SetTextureScale(glm::vec2(textureScale.x, static_cast<float>(textureScaleYInt)));
 					}
 
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					ImGui::Text("Mesh Info");
 					Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());
 					if (ImGui::BeginCombo("Mesh", gameObjectModel->meshes[g_selectedMeshIndex].m_Name.c_str())) {
 						for (int i = 0; i < gameObjectModel->meshes.size(); i++) {
@@ -287,27 +291,33 @@ namespace EditorPanel {
 
 					std::vector<Material>& materials = AssetManager::GetAllMaterials();
 					if (g_selectedMeshIndex != -1 && g_selectedMeshIndex < gameObjectModel->meshes.size()) {
+						ImGui::Dummy(ImVec2(0.0f, 5.0f));
 						ImGui::Text("Mesh Material");
 
-						ImGui::BeginChild("MaterialPreview", ImVec2(0, 150), true);
+						ImGui::BeginChild("MaterialPreview", ImVec2(0, 200), true);
 
-						for (int i = 0; i < materials.size(); i++) {
-							Material& material = materials[i];
+						const int itemsPerRow = 4;
 
-							Texture* baseTexture = AssetManager::GetTextureByIndex(material.baseTexture);
+						if (ImGui::BeginTable("Materials", itemsPerRow, ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit)) {
+							for (int i = 0; i < materials.size(); i++) {
+								Material& material = materials[i];
 
-							if (baseTexture) {
-								ImGui::PushID(i);
+								Texture* baseTexture = AssetManager::GetTextureByIndex(material.baseTexture);
 
-								if (ImGui::ImageButton("##materialPreview", (ImTextureID)(intptr_t)baseTexture->m_id, ImVec2(64, 64))) {
-									gameObject.PushToMeshRenderingInfo(gameObjectModel->meshes[g_selectedMeshIndex].m_Name, material.name);
+								if (baseTexture) {
+									ImGui::TableNextColumn();
+									ImGui::PushID(i);
+
+									if (ImGui::ImageButton("##materialPreview", (ImTextureID)(intptr_t)baseTexture->m_id, ImVec2(64, 64))) {
+										gameObject.SetMeshMaterialByMeshName(gameObjectModel->meshes[g_selectedMeshIndex].m_Name, material.name);
+									}
+
+									ImGui::TextWrapped("%s", material.name.c_str());
+									ImGui::PopID();
 								}
-
-								std::cout << "MeshMaterialName: " << material.name << std::endl;
-
-								ImGui::Text("%s", material.name.c_str());
-								ImGui::PopID();
 							}
+
+							ImGui::EndTable();
 						}
 
 						ImGui::EndChild();
@@ -317,20 +327,8 @@ namespace EditorPanel {
 					ImGui::PopID();
 				}
 
-				if (ImGui::Button("Create Plane")) {
-					GameObjectCreateInfo newPlaneObject;
-					newPlaneObject.modelName = "Plane";
-					newPlaneObject.name = "Plane" + std::to_string(Scene::GetGameObjects().size());
-
-					Scene::AddGameObject(newPlaneObject);
-				}
-				if (ImGui::Button("Create Cube")) {
-					GameObjectCreateInfo newPlaneObject;
-					newPlaneObject.modelName = "Cube";
-					newPlaneObject.name = "Cube" + std::to_string(Utils::GenerateUniqueID());
-
-					Scene::AddGameObject(newPlaneObject);
-				}
+				ImGui::Dummy(ImVec2(0.0f, 5.0f));
+				
 				if (ImGui::Button("Add Game Object")) {
 					g_addModelPanel = true;
 				}

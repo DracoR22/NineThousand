@@ -5,13 +5,15 @@ namespace Engine {
 		Window::Init();
 		Physics::Init();
 		AudioManager::Init();
-		Game::Init();
 		UIManager::Init();
+
+		LoadResources();
+
+		Game::Init();
 		Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);
 
-		LoadResources();
 		Window::ShowWindow();
 
 		Scene::LoadSceneFromFile("resources/levels/poolrooms.json");
@@ -204,7 +206,7 @@ namespace Engine {
 		AssetManager::LoadAnimator("DEAGLEAnimator", AssetManager::GetAnimationByName("DEAGLE_Walk"));
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
 
-		AssetManager::LoadMaterials();
+		AssetManager::BuildMaterials();
 
 		for (Material& material : AssetManager::GetAllMaterials()) {
 			std::cout << "MATERIAL AVAILABLE: " << material.name << std::endl;

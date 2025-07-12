@@ -5,6 +5,8 @@
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	glm::vec3 radians = glm::radians(createInfo.rotation);
 
+	std::cout << "Model Name" << createInfo.name << std::endl;
+
 	m_name = createInfo.name;
 	m_modelName = createInfo.modelName;
 	m_position = createInfo.position;
@@ -15,7 +17,37 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	m_textureScale = createInfo.textureScale;
 	m_selected = false;
 
-	if (createInfo.modelName == "Cube" && createInfo.name != "Cube0") {
+	// Set mesh rendering info
+	Model* model = AssetManager::GetModelByName(m_modelName);
+
+	if (model) {
+		if (createInfo.meshRenderingInfo.empty()) { // always build meshRenderingInfo even if its not provided
+			for (Mesh& mesh : model->meshes) {
+				int meshIndex = AssetManager::GetMeshIndexByName(mesh.m_Name);
+				int defaultMaterialIndex = AssetManager::GetMaterialIndexByName("Default");
+
+				MeshRenderingInfo& info = m_meshRenderingInfo.emplace_back();
+				info.meshIndex = meshIndex;
+				info.materialIndex = defaultMaterialIndex;
+
+				m_meshRenderingIndexMap[mesh.m_Name] = m_meshRenderingInfo.size() - 1;
+			}
+		}
+		else { // use the create info if provided
+			for (MeshRenderingInfo& info : createInfo.meshRenderingInfo) {
+				Mesh* mesh = AssetManager::GetMeshByIndex(info.meshIndex);
+
+				MeshRenderingInfo& newInfo = m_meshRenderingInfo.emplace_back();
+				newInfo.meshIndex = info.meshIndex;
+				newInfo.materialIndex = info.materialIndex;
+
+				m_meshRenderingIndexMap[mesh->m_Name] = m_meshRenderingInfo.size() - 1;
+			}
+		}
+	}
+
+	// Physics
+	if (createInfo.modelName == "Cube" && createInfo.name != "Cube0" || createInfo.name == "Plane2" || createInfo.name == "Plane3" || createInfo.name == "Plane6") {
 		PhysicsTransformData physicsTransformData;
 		physicsTransformData.position = createInfo.position;
 		physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
@@ -28,21 +60,6 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 			createInfo.size.z * 0.5f
 			)
 		);
-
-		/*std::vector<Vertex> vertices;
-
-		for (Mesh& mesh : AssetManager::GetModelByName(createInfo.modelName)->meshes) {
-			vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
-		}
-
-		std::vector<glm::vec3> positions;
-		positions.reserve(vertices.size());
-
-		for (const Vertex& v : vertices) {
-			positions.push_back(v.m_Position);
-		}
-
-		uint64_t physicsId = Physics::CreateRigidStaticConvexMeshFromVertices(positions, physicsTransformData);*/
 
 		m_physicsId = physicsId;
 	}
@@ -134,33 +151,18 @@ glm::vec2 GameObject::GetTextureScale() const {
 	return m_textureScale;
 }
 
-void GameObject::PushToMeshRenderingInfo(const std::string& meshName, const std::string& materialName) {
-	int meshIndex = AssetManager::GetMeshIndexByName(meshName);
-	int materialIndex = AssetManager::GetMaterialIndexByName(materialName);
-
-	if (meshIndex == -1) {
-		std::cerr << "GameObject::PushToMeshRenderingInfo() failed: mesh '" << meshName << "' not found.\n";
-		return;
+int GameObject::GetMeshMaterialIndex(const std::string& meshName) {
+	auto it = m_meshRenderingIndexMap.find(meshName);
+	if (it != m_meshRenderingIndexMap.end()) {
+		size_t infoIndex = it->second;
+		return m_meshRenderingInfo[infoIndex].materialIndex;
 	}
 
-	if (materialIndex == -1) {
-		std::cerr << "GameObject::PushToMeshRenderingInfo() failed: material '" << materialName << "' not found.\n";
-		return;
-	}
-
-	for (auto& info : m_meshRenderingInfo) {
-		if (info.meshIndex == meshIndex) {
-			info.materialIndex = materialIndex;
-			return;
-		}
-	}
-
-	MeshRenderingInfo& info = m_meshRenderingInfo.emplace_back();
-	info.meshIndex = meshIndex;
-	info.materialIndex = materialIndex;
+	std::cout << "GameObject::GetMeshMaterialIndex() failed: mesh '" << meshName << "' not found.\n";
+	return -1; 
 }
 
-void GameObject::SetMeshRenderingMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
+void GameObject::SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName) {
 	int meshIndex = AssetManager::GetMeshIndexByName(meshName);
 	int materialIndex = AssetManager::GetMaterialIndexByName(materialName);
 
@@ -205,5 +207,6 @@ GameObjectCreateInfo GameObject::GetLatestCreateInfo() const {
 	info.size = m_size;
 	info.rotation = m_eulerRotation;
 	info.textureScale = m_textureScale;
+	info.meshRenderingInfo = m_meshRenderingInfo;
 	return info;
 }

@@ -7,19 +7,6 @@
 #include <glm/gtx/quaternion.hpp>
 
 class GameObject {
-private:
-	std::string m_name;
-	std::string m_modelName;
-	glm::vec3 m_position;
-	glm::vec3 m_size;
-	glm::mat4 m_rotationMatrix;
-	glm::vec3 m_eulerRotation;
-	glm::vec2 m_textureScale;
-	GameObjectCreateInfo m_createInfo;
-	bool m_selected;
-	std::vector<MeshRenderingInfo> m_meshRenderingInfo;
-
-	uint64_t m_physicsId = 0;
 public:
 	GameObject() = default;
 	GameObject(GameObjectCreateInfo& createInfo);
@@ -40,14 +27,31 @@ public:
 	std::string GetName() const;
 	glm::vec2 GetTextureScale() const;
 	uint64_t GetPhysicsId() const { return m_physicsId; };
-	std::vector<MeshRenderingInfo> GetMeshRenderingInfo() { return m_meshRenderingInfo; };
-
-	void PushToMeshRenderingInfo(const std::string& meshName, const std::string& materialName);
-	void SetMeshRenderingMaterialByMeshName(const std::string& meshName, const std::string& materialName);
 
 	bool IsSelected() const;
 	void SetSelected(bool select);
 
 	GameObjectCreateInfo GetCreateInfo() const;
 	GameObjectCreateInfo GetLatestCreateInfo() const;
+
+	int GetMeshMaterialIndex(const std::string& meshName);
+	void SetMeshMaterialByMeshName(const std::string& meshName, const std::string& materialName);
+private:
+	std::string m_name;
+	std::string m_modelName;
+	glm::vec3 m_position;
+	glm::vec3 m_size;
+	glm::mat4 m_rotationMatrix;
+	glm::vec3 m_eulerRotation;
+	glm::vec2 m_textureScale;
+	GameObjectCreateInfo m_createInfo;
+	bool m_selected;
+
+	uint64_t m_physicsId = 0;
+	bool m_isRigidDynamic = false;
+	bool m_isRigidStatic = false;
+
+	// mesh stuff
+	std::vector<MeshRenderingInfo> m_meshRenderingInfo;
+	std::unordered_map<std::string, size_t> m_meshRenderingIndexMap;
 };

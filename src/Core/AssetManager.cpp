@@ -116,6 +116,15 @@ namespace AssetManager {
 		return -1;
 	}
 
+	Mesh* GetMeshByIndex(int index) {
+		if (index >= 0 && index < g_meshes.size()) {
+			return &g_meshes[index];
+		}
+
+		std::cout << "AssetManager::GetMeshByIndex() failed because index was -1\n";
+		return nullptr;
+	}
+
 	// Textures
 	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type) {
 		stbi_set_flip_vertically_on_load(false);
@@ -248,7 +257,7 @@ namespace AssetManager {
 	}
 
 // Materials
-	void LoadMaterials() {
+	void BuildMaterials() {
 		Material& defaultMaterial = g_materials.emplace_back();
 		defaultMaterial.name = "Default";
 		defaultMaterial.baseTexture = GetTextureIndexByName("Default_ALB.png");

@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "../Common/Types.hpp"
+
 enum class LightType {
 	POINT_LIGHT = 0,
 	DIRECTIONAL_LIGHT = 1
@@ -18,6 +20,7 @@ struct GameObjectCreateInfo {
 	glm::vec3 size = glm::vec3(1.0f);
 	glm::vec3 rotation = glm::vec3(0.0f);
 	glm::vec2 textureScale = glm::vec2(1.0f);
+	std::vector<MeshRenderingInfo> meshRenderingInfo;
 };
 
 struct WaterObjectCreateInfo {
