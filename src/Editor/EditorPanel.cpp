@@ -274,11 +274,11 @@ namespace EditorPanel {
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text("Mesh Info");
 					Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());
-					if (ImGui::BeginCombo("Mesh", gameObjectModel->meshes[g_selectedMeshIndex].m_Name.c_str())) {
-						for (int i = 0; i < gameObjectModel->meshes.size(); i++) {
+					if (ImGui::BeginCombo("Mesh", gameObjectModel->m_meshes[g_selectedMeshIndex].m_Name.c_str())) {
+						for (int i = 0; i < gameObjectModel->m_meshes.size(); i++) {
 							bool isSelected = (i == g_selectedMeshIndex);
 
-							if (ImGui::Selectable(gameObjectModel->meshes[i].m_Name.c_str(), isSelected)) {
+							if (ImGui::Selectable(gameObjectModel->m_meshes[i].m_Name.c_str(), isSelected)) {
 								g_selectedMeshIndex = i;
 							}
 
@@ -290,7 +290,7 @@ namespace EditorPanel {
 					}
 
 					std::vector<Material>& materials = AssetManager::GetAllMaterials();
-					if (g_selectedMeshIndex != -1 && g_selectedMeshIndex < gameObjectModel->meshes.size()) {
+					if (g_selectedMeshIndex != -1 && g_selectedMeshIndex < gameObjectModel->m_meshes.size()) {
 						ImGui::Dummy(ImVec2(0.0f, 5.0f));
 						ImGui::Text("Mesh Material");
 
@@ -309,7 +309,7 @@ namespace EditorPanel {
 									ImGui::PushID(i);
 
 									if (ImGui::ImageButton("##materialPreview", (ImTextureID)(intptr_t)baseTexture->m_id, ImVec2(64, 64))) {
-										gameObject.SetMeshMaterialByMeshName(gameObjectModel->meshes[g_selectedMeshIndex].m_Name, material.name);
+										gameObject.SetMeshMaterialByMeshName(gameObjectModel->m_meshes[g_selectedMeshIndex].m_Name, material.name);
 									}
 
 									ImGui::TextWrapped("%s", material.name.c_str());

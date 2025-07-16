@@ -116,8 +116,6 @@ namespace OpenGLRenderer {
 	}
 
 	void Render() {
-		Camera* camera = CameraManager::GetActiveCamera();
-	
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 			LoadShaders();
 		}
@@ -131,7 +129,7 @@ namespace OpenGLRenderer {
 		AnimationPass();
 		LightingPass();
 		WaterPass();
-		g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), camera->GetProjectionMatrix());
+		CubeMapPass();
 		DebugPass();
 		BillboardPass();
 		UIPass();
@@ -177,6 +175,11 @@ namespace OpenGLRenderer {
 		glEnable(GL_STENCIL_TEST);
 		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
+	void CubeMapPass() {
+		Camera* camera = CameraManager::GetActiveCamera();
+		g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 
 	Shader* GetShaderByName(const std::string& name) {

@@ -19,10 +19,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
-
-struct BoneInfo
-{
+struct BoneInfo {
 	int id;
 	glm::mat4 offset;
 };
@@ -33,49 +30,26 @@ enum class ModelType {
 };
 
 class Model {
-private:
-	std::string m_directory;
-	std::vector<Texture> m_textures_loaded;
-
-	void processNode(aiNode* node, const aiScene* scene);
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-
-	std::vector<Texture> LoadDefaultMaterials(aiMaterial* mat, aiTextureType type);
-	void LoadRMAMaterials(const std::string& meshName, aiMaterial* material, std::vector<Texture>& textures);
-
-	std::string m_name;
-
-	// animations
-	std::map<std::string, BoneInfo> m_BoneInfoMap;
-	int m_BoneCounter = 0;
-
-	void SetVertexBoneDataToDefault(Vertex& vertex);
-	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
-	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
-
-	unsigned int m_instanceOffsetVBO;
-
-	glm::vec3 m_aabbMin = glm::vec3(0);
-	glm::vec3 m_aabbMax = glm::vec3(0);
-
-	std::vector<int> meshMaterialIndices;
 public:
-	std::vector<Mesh> meshes;
+	std::vector<Mesh> m_meshes;
 public:
-	Model(const std::string& name, const ModelCreateInfo& createInfo);
+	Model(const std::string& name);
 
-	void draw(Shader& shader);
+	void LoadSkinnedModel(std::string path);
+	void LoadModel(ModelType type, std::vector<glm::vec3> instanceOffsets = {});
+
+	void ProcessNode(aiNode* node, const aiScene* scene);
+	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+
 	void DrawInstanced(Shader& shader, std::vector<glm::vec3> offsets);
-
-	void loadAssimpModel(std::string path);
-	void LoadModel(ModelType type, ModelCreateInfo& createInfo);
 
 	void CreateInstanceBuffers();
 
-	void cleanup();
-
 	std::map<std::string, BoneInfo>& GetBoneInfoMap();
 	int& GetBoneCount();
+	void SetVertexBoneDataToDefault(Vertex& vertex);
+	void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
+	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
 	const std::string& GetName();
 
@@ -83,4 +57,19 @@ public:
 	void SetAABBMax(glm::vec3 aabbMax);
 	glm::vec3 GetAABBMin() const { return m_aabbMin; }
 	glm::vec3 GetAABBMax() const { return m_aabbMax; }
+
+	std::vector<Texture> LoadDefaultMaterials(aiMaterial* mat, aiTextureType type);
+	void Cleanup();
+private:
+	std::string m_name;
+	std::string m_defaultTexturesDirectory;
+	std::vector<Texture> m_defaultTextures;
+
+	std::map<std::string, BoneInfo> m_BoneInfoMap;
+	int m_BoneCounter = 0;
+
+	unsigned int m_instanceOffsetVBO = 0;
+
+	glm::vec3 m_aabbMin = glm::vec3(0);
+	glm::vec3 m_aabbMax = glm::vec3(0);
 };

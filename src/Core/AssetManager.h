@@ -32,10 +32,8 @@ namespace AssetManager {
 	inline std::vector<Mesh> g_meshes;
 
 	// models
-	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo);
-	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo);
-	void DrawModel(const std::string& name, Shader& shader);
-	void DrawModelInstanced(const std::string& name, Shader& shader, std::vector<glm::vec3> offsets);
+	void LoadSkinnedModel(const std::string& name, const std::string& path, std::vector<glm::vec3> instanceOffsets = {});
+	void LoadModel(const std::string& name, ModelType type, std::vector<glm::vec3> instanceOffsets = {});
     Model* GetModelByName(const std::string& name);
 	void ComputeModelAABB(Model& model);
 	std::vector<Model>& GetModels();

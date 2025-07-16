@@ -9,56 +9,34 @@ namespace AssetManager {
 	std::unordered_map<std::string, int> g_meshIndexMap;
 
 	// Models
-	void LoadModel(const std::string& name, ModelType type, ModelCreateInfo& createInfo) {
-		Model model(name, createInfo);
-		model.LoadModel(type, createInfo);
+	void LoadModel(const std::string& name, ModelType type, std::vector<glm::vec3> instanceOffsets) {
+		Model model(name);
+		model.LoadModel(type, instanceOffsets);
 		ComputeModelAABB(model);
 
 		g_models.push_back(model);
 		g_modelIndexMap[name] = g_models.size() - 1;
 
 		// store meshes
-		for (Mesh& mesh : model.meshes) {
+		for (Mesh& mesh : model.m_meshes) {
 			g_meshes.push_back(mesh);
 			g_meshIndexMap[mesh.m_Name] = g_meshes.size() - 1;
 		}
 	}
 
-	void LoadAssimpModel(const std::string& name, const std::string& path, ModelCreateInfo& createInfo) {
-		Model model(name, createInfo);
-		model.loadAssimpModel(path);
+	void LoadSkinnedModel(const std::string& name, const std::string& path, std::vector<glm::vec3> instanceOffsets) {
+		Model model(name);
+		model.LoadSkinnedModel(path);
 		ComputeModelAABB(model);
 
 		g_models.push_back(model);
 	    g_modelIndexMap[name] = g_models.size() - 1;
 
 		// store meshes
-		for (Mesh& mesh : model.meshes) {
+		for (Mesh& mesh : model.m_meshes) {
 			g_meshes.push_back(mesh);
 			g_meshIndexMap[mesh.m_Name] = g_meshes.size() - 1;
 		}
-	}
-
-	void DrawModel(const std::string& name, Shader& shader) {
-		Model* existingModel = AssetManager::GetModelByName(name);
-
-		if (!existingModel) {
-			std::cout << "AssetManager::DrawModel() failed because '" << name << "' does not exist!\n";
-			return;
-		}
-
-		existingModel->draw(shader);
-	}
-
-	void DrawModelInstanced(const std::string& name, Shader& shader, std::vector<glm::vec3> offsets) {
-		Model* existingModel = AssetManager::GetModelByName(name);
-
-		if (!existingModel) {
-			std::cout << "AssetManager::DrawModel() failed because '" << name << "' does not exist!\n";
-			return;
-		}
-
-		existingModel->DrawInstanced(shader, offsets);
 	}
 
 	Model* GetModelByName(const std::string& name) {
@@ -76,7 +54,7 @@ namespace AssetManager {
 		glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
 		glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());
 
-		for (auto&& mesh : model.meshes) {
+		for (auto&& mesh : model.m_meshes) {
 			for (auto&& vertex : mesh.vertices) {
 				minAABB.x = std::min(minAABB.x, vertex.m_Position.x);
 				minAABB.y = std::min(minAABB.y, vertex.m_Position.y);
@@ -98,7 +76,7 @@ namespace AssetManager {
 
 	void CleanupModels() {
 		for (auto& model : g_models) {
-			model.cleanup();
+			model.Cleanup();
 		}
 		g_models.clear();
 		g_modelIndexMap.clear();

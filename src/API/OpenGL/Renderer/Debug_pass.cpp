@@ -38,7 +38,15 @@ void OpenGLRenderer::DebugPass() {
 		stModel *= outlineObject.GetRotationMatrix();
 
 		outlineAnimatedShader->setMat4("model", stModel);
-		AssetManager::DrawModel(outlineObject.GetModelName(), *outlineAnimatedShader);
+
+		Model* outlineObjectModel = AssetManager::GetModelByName(outlineObject.GetModelName());
+		for (Mesh& mesh : outlineObjectModel->m_meshes) {
+			glBindVertexArray(mesh.GetVAO());
+			glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 
 
@@ -80,9 +88,9 @@ void OpenGLRenderer::DebugPass() {
 
 					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
-					for (unsigned int i = 0; i < debugModel->meshes.size(); i++) {
-						glBindVertexArray(debugModel->meshes[i].GetVAO());
-						glDrawElements(GL_TRIANGLES, debugModel->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+					for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+						glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+						glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
 					}
 				}
 
@@ -99,9 +107,9 @@ void OpenGLRenderer::DebugPass() {
 
 					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
-					for (unsigned int i = 0; i < debugModel->meshes.size(); i++) {
-						glBindVertexArray(debugModel->meshes[i].GetVAO());
-						glDrawElements(GL_TRIANGLES, debugModel->meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+					for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+						glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+						glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
 					}
 				}
 			}

@@ -22,7 +22,7 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 
 	if (model) {
 		if (createInfo.meshRenderingInfo.empty()) { // always build meshRenderingInfo even if its not provided
-			for (Mesh& mesh : model->meshes) {
+			for (Mesh& mesh : model->m_meshes) {
 				int meshIndex = AssetManager::GetMeshIndexByName(mesh.m_Name);
 				int defaultMaterialIndex = AssetManager::GetMaterialIndexByName("Default");
 

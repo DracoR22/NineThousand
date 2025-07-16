@@ -26,10 +26,10 @@ uniform int lightsNr;
 
 uniform float moveFactor;
 
-uniform sampler2D baseTexture; // aka distortion texture
-uniform sampler2D normalTexture;
 uniform sampler2D refractionColor;
 uniform sampler2D depthTexture;
+uniform sampler2D distortionTexture;
+uniform sampler2D normalTexture;
 
 const float waveStrength = 0.02;
 const float shineDamper = 20.0;
@@ -39,9 +39,9 @@ void main() {
     vec2 ndc = ClipSpacePos.xy / ClipSpacePos.w;   
     vec2 refractTexCoords = ndc * 0.5 + 0.5;     
     
-    vec2 distortedTexCoords = texture(baseTexture, vec2(TexCoords.x + moveFactor, TexCoords.y)).rg * 0.1;
+    vec2 distortedTexCoords = texture(distortionTexture, vec2(TexCoords.x + moveFactor, TexCoords.y)).rg * 0.1;
 	distortedTexCoords = TexCoords + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
-	vec2 totalDistortion = (texture(baseTexture, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength;
+	vec2 totalDistortion = (texture(distortionTexture, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength;
 
     refractTexCoords += totalDistortion;
     refractTexCoords = clamp(refractTexCoords, 0.001, 0.999); 

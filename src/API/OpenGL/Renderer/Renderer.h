@@ -55,6 +55,7 @@ namespace OpenGLRenderer {
 	void BillboardPass();
 	void UIPass();
 	void PostProcessingPass();
+	void CubeMapPass();
 
 	void LoadShaders();
 	void UpdateFBOs();

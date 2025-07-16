@@ -70,8 +70,6 @@ namespace Utils {
 
 		glm::vec3 lightDir = glm::normalize(glm::vec3(20.0f, 50.0f, 20.0f));
 
-		const int shadowMapResolution = 1024;
-
 		glm::mat4 lightView = glm::lookAt(center + lightDir, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		float minX = std::numeric_limits<float>::max();
@@ -91,24 +89,25 @@ namespace Utils {
 			maxZ = std::max(maxZ, trf.z);
 		}
 
-		float width = maxX - minX;
-		float height = maxY - minY;
-		float texelSizeX = width / float(shadowMapResolution);
-		float texelSizeY = height / float(shadowMapResolution);
+		constexpr float zMult = 10.0f; 
+		if (minZ < 0) {
+			minZ *= zMult;
+		}
+		else {
+			minZ /= zMult;
+		}
+		if (maxZ < 0) {
+			maxZ /= zMult;
+		}
+		else {
+			maxZ *= zMult;
+		}
 
-		float snapMinX = std::floor(minX / texelSizeX) * texelSizeX;
-		float snapMaxX = snapMinX + std::ceil(width / texelSizeX) * texelSizeX;
-		float snapMinY = std::floor(minY / texelSizeY) * texelSizeY;
-		float snapMaxY = snapMinY + std::ceil(height / texelSizeY) * texelSizeY;
 
-		constexpr float zMult = 20.0f;
-		float zNear = (minZ < 0 ? minZ * zMult : minZ / zMult);
-		float zFar = (maxZ < 0 ? maxZ / zMult : maxZ * zMult);
+		const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
-		glm::mat4 lightProjection = glm::ortho(snapMinX, snapMaxX, snapMinY, snapMaxY, zNear, zFar);
-		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-		
-		return lightSpaceMatrix;
+		return lightProjection * lightView;
+
 	}
 
 	std::vector<glm::mat4> GetLightSpaceMatrices(const float nearPlane, const float farPlane, std::vector<float>& shadowCascadeLevels, float windowWidth, float windowHeight, float fov, glm::mat4& viewMatrix) {

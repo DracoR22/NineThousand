@@ -68,6 +68,7 @@ struct WeaponInfo {
 	int magSize = 0;
 	int maxAmmo = 0;	
 	bool hasADS = false;
+	std::unordered_map<std::string, std::string> meshMaterials;
 };
 
 struct WeaponState {

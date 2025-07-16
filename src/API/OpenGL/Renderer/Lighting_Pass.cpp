@@ -71,7 +71,7 @@ namespace OpenGLRenderer {
 			if (camFrustum.IntersectsAABB(worldAABB)) {
 				//model->draw(*lightingShader);
 
-				for (Mesh& mesh : model->meshes) {
+				for (Mesh& mesh : model->m_meshes) {
 					int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
 					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
 					Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
@@ -93,6 +93,7 @@ namespace OpenGLRenderer {
 					glBindVertexArray(mesh.GetVAO());
 					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
 					glBindVertexArray(0);
+
 					glActiveTexture(GL_TEXTURE0);
 					glBindTexture(GL_TEXTURE_2D, 0);
 				}

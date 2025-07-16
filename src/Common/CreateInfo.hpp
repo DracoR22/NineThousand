@@ -33,13 +33,6 @@ struct WaterObjectCreateInfo {
 	float waterTransparency = 0.0f;
 };
 
-struct ModelCreateInfo {
-	std::string baseTexture = "Concrete_ALB.png";
-	std::string normalTexture = "Concrete_NRM.png";
-	std::string rmaTexture = "Concrete_RMA.png";
-	std::vector<glm::vec3> instanceOffsets = {};
-};
-
 struct LightCreateInfo {
 	glm::vec3 position = glm::vec3(0.0f);
 	glm::vec3 color = glm::vec3(0.8f);

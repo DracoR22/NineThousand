@@ -50,6 +50,14 @@ uniform vec3 lightDir;
 
 const float PI = 3.14159265359;
 
+vec3 gridSamplingDiskCSM[20] = vec3[](
+    vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
 float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
   vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
@@ -70,7 +78,7 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
     }
   
     vec3 normal = normalize(Normal);
-    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     const float biasModifier = 0.5f;
     if (layer == cascadeCount) {
         bias *= 1.0 / (farPlane * biasModifier);
@@ -82,19 +90,24 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
     // PCF
     float shadow = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-    float diskRadius = 1.0;
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
-            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
-        }    
+    vec3 baseCoords = vec3(projCoords.xy, layer);
+    float testDepth = currentDepth - bias;
+
+    // Reduce quality for distant shadows
+    int sampleRadius = (layer < 2) ? 1 : 0; // Only high quality for close cascades
+    int sampleCount = 0;
+
+    for(int x = -sampleRadius; x <= sampleRadius; ++x) {
+    for(int y = -sampleRadius; y <= sampleRadius; ++y) {
+        float pcfDepth = texture(shadowMap, baseCoords + vec3(vec2(x, y) * texelSize, 0.0)).r;
+        shadow += testDepth > pcfDepth ? 1.0 : 0.0;
+        sampleCount++;
+      }    
     }
-    shadow /= 20.0;
+    shadow /= float(sampleCount);
 
     
-    return shadow;
+    return shadow * 0.4;
 }
 
 

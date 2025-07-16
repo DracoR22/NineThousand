@@ -111,42 +111,22 @@ namespace Engine {
 		AssetManager::LoadAllTexturesAsync();
 
 		// models
-		ModelCreateInfo glockCreateInfo{};
-		ModelCreateInfo p90CreateInfo{};
-		ModelCreateInfo aks74uCreateInfo{};
-		ModelCreateInfo katanaCreateInfo{};
-		ModelCreateInfo cubeCreateInfo{
-			"PoolTile_ALB.png",
-			"PoolTile_NRM.png",
-			"PoolTile_RMA.png"
-		};
-		ModelCreateInfo lampCreateInfo{};
-		ModelCreateInfo planeCreateInfo{
-			"PoolTile_ALB.png",
-			"PoolTile_NRM.png",
-			"PoolTile_RMA.png"
-		};
-		ModelCreateInfo waterPlaneCreateInfo{
-			"WaterDUDV.png",
-			"WaterNormal.png",
-		};
-
 		auto start = std::chrono::high_resolution_clock::now();
-		AssetManager::LoadAssimpModel("P90", "resources/models/P90.fbx", p90CreateInfo);
-		AssetManager::LoadAssimpModel("Glock", "resources/models/Glock.fbx", glockCreateInfo);
-		AssetManager::LoadAssimpModel("AKS74U", "resources/models/AKS74U_Simple.fbx", aks74uCreateInfo);
-		AssetManager::LoadAssimpModel("Katana", "resources/models/Katana.fbx", katanaCreateInfo);
-		AssetManager::LoadAssimpModel("DEAGLE", "resources/models/Deagle_Animation.fbx", aks74uCreateInfo);
-		AssetManager::LoadAssimpModel("PoolLadder", "resources/models/PoolLadder.obj", aks74uCreateInfo);
+		AssetManager::LoadSkinnedModel("P90", "resources/models/P90.fbx");
+		AssetManager::LoadSkinnedModel("Glock", "resources/models/Glock.fbx");
+		AssetManager::LoadSkinnedModel("AKS74U", "resources/models/AKS74U_Simple.fbx");
+		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
+		AssetManager::LoadSkinnedModel("DEAGLE", "resources/models/Deagle_Animation.fbx");
+		AssetManager::LoadSkinnedModel("PoolLadder", "resources/models/PoolLadder.obj");
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;
 
 		std::cout << "Loaded models in: " << duration.count() << " seconds\n";
 
-		AssetManager::LoadModel("Cube", ModelType::CUBE, cubeCreateInfo);
-		AssetManager::LoadModel("CubeLamp", ModelType::CUBE, lampCreateInfo);
-		AssetManager::LoadModel("Plane", ModelType::PLANE, planeCreateInfo);
-		AssetManager::LoadModel("WaterPlane", ModelType::PLANE, waterPlaneCreateInfo);
+		AssetManager::LoadModel("Cube", ModelType::CUBE);
+		AssetManager::LoadModel("CubeLamp", ModelType::CUBE);
+		AssetManager::LoadModel("Plane", ModelType::PLANE);
+		AssetManager::LoadModel("WaterPlane", ModelType::PLANE);
 
 		// animations
 		Model* glockModel = AssetManager::GetModelByName("Glock");
@@ -207,9 +187,5 @@ namespace Engine {
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
 
 		AssetManager::BuildMaterials();
-
-		for (Material& material : AssetManager::GetAllMaterials()) {
-			std::cout << "MATERIAL AVAILABLE: " << material.name << std::endl;
-		}
 	}
 }

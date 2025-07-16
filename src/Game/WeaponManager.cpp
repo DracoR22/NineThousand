@@ -4,6 +4,7 @@ namespace WeaponManager {
 	std::vector<WeaponInfo> g_weapons;
 
 	void Init() {
+		// gun assets from https://github.com/livinamuk/Hell2025
 		g_weapons.clear();
 
 		WeaponInfo& glock = g_weapons.emplace_back();
@@ -35,6 +36,9 @@ namespace WeaponManager {
 		glock.magSize = 15;
 		glock.maxAmmo = 99;
 		glock.hasADS = true;
+		glock.meshMaterials["Glock"] = "Glock";
+		glock.meshMaterials["ArmsMale"] = "Hands";
+		glock.meshMaterials["ArmsFemale"] = "FemaleArms";
 
 		WeaponInfo& katana = g_weapons.emplace_back();
 		katana.name = "Katana";
@@ -51,36 +55,9 @@ namespace WeaponManager {
 		katana.animationCancelFrames.fire = 13;
 		katana.type = WeaponType::MELEE;
 		katana.hasADS = false;
-
-		WeaponInfo& p90 = g_weapons.emplace_back();
-		p90.name = "P90";
-		p90.modelName = "P90";
-		p90.animations.idle = "P90_Idle";
-		p90.animations.walk = "P90_Walk";
-		p90.animations.reload = "P90_Reload";
-		p90.animations.reloadEmpty = "P90_ReloadEmpty";
-		p90.animations.fire.push_back("P90_Fire0");
-		p90.animations.ADSIdle = "P90_ADS_Idle";
-		p90.animations.ADSIn = "P90_ADS_In";
-		p90.animations.ADSOut = "P90_ADS_Out";
-		p90.animations.ADSWalk = "P90_ADS_Walk";
-		p90.animations.ADSFire.push_back("P90_ADS_Fire");
-		p90.animationCancelFrames.fire = 2;
-		p90.animationCancelFrames.reload = 50;
-		p90.audioFiles.fire.push_back("P90_Fire0.wav");
-		p90.audioFiles.fire.push_back("P90_Fire1.wav");
-		p90.audioFiles.fire.push_back("P90_Fire2.wav");
-		p90.audioFiles.fire.push_back("P90_Fire3.wav");
-		p90.audioFiles.reload = "P90_Reload.wav";
-		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
-		p90.audioFiles.draw = "NextWeapon.wav";
-		p90.muzzleFlashOffset = glm::vec3(1.35f, 1.4f, 6.7f);
-		p90.ADSMuzzleFlashOffset = glm::vec3(2.35f, 2.9f, 6.7f);
-		p90.muzzleFlashSize = glm::vec3(5.0f, 2.0f, 5.0f);
-		p90.type = WeaponType::AUTO;
-		p90.magSize = 50;
-		p90.maxAmmo = 550;
-		p90.hasADS = true;
+		katana.meshMaterials["ArmsMale"] = "Hands";
+		katana.meshMaterials["ArmsFemale"] = "FemaleArms";
+		katana.meshMaterials["Mesh.009"] = "Katana";
 
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
@@ -111,6 +88,65 @@ namespace WeaponManager {
 		aks74u.magSize = 30;
 		aks74u.maxAmmo = 300;
 		aks74u.hasADS = true;
+		aks74u.meshMaterials["ArmsMale"] = "Hands";
+		aks74u.meshMaterials["ArmsFemale"] = "FemaleArms";
+		aks74u.meshMaterials["AKS74UBarrel"] = "AKS74U_4";
+		aks74u.meshMaterials["AKS74UBolt"] = "AKS74U_1";
+		aks74u.meshMaterials["AKS74UHandGuard"] = "AKS74U_0";
+		aks74u.meshMaterials["AKS74UMag"] = "AKS74U_3";
+		aks74u.meshMaterials["AKS74UPistolGrip"] = "AKS74U_2";
+		aks74u.meshMaterials["AKS74UReceiver"] = "AKS74U_1";
+		aks74u.meshMaterials["AKS74U_ScopeSupport"] = "AKS74U_ScopeSupport";
+		aks74u.meshMaterials["AKS74U_ScopeMain"] = "AKS74U_ScopeMain";
+		aks74u.meshMaterials["AKS74U_ScopeFrontCap"] = "AKS74U_ScopeVxor";
+		aks74u.meshMaterials["AKS74U_ScopeBackCap"] = "AKS74U_ScopeVxor";
+
+		WeaponInfo& p90 = g_weapons.emplace_back();
+		p90.name = "P90";
+		p90.modelName = "P90";
+		p90.animations.idle = "P90_Idle";
+		p90.animations.walk = "P90_Walk";
+		p90.animations.reload = "P90_Reload";
+		p90.animations.reloadEmpty = "P90_ReloadEmpty";
+		p90.animations.fire.push_back("P90_Fire0");
+		p90.animations.ADSIdle = "P90_ADS_Idle";
+		p90.animations.ADSIn = "P90_ADS_In";
+		p90.animations.ADSOut = "P90_ADS_Out";
+		p90.animations.ADSWalk = "P90_ADS_Walk";
+		p90.animations.ADSFire.push_back("P90_ADS_Fire");
+		p90.animationCancelFrames.fire = 2;
+		p90.animationCancelFrames.reload = 50;
+		p90.audioFiles.fire.push_back("P90_Fire0.wav");
+		p90.audioFiles.fire.push_back("P90_Fire1.wav");
+		p90.audioFiles.fire.push_back("P90_Fire2.wav");
+		p90.audioFiles.fire.push_back("P90_Fire3.wav");
+		p90.audioFiles.reload = "P90_Reload.wav";
+		p90.audioFiles.reloadEmpty = "P90_ReloadEmpty.wav";
+		p90.audioFiles.draw = "NextWeapon.wav";
+		p90.muzzleFlashOffset = glm::vec3(1.35f, 1.4f, 6.7f);
+		p90.ADSMuzzleFlashOffset = glm::vec3(2.35f, 2.9f, 6.7f);
+		p90.muzzleFlashSize = glm::vec3(5.0f, 2.0f, 5.0f);
+		p90.type = WeaponType::AUTO;
+		p90.magSize = 50;
+		p90.maxAmmo = 550;
+		p90.hasADS = true;
+		p90.meshMaterials["ArmsMale"] = "Hands";
+		p90.meshMaterials["ArmsFemale"] = "FemaleArms";
+		p90.meshMaterials["Magazine_low"] = "P90_Mag";
+		p90.meshMaterials["Magazine_low2"] = "P90_Mag";
+		p90.meshMaterials["LowerReceiver_low"] = "P90_Main";
+		p90.meshMaterials["SideRail_low"] = "P90_Rails";
+		p90.meshMaterials["TopRailStandard_low"] = "P90_Rails";
+		p90.meshMaterials["UpperReceiver_low"] = "P90_FrontEnd";
+		p90.meshMaterials["SideRailScrews_low"] = "P90_Rails";
+		p90.meshMaterials["Compensator_low"] = "P90_FrontEnd";
+		p90.meshMaterials["ChargingHandle_low"] = "P90_FrontEnd";
+		p90.meshMaterials["ChargingHamdlePlate_low"] = "P90_FrontEnd";
+		p90.meshMaterials["Trigger_low"] = "P90_Main";
+		p90.meshMaterials["FireSelector_low"] = "P90_Main";
+		p90.meshMaterials["MagRelease_low"] = "P90_Main";
+		p90.meshMaterials["Velcro_Clip"] = "P90_Sling";
+		p90.meshMaterials["Object_0.002"] = "P90_Rails";
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string& name) {

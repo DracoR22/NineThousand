@@ -67,11 +67,10 @@ std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
 }
 
 
-Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
+Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
 	this->m_Name = name;
 	this->vertices = vertices;
 	this->indices = indices;
-	this->textures = textures;
 
 	SetupMesh();
 }
@@ -128,31 +127,6 @@ void Mesh::SetupMesh() {
 }
 
 void Mesh::Draw(Shader& shader, unsigned int instances) {
-	for (unsigned int i = 0; i < textures.size(); i++) {
-		glActiveTexture(GL_TEXTURE0 + i);
-
-		std::string name;
-		switch (textures[i].m_type) {
-		case aiTextureType_DIFFUSE:
-			name = "baseTexture";
-			break;
-		case aiTextureType_NORMALS:
-			name = "normalTexture";
-			break;
-		case aiTextureType_SPECULAR:
-			name = "rmaTexture";
-			break;
-		default:
-			continue;
-		}
-
-		// set shader texture value
-		shader.setInt(name, i);
-
-		textures[i].Bind();
-	}
-
-	// draw mesh
 	glBindVertexArray(m_VAO);
 	if (instances > 0) {
 		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, instances);
@@ -163,9 +137,7 @@ void Mesh::Draw(Shader& shader, unsigned int instances) {
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
-	for (unsigned int i = 0; i < textures.size(); i++) {
-		glBindTexture(GL_TEXTURE_2D, 0); 
-	}
+    glBindTexture(GL_TEXTURE_2D, 0); 
 }
 
 unsigned int Mesh::GetVAO() const {
