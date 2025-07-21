@@ -3,13 +3,36 @@
 namespace Game {
 	GameState g_gameState = {};
 
+	std::vector<Player> g_players;
+	std::vector<Stalker> g_stalkers;
+
 	void Init() {
 		g_gameState = GameState::PLAYING;
 		WeaponManager::Init();
+
+		CreatePlayers();
+
+		Stalker stalker1 = g_stalkers.emplace_back(glm::vec3(glm::vec3(-37.0f, 5.0f, 0.0f)));
 	}
 
 	void Update(double deltaTime) {
 		UpdatePhysics();
+
+		// Update enemies
+		if (g_players[0].IsMoving()) {
+			float enemySpeed = 20.0f;
+			glm::vec3 stalkerPos = g_stalkers[0].GetPosition();
+			glm::vec3 playerPos = g_players[0].getPosition();
+
+			glm::vec3 moveDirection = glm::normalize(playerPos - stalkerPos);
+			glm::vec3 newPosition = stalkerPos + moveDirection * enemySpeed * float(deltaTime);
+
+			g_stalkers[0].SetPosition(glm::vec3(newPosition.x, stalkerPos.y, newPosition.z));
+
+			float yawDegrees = glm::degrees(atan2(moveDirection.x, moveDirection.z));
+			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
+		}
+		
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
 
@@ -208,7 +231,7 @@ namespace Game {
 	}
 
 	void CreatePlayers() {
-		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 5.2f, 75.0f);
+		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 5.2f);
 		player.EquipWeapon("Glock");
 		player.InitWeaponStates();
 
@@ -220,6 +243,10 @@ namespace Game {
 			throw std::out_of_range("ERROR::GetPlayerByIndex::Index out of range!");
 		}
 		return g_players[index];
+	}
+
+	std::vector<Stalker>& GetAllStalkers() {
+		return g_stalkers;
 	}
 
 	void UpdateWeaponPositionByName(std::string name, bool flipRotation) {

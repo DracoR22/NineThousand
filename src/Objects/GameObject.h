@@ -48,8 +48,6 @@ private:
 	bool m_selected;
 
 	uint64_t m_physicsId = 0;
-	bool m_isRigidDynamic = false;
-	bool m_isRigidStatic = false;
 
 	// mesh stuff
 	std::vector<MeshRenderingInfo> m_meshRenderingInfo;

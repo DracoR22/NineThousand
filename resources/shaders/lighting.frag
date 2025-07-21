@@ -32,8 +32,8 @@ uniform int noLights;
 uniform vec3 camPos;
 
 uniform sampler2DArray shadowMap;
-
 uniform float farPlane;
+uniform bool castShadows;
 
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
@@ -106,6 +106,9 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
     }
     shadow /= float(sampleCount);
 
+    if(projCoords.z > 1.0) {
+     shadow = 0.0;
+   }
     
     return shadow * 0.4;
 }
@@ -211,14 +214,12 @@ void main() {
 
    float NdotL = max(dot(N, L), 0.0);        
    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-
-   // calculate shadows
-    //float shadow = ShadowCalculation(WorldPosLight, N, lights[i], WorldPos);
-     //Lo *= (1.0 - shadow);
  }
 
-  float shadow = ShadowCalculationCSM(WorldPos);
-  Lo *= (1.0 - shadow);
+  if (castShadows) {
+   float shadow = ShadowCalculationCSM(WorldPos);
+   Lo *= (1.0 - shadow);
+  }
 
   vec3 ambient = vec3(0.02) * albedo * ao;
   //vec3 color   = ambient + Lo; 

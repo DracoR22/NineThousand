@@ -10,7 +10,7 @@ namespace Engine {
 		LoadResources();
 
 		Game::Init();
-		Game::CreatePlayers();
+		//Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);
 
@@ -116,7 +116,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Glock", "resources/models/Glock.fbx");
 		AssetManager::LoadSkinnedModel("AKS74U", "resources/models/AKS74U_Simple.fbx");
 		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
-		AssetManager::LoadSkinnedModel("DEAGLE", "resources/models/Deagle_Animation.fbx");
+		AssetManager::LoadSkinnedModel("Stalker", "resources/models/Stalker.fbx");
 		AssetManager::LoadSkinnedModel("PoolLadder", "resources/models/PoolLadder.obj");
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;
@@ -133,7 +133,6 @@ namespace Engine {
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
-		Model* dEagleModel = AssetManager::GetModelByName("DEAGLE");
 
 
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
@@ -167,8 +166,6 @@ namespace Engine {
 		AssetManager::LoadAnimation("Knife_Draw", "resources/animations/Knife_Draw.fbx", katanaModel);
 		AssetManager::LoadAnimation("Knife_Walk", "resources/animations/Knife_Walk.fbx", katanaModel);
 
-		AssetManager::LoadAnimation("DEAGLE_Walk", "resources/models/Deagle_Animation.fbx", dEagleModel);
-
 		AssetManager::LoadAnimation("P90_Idle", "resources/animations/P90_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_Reload", "resources/animations/P90_Reload.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_ReloadEmpty", "resources/animations/P90_ReloadEmpty.fbx", p90Model);
@@ -183,7 +180,6 @@ namespace Engine {
 		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
 		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
-		AssetManager::LoadAnimator("DEAGLEAnimator", AssetManager::GetAnimationByName("DEAGLE_Walk"));
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
 
 		AssetManager::BuildMaterials();

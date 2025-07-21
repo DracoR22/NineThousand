@@ -25,14 +25,15 @@ private:
 	bool m_isOnWaterSurface = false;
 	
 	float m_speed = 0.0f;
-	float m_height = 0.0f;
+	float m_height = 5.2f;
+	float m_mass = 75.0f;
 
 	WeaponInfo* m_equippedWeapon = nullptr;
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
 	std::unordered_map<std::string, WeaponState> m_weaponStates;
 public:
 	Player() = default;
-	Player(glm::vec3 position, float height, float mass);
+	Player(glm::vec3 position, float height);
 
     void Update(double deltaTime);
 	void UpdateMovement(double deltaTime);

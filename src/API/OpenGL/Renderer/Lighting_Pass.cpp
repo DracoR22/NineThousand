@@ -1,6 +1,8 @@
 #include "./Renderer.h"
 
 namespace OpenGLRenderer {
+	void DrawModel();
+
 	void LightingPass() {
 		if (GetRenderType() == RendererType::DEFERRED) {
 			DeferredLightingPass();
@@ -50,6 +52,7 @@ namespace OpenGLRenderer {
 		lightingShader->setInt("shadowMap", 3);
 
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			lightingShader->setBool("castShadows", true);
 			lightingShader->setMat4("model", gameObject.GetModelMatrix());
 			lightingShader->setVec2("textureScale", gameObject.GetTextureScale());
 			lightingShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
@@ -98,8 +101,47 @@ namespace OpenGLRenderer {
 					glBindTexture(GL_TEXTURE_2D, 0);
 				}
 			}
-
 		}
+
+		Model* stalkerModel = AssetManager::GetModelByName("Stalker");
+		for (Stalker& stalkerObject : Game::GetAllStalkers()) {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, stalkerObject.GetPosition());
+
+			glm::vec3 rotationRadians = glm::radians(stalkerObject.GetRotationEuler());
+			glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotationRadians));
+			model *= rotationMatrix;
+			model = glm::scale(model, glm::vec3(5.0f));
+			lightingShader->setMat4("model", model);
+			lightingShader->setVec2("textureScale", glm::vec2(1.0f));
+			lightingShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+			for (Mesh& mesh : stalkerModel->m_meshes) {
+				Material* meshMaterial = AssetManager::GetMaterialByName("Stalker");
+				Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
+				Texture* normalTexture = AssetManager::GetTextureByIndex(meshMaterial->normalTexture);
+				Texture* rmaTexture = AssetManager::GetTextureByIndex(meshMaterial->rmaTexture);
+
+				glActiveTexture(GL_TEXTURE0);
+				lightingShader->setInt("baseTexture", 0);
+				baseTexture->Bind();
+
+				glActiveTexture(GL_TEXTURE1);
+				lightingShader->setInt("normalTexture", 1);
+				normalTexture->Bind();
+
+				glActiveTexture(GL_TEXTURE2);
+				lightingShader->setInt("rmaTexture", 2);
+				rmaTexture->Bind();
+
+				glBindVertexArray(mesh.GetVAO());
+				glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+				glBindVertexArray(0);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+		}
+
 		glStencilMask(0x00);
 	}
 

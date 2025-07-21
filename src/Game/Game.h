@@ -5,6 +5,8 @@
 #include "./Player.h"
 #include "./WeaponManager.h"
 #include "./Scene.h"
+#include "./Stalker.h"
+#include "./Player.h"
 
 #include "../Core/AssetManager.h"
 
@@ -16,14 +18,14 @@
 namespace Game {
 	enum class GameState { PLAYING, PAUSED, EDITOR };
 
-	inline std::vector<Player> g_players;
-
 	void Init();
 	void Update(double deltaTime);
 	void UpdatePhysics();
 
 	void CreatePlayers();
+
 	Player& GetPLayerByIndex(int index);
+	std::vector<Stalker>& GetAllStalkers();
 
 	void UpdateWeaponPositionByName(std::string weaponName, bool flipRotation = false);
 
