@@ -33,7 +33,6 @@ uniform vec3 camPos;
 
 uniform sampler2DArray shadowMap;
 uniform float farPlane;
-uniform bool castShadows;
 
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
@@ -50,14 +49,6 @@ uniform vec3 lightDir;
 
 const float PI = 3.14159265359;
 
-vec3 gridSamplingDiskCSM[20] = vec3[](
-    vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
-    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-    vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-);
-
 float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
   vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
@@ -72,14 +63,13 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
 
     float currentDepth = projCoords.z;
 
-    if (currentDepth > 1.0)
-    {
+    if (currentDepth > 1.0) {
         return 0.0;
     }
   
     vec3 normal = normalize(Normal);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    const float biasModifier = 0.5f;
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
+    const float biasModifier = 0.05f;
     if (layer == cascadeCount) {
         bias *= 1.0 / (farPlane * biasModifier);
     }
@@ -87,30 +77,31 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
         bias *= 1.0 / (cascadePlaneDistances[layer] * biasModifier);
     }
 
-    // PCF
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-    vec3 baseCoords = vec3(projCoords.xy, layer);
-    float testDepth = currentDepth - bias;
+    // PCF 2x2 centered
+  float shadow = 0.0;
+vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+vec2 offsets[4] = vec2[](
+    vec2(-0.5, -0.5),
+    vec2(0.5, -0.5),
+    vec2(-0.5, 0.5),
+    vec2(0.5, 0.5)
+);
 
-    // Reduce quality for distant shadows
-    int sampleRadius = (layer < 2) ? 1 : 0; // Only high quality for close cascades
-    int sampleCount = 0;
-
-    for(int x = -sampleRadius; x <= sampleRadius; ++x) {
-    for(int y = -sampleRadius; y <= sampleRadius; ++y) {
-        float pcfDepth = texture(shadowMap, baseCoords + vec3(vec2(x, y) * texelSize, 0.0)).r;
-        shadow += testDepth > pcfDepth ? 1.0 : 0.0;
-        sampleCount++;
-      }    
-    }
-    shadow /= float(sampleCount);
-
-    if(projCoords.z > 1.0) {
-     shadow = 0.0;
-   }
+for (int i = 0; i < 4; ++i) {
+    float pcfDepth = texture(
+        shadowMap,
+        vec3(projCoords.xy + offsets[i] * texelSize, layer)
+    ).r;
+    shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+}
+shadow /= 4.0;
     
-    return shadow * 0.4;
+     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+     if(projCoords.z > 1.0) {
+       shadow = 0.0;
+     }
+    
+     return shadow * 0.4;
 }
 
 
@@ -216,10 +207,10 @@ void main() {
    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
  }
 
-  if (castShadows) {
-   float shadow = ShadowCalculationCSM(WorldPos);
-   Lo *= (1.0 - shadow);
-  }
+
+  float shadow = ShadowCalculationCSM(WorldPos);
+  Lo *= (1.0 - shadow);
+  
 
   vec3 ambient = vec3(0.02) * albedo * ao;
   //vec3 color   = ambient + Lo; 

@@ -15,8 +15,10 @@ namespace Physics {
     PxControllerManager* g_controllerManager = nullptr;
 
     PxRigidDynamic* g_cubeActor = nullptr;
+
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatic;
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
+  /*  std::unordered_map<uint64_t, PxController> g_charaterControllers;*/
 
     float g_ControllerVerticalVelocity = 0.0f;
     double g_fixedDeltaTime = 1.0 / 60;

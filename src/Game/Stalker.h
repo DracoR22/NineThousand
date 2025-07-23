@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "../PathFinding/PathFinding.h"
 
 class Stalker {
 public:
@@ -12,6 +13,8 @@ public:
 
 	glm::vec3 GetPosition() const { return m_position; };
 	glm::vec3 GetRotationEuler() const { return m_rotationEuler; };
+
+	PathFinding m_pathFinder;
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_rotationEuler;

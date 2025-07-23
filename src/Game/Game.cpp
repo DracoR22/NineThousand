@@ -19,7 +19,7 @@ namespace Game {
 		UpdatePhysics();
 
 		// Update enemies
-		if (g_players[0].IsMoving()) {
+		/*if (g_players[0].IsMoving()) {
 			float enemySpeed = 20.0f;
 			glm::vec3 stalkerPos = g_stalkers[0].GetPosition();
 			glm::vec3 playerPos = g_players[0].getPosition();
@@ -30,6 +30,35 @@ namespace Game {
 			g_stalkers[0].SetPosition(glm::vec3(newPosition.x, stalkerPos.y, newPosition.z));
 
 			float yawDegrees = glm::degrees(atan2(moveDirection.x, moveDirection.z));
+			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
+		}*/
+
+		Stalker& stalker = g_stalkers[0];
+		glm::vec3 stalkerPos = g_stalkers[0].GetPosition();
+		glm::vec3 playerPos = g_players[0].getPosition();
+		float enemySpeed = 20.0f;
+
+		static float pathfindingTimer = 0.0f;
+		pathfindingTimer += deltaTime;
+
+
+		if (g_players[0].IsMoving() || pathfindingTimer >= 0.5f) {
+			stalker.m_pathFinder.Reset();
+			stalker.m_pathFinder.FindPath(stalkerPos, playerPos);
+			pathfindingTimer = 0.0f;
+		}
+
+
+		if (!stalker.m_pathFinder.IsPathEmpty()) {
+			
+			glm::vec3 nextPos = stalker.m_pathFinder.NextPathPos(stalkerPos, glm::vec3(0.5f)); // 0.5f radius as proximity threshold
+
+			glm::vec3 moveDir = glm::normalize(nextPos - stalkerPos);
+			glm::vec3 newPosition = stalkerPos + moveDir * enemySpeed * (float)deltaTime;
+			stalker.SetPosition(glm::vec3(newPosition.x, newPosition.y, newPosition.z));
+
+			// stalker rotation
+			float yawDegrees = glm::degrees(atan2(moveDir.x, moveDir.z));
 			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
 		}
 		

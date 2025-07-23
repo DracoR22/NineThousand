@@ -52,7 +52,6 @@ namespace OpenGLRenderer {
 		lightingShader->setInt("shadowMap", 3);
 
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			lightingShader->setBool("castShadows", true);
 			lightingShader->setMat4("model", gameObject.GetModelMatrix());
 			lightingShader->setVec2("textureScale", gameObject.GetTextureScale());
 			lightingShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));

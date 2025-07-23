@@ -22,8 +22,8 @@ private:
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 	Frustum m_frustum;
-	float m_nearPlane = 0.1f;
-	float m_farPlane = 500.0f;
+	float m_nearPlane = 0.005f;
+	float m_farPlane = 256.0f;
 public:
 	Camera() = default;
 	Camera(glm::vec3 position);
