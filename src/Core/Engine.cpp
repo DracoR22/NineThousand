@@ -63,6 +63,8 @@ namespace Engine {
 			OpenGLRenderer::Render();
 			UIManager::Update();
 			EditorPanel::Render();
+
+			Mouse::ClearDeltas();
 			Window::ProcessEvents();
 		}
 

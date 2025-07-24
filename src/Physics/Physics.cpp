@@ -9,18 +9,15 @@ namespace Physics {
     PxPhysics* g_physics = nullptr;
     PxDefaultCpuDispatcher* g_dispatcher = nullptr;
     PxScene* g_scene = nullptr;
-    PxMaterial* g_material = nullptr;
-    PxMaterial* g_characterMaterial = nullptr;
-    PxController* g_controller = nullptr;
+    PxMaterial* g_defaultMaterial = nullptr;
     PxControllerManager* g_controllerManager = nullptr;
 
     PxRigidDynamic* g_cubeActor = nullptr;
 
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatic;
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
-  /*  std::unordered_map<uint64_t, PxController> g_charaterControllers;*/
+    std::unordered_map<uint64_t, CharacterController> g_charaterControllers;
 
-    float g_ControllerVerticalVelocity = 0.0f;
     double g_fixedDeltaTime = 1.0 / 60;
     double g_accumulatedTime = 0.0;
 
@@ -37,12 +34,14 @@ namespace Physics {
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
         g_scene = g_physics->createScene(sceneDesc);
 
-        g_material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
-        g_characterMaterial = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
+        g_defaultMaterial = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
+
+        // initialize character controller manager
+        g_controllerManager = PxCreateControllerManager(*g_scene);
 
         // create a ground plane
         PxRigidStatic* groundPlane = nullptr;
-        groundPlane = PxCreatePlane(*g_physics, PxPlane(0.0f, 1.0f, 0.0f, 0.0f), *g_material);
+        groundPlane = PxCreatePlane(*g_physics, PxPlane(0.0f, 1.0f, 0.0f, 0.0f), *g_defaultMaterial);
         g_scene->addActor(*groundPlane);
     }
 
@@ -60,7 +59,7 @@ namespace Physics {
         PxTransform transform(position);
         PxRigidDynamic* cubeActor = g_physics->createRigidDynamic(transform);
 
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
         cubeActor->attachShape(*shape);
         shape->release();
 
@@ -77,7 +76,7 @@ namespace Physics {
 
         PxRigidStatic* staticActor = g_physics->createRigidStatic(transform);
 
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
         staticActor->attachShape(*shape);
         shape->release();
 
@@ -91,7 +90,7 @@ namespace Physics {
 
         PxRigidDynamic* capsuleActor = g_physics->createRigidDynamic(transform);
 
-        PxShape* shape = g_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *g_material);
+        PxShape* shape = g_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *g_defaultMaterial);
         capsuleActor->attachShape(*shape);
   
         shape->release();
@@ -103,7 +102,7 @@ namespace Physics {
         return capsuleActor;
     }
 
-    void CreateCharacterController() {
+    /*void CreateCharacterController() {
         g_controllerManager = PxCreateControllerManager(*g_scene);
 
         physx::PxCapsuleControllerDesc desc;
@@ -116,26 +115,68 @@ namespace Physics {
         desc.upDirection = PxVec3(0, 1, 0);
 
        g_controller = g_controllerManager->createController(desc);
+    }*/
+
+    uint64_t CreateCharacterController(const glm::vec3& position, float height) {
+        PxCapsuleControllerDesc desc;
+        desc.height = height - 2.0f * desc.radius;
+        desc.radius = 0.3f;
+        desc.material = g_defaultMaterial;
+        desc.position = PxExtendedVec3(position.x, position.y, position.z);
+        desc.slopeLimit = 0.707f;
+        desc.stepOffset = 0.5f;
+        desc.upDirection = PxVec3(0, 1, 0);
+
+        PxController* pxController = g_controllerManager->createController(desc);
+
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        CharacterController& characterController = g_charaterControllers[physicsId];
+        characterController.SetPxController(pxController);
+
+        return physicsId;
     }
 
-    void MoveCharacterController(const glm::vec3& direction, float deltaTime) {
-        g_ControllerVerticalVelocity -= 0.81f * g_fixedDeltaTime;
-        
-        physx::PxVec3 displacement(direction.x, g_ControllerVerticalVelocity, direction.z);
-        PxControllerCollisionFlags flags = g_controller->move(displacement, 0.001f, g_fixedDeltaTime, nullptr);
+    void MoveCharacterController(uint64_t physicsId, const glm::vec3& direction) {
+        CharacterController* characterController = GetCharacterControllerById(physicsId);
 
-        if (flags & PxControllerCollisionFlag::eCOLLISION_DOWN) {
-           g_ControllerVerticalVelocity = 0.0f;
+        if (characterController) {
+            characterController->Move(direction);
+        }
+        else {
+            std::cout << "ERROR: Physics::MoveCharacterController() controller with physicsId: " << physicsId << " was nullptr!\n";
         }
     }
 
-    void UpdateCharacterControllerVerticalVelocity() {
-        float jumpVelocity = 0.55f; 
-        g_ControllerVerticalVelocity = jumpVelocity;
+    void UpdateCharacterControllerVerticalVelocity(uint64_t physicsId) {
+        CharacterController* characterController = GetCharacterControllerById(physicsId);
+
+        if (characterController) {
+            characterController->SetVerticalVelocity(0.55f);
+        }
+        else {
+            std::cout << "ERROR: Physics::UpdateCharacterControllerVerticalVelocity() controller with physicsId: " << physicsId << " was nullptr!\n";
+        }
     }
 
-    PxExtendedVec3 GetCharacterControllerPosition() {
-        return g_controller->getPosition();
+    glm::vec3 GetCharacterControllerPosition(uint64_t physicsId) {
+        CharacterController* characterController = GetCharacterControllerById(physicsId);
+
+        if (characterController) {
+            PxExtendedVec3 position = characterController->GetPxController()->getPosition();
+            return glm::vec3(position.x, position.y, position.z);
+        }
+        else {
+            std::cout << "ERROR: Physics::GetCharacterControllerPosition() controller with physicsId: " << physicsId << " was nullptr!\n";
+            return glm::vec3(0.0f);
+        }
+    }
+
+    CharacterController* GetCharacterControllerById(uint64_t physicsId) {
+        auto it = g_charaterControllers.find(physicsId);
+        if (it != g_charaterControllers.end()) {
+            return &it->second;
+        }
+        return nullptr;
     }
 
     uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass) {
@@ -145,7 +186,7 @@ namespace Physics {
 
         PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
 
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
@@ -177,7 +218,7 @@ namespace Physics {
         PxRigidStatic* pxRigidStatic = g_physics->createRigidStatic(pxTransform);
 
         // create shape
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_material);
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
         pxRigidStatic->attachShape(*shape);
         shape->release();
 
@@ -221,7 +262,7 @@ namespace Physics {
         PxConvexMeshGeometryFlags flags(~PxConvexMeshGeometryFlag::eTIGHT_BOUNDS);
         PxConvexMeshGeometry geometry(convexMesh, PxMeshScale(PxVec3(1.0f)), flags);
 
-        PxShape* pxShape = g_physics->createShape(geometry, *g_material);
+        PxShape* pxShape = g_physics->createShape(geometry, *g_defaultMaterial);
 
         // create PxRigidStatic
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
@@ -284,12 +325,12 @@ namespace Physics {
     void CleanupPhysX() {
         g_rigidDynamic.clear();
         g_rigidStatic.clear();
-      /*  g_cubeActor->release();*/
-        g_controller->release();
+        g_charaterControllers.clear();
+     
         g_controllerManager->release();
         g_scene->release();
         g_dispatcher->release();
-        g_material->release();
+        g_defaultMaterial->release();
         g_physics->release();
         g_foundation->release();
     }

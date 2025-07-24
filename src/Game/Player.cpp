@@ -5,8 +5,12 @@ Player::Player(glm::vec3 position, float height)
     float eyeHeight = position.y + (height * 0.8f);
 
 	m_camera = Camera(glm::vec3(position.x, eyeHeight, position.z));
+    m_position = position;
 
-    Physics::CreateCharacterController();
+    //Physics::CreateCharacterController();
+
+    uint64_t physicsId = Physics::CreateCharacterController(position, height);
+    m_physicsId = physicsId;
 
     GameObjectCreateInfo gunCreateInfo{
             "Player1Glock", 
@@ -41,10 +45,14 @@ void Player::Update(double deltaTime) {
     }
 
     UpdateAudio(deltaTime);
+    UpdateMovement(deltaTime);
+    
+}
 
+void Player::UpdateMovement(double deltaTime) {
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(m_camera.cameraFront.x, 0.0f, m_camera.cameraFront.z));
     glm::vec3 horizontalRight = glm::normalize(glm::vec3(m_camera.cameraRight.x, 0.0f, m_camera.cameraRight.z));
-    
+
     glm::vec3 moveDirection(0.0f, 0.0f, 0.0f);
 
     if (Keyboard::KeyPressed(GLFW_KEY_W)) {
@@ -66,7 +74,7 @@ void Player::Update(double deltaTime) {
     }
 
     if (Keyboard::KeyJustPressed(GLFW_KEY_SPACE)) {
-        Physics::UpdateCharacterControllerVerticalVelocity();
+        Physics::UpdateCharacterControllerVerticalVelocity(m_physicsId);
     }
 
     // Normalize move direction to avoid faster diagonal movement
@@ -74,30 +82,33 @@ void Player::Update(double deltaTime) {
         moveDirection = glm::normalize(moveDirection);
     }
 
-     m_isMoving = glm::length(moveDirection) > 0.0f;
+    m_isMoving = glm::length(moveDirection) > 0.0f;
 
-     Physics::MoveCharacterController(moveDirection * currentSpeed * static_cast<float>(deltaTime), deltaTime);
+    Physics::MoveCharacterController(m_physicsId, moveDirection * currentSpeed * static_cast<float>(deltaTime));
 
-     // Handle mouse input for camera rotation
-     static glm::vec2 smoothedDelta = glm::vec2(0.0f);
-     const float smoothingFactor = 0.95f; // Lower = smoother, but more latency
+    // Handle mouse movement for camera rotation
+    static glm::vec2 smoothedDelta = glm::vec2(0.0f);
+    const float smoothingFactor = 0.95f; // Lower = smoother, but more latency
 
-     double dx = Mouse::getDX();
-     double dy = Mouse::getDY();
+    double dx = Mouse::getDX();
+    double dy = Mouse::getDY();
 
-     // Smooth mouse input
-     smoothedDelta.x += (dx - smoothedDelta.x) * smoothingFactor;
-     smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
+    // Smooth mouse input
+    smoothedDelta.x += (dx - smoothedDelta.x) * smoothingFactor;
+    smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
 
-     float sensitivity = 0.007f;
-     m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
+    float sensitivity = 0.007f;
+    m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
-     physx::PxExtendedVec3 characterControllerPos = Physics::GetCharacterControllerPosition();
-     glm::vec3 currentCamPos = m_camera.cameraPos; 
-     glm::vec3 targetCamPos = glm::vec3(characterControllerPos.x, characterControllerPos.y + m_height * 0.8f, characterControllerPos.z);
+    glm::vec3 characterControllerPos = Physics::GetCharacterControllerPosition(m_physicsId);
 
-     float camSmoothFactor = 10.0f; // tweak as needed
-     m_camera.setPosition(glm::mix(currentCamPos, targetCamPos, camSmoothFactor * static_cast<float>(deltaTime)));
+    m_position = characterControllerPos;
+    glm::vec3 currentCamPos = m_camera.cameraPos;
+    glm::vec3 targetCamPos = glm::vec3(characterControllerPos.x, characterControllerPos.y + m_height * 0.8f, characterControllerPos.z);
+
+    float camSmoothFactor = 10.0f; // tweak as needed
+    m_camera.setPosition(glm::mix(currentCamPos, targetCamPos, camSmoothFactor * static_cast<float>(deltaTime)));
+    //m_camera.setPosition(targetCamPos);
 }
 
 void Player::UpdateAudio(double deltaTime) {

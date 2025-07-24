@@ -59,14 +59,14 @@ double Mouse::getMouseY() {
 double Mouse::getDX() {
     double _dx = dx;
     // set to 0 because change no longer new
-    dx = 0;
+    //dx = 0;
     return _dx;
 }
 
 double Mouse::getDY() {
     double _dy = dy;
     // set to 0 because change no longer new
-    dy = 0;
+    //dy = 0;
     return _dy;
 }
 
@@ -101,4 +101,9 @@ bool Mouse::ButtonJustReleased(int button) {
 
 bool Mouse::ButtonJustPressed(int button) {
     return buttons[button] && ButtonChanged(button);
+}
+
+void Mouse::ClearDeltas() {
+    dx = 0;
+    dy = 0;
 }

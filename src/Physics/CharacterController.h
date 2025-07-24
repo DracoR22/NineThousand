@@ -9,5 +9,15 @@ using namespace physx;
 
 class CharacterController {
 public:
+	CharacterController() = default;
+	~CharacterController();
+
+	void SetPxController(PxController* pxController);
+	void SetVerticalVelocity(float jumpVelocity);
+	void Move(const glm::vec3& direction);
+
+	PxController* GetPxController();
 private:
+	PxController* m_pxController;
+	float m_verticalVelocity = 0.0f;
 };

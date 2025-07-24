@@ -17,20 +17,6 @@
 
 
 class Player {
-private:
-	bool m_isOnGround = true;
-	bool m_isMoving = false;
-	bool m_isSprinting = false;
-	bool m_isAimingWeapon = false;
-	bool m_isOnWaterSurface = false;
-	
-	float m_speed = 0.0f;
-	float m_height = 5.2f;
-	float m_mass = 75.0f;
-
-	WeaponInfo* m_equippedWeapon = nullptr;
-	WeaponAction m_weaponAction = WeaponAction::IDLE;
-	std::unordered_map<std::string, WeaponState> m_weaponStates;
 public:
 	Player() = default;
 	Player(glm::vec3 position, float height);
@@ -79,4 +65,22 @@ public:
 	Camera m_camera;
 	float m_muzzleFlashTimer = 0;
 	GameObject m_currentWeaponGameObject;
+
+private:
+	uint64_t m_physicsId;
+
+	bool m_isOnGround = true;
+	bool m_isMoving = false;
+	bool m_isSprinting = false;
+	bool m_isAimingWeapon = false;
+	bool m_isOnWaterSurface = false;
+
+	glm::vec3 m_position;
+	float m_speed = 0.0f;
+	float m_height = 0.0f;
+	float m_mass = 75.0f;
+
+	WeaponInfo* m_equippedWeapon = nullptr;
+	WeaponAction m_weaponAction = WeaponAction::IDLE;
+	std::unordered_map<std::string, WeaponState> m_weaponStates;
 };

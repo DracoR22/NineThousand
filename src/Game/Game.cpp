@@ -260,7 +260,7 @@ namespace Game {
 	}
 
 	void CreatePlayers() {
-		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 5.2f);
+		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 4.2f);
 		player.EquipWeapon("Glock");
 		player.InitWeaponStates();
 
@@ -333,6 +333,23 @@ namespace Game {
 			localRotationFix = katanaForwardTilt * localRotationFix;
 		}
 		gunRotation = gunRotation * localRotationFix;
+
+		double mouseDX = Mouse::getDX();
+		double mouseDY = Mouse::getDY();
+
+		float swayAmount = 0.002f;
+		static glm::vec3 weaponSwayOffset = glm::vec3(0.0f);
+
+		glm::vec3 targetSwayOffset =
+			g_players[0].m_camera.cameraRight * (-(float)mouseDX * swayAmount) +
+			g_players[0].m_camera.cameraUp * (-(float)mouseDY * swayAmount);
+
+		float smoothSpeed = 5.0f; // Increase for snappier, decrease for floatier
+		weaponSwayOffset = glm::mix(weaponSwayOffset, targetSwayOffset, smoothSpeed * Window::GetDeltaTime());
+
+		// Apply
+		gunPosition += weaponSwayOffset;
+
 
 		g_players[0].m_currentWeaponGameObject.SetPosition(gunPosition);
 		g_players[0].m_currentWeaponGameObject.SetRotationMatrix(gunRotation);

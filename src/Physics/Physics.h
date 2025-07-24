@@ -6,6 +6,7 @@
 #include "../Core/Model.h"
 #include "./RigidStatic.h"
 #include "./RigidDynamic.h"
+#include "./CharacterController.h"
 #include "../Utils/Utils.h"
 
 struct PhysicsTransformData {
@@ -27,10 +28,11 @@ namespace Physics {
     PhysicsTransformData GetActorTransform(const physx::PxRigidActor* actor);
 
     // Character Controller
-    void CreateCharacterController();
-    void MoveCharacterController(const glm::vec3& direction, float deltaTime);
-    void UpdateCharacterControllerVerticalVelocity();
-    PxExtendedVec3 GetCharacterControllerPosition();
+    uint64_t CreateCharacterController(const glm::vec3& position, float height);
+    void MoveCharacterController(uint64_t physicsId, const glm::vec3& direction);
+    void UpdateCharacterControllerVerticalVelocity(uint64_t physicsId);
+    glm::vec3 GetCharacterControllerPosition(uint64_t physicsId);
+    CharacterController* GetCharacterControllerById(uint64_t physicsId);
 
     // Rigid Dynamics
     uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass);

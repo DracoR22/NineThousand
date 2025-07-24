@@ -23,6 +23,8 @@ public:
 	static bool ButtonJustReleased(int button);
 	static bool ButtonJustPressed(int button);
 
+	static void ClearDeltas();
+
 private:
 	static double x;
 	static double y;

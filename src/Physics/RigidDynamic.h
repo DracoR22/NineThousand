@@ -8,8 +8,6 @@
 using namespace physx;
 
 class RigidDynamic {
-private:
-	PxRigidDynamic* m_pxRigidDynamic = nullptr;
 public:
 	RigidDynamic() = default;
 	~RigidDynamic();
@@ -25,4 +23,6 @@ public:
 
 	glm::vec3 m_previousPosition;
 	glm::mat4 m_previousRotation;
+private:
+	PxRigidDynamic* m_pxRigidDynamic = nullptr;
 };
