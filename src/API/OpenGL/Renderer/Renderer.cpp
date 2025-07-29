@@ -69,7 +69,7 @@ namespace OpenGLRenderer {
 		cubeLampLight2.strength = 1.0f;
 		cubeLampLight2.type = LightType::POINT_LIGHT;
 
-		g_renderData.sceneLights.push_back(cubeLampLight);
+		//g_renderData.sceneLights.push_back(cubeLampLight);
 	    g_renderData.sceneLights.push_back(cubeLampLight2);
 		
 		glm::vec2 viewPortResolution = GetRenderResolution();
@@ -134,6 +134,8 @@ namespace OpenGLRenderer {
 		BillboardPass();
 		UIPass();
 		PostProcessingPass();
+
+		EditorPanel::Render();
 	}
 
 	void LoadShaders() {
@@ -175,6 +177,17 @@ namespace OpenGLRenderer {
 		glEnable(GL_STENCIL_TEST);
 		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
+	void DrawCube(Shader& shader, glm::mat4 modelMatrix) {
+		Model* model = AssetManager::GetModelByName("Cube");
+
+		for (Mesh& mesh : model->m_meshes) {
+			shader.setMat4("model", modelMatrix);
+			glBindVertexArray(mesh.GetVAO());
+			glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+		}
 	}
 
 	void CubeMapPass() {

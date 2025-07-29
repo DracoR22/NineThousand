@@ -151,7 +151,7 @@ namespace Physics {
         CharacterController* characterController = GetCharacterControllerById(physicsId);
 
         if (characterController) {
-            characterController->SetVerticalVelocity(0.55f);
+            characterController->SetVerticalVelocity(0.35f);
         }
         else {
             std::cout << "ERROR: Physics::UpdateCharacterControllerVerticalVelocity() controller with physicsId: " << physicsId << " was nullptr!\n";
@@ -186,7 +186,9 @@ namespace Physics {
 
         PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
 
+        PxTransform shapeOffset(PxVec3(0, halfExtents.y, 0));
         PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
+        shape->setLocalPose(shapeOffset); // this can be wrong
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
@@ -208,6 +210,59 @@ namespace Physics {
             return &it->second;
         }
         return nullptr;
+    }
+
+    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale) {
+        // Convert vertices to PxVec3
+        std::vector<PxVec3> pxVertices;
+        pxVertices.reserve(vertices.size());
+        for (Vertex& v : vertices) {
+            pxVertices.emplace_back(v.m_Position.x, v.m_Position.y, v.m_Position.z);
+        }
+
+        PxConvexMeshDesc convexDesc;
+        convexDesc.points.count = static_cast<PxU32>(pxVertices.size());
+        convexDesc.points.stride = sizeof(PxVec3);
+        convexDesc.points.data = pxVertices.data();
+        convexDesc.flags = PxConvexFlag::eSHIFT_VERTICES | PxConvexFlag::eCOMPUTE_CONVEX;
+
+        PxTolerancesScale scaleHint;
+        PxCookingParams params(scaleHint);
+
+        PxDefaultMemoryOutputStream writeBuffer;
+        PxConvexMeshCookingResult::Enum result;
+        if (!PxCookConvexMesh(params, convexDesc, writeBuffer, &result)) {
+            std::cout << "Convex mesh cooking failed!\n";
+            return 0;
+        }
+
+        PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+        PxConvexMesh* convexMesh = g_physics->createConvexMesh(readBuffer);
+        PxConvexMeshGeometryFlags flags(~PxConvexMeshGeometryFlag::eTIGHT_BOUNDS);
+       // PxConvexMeshGeometry geometry(convexMesh, PxMeshScale(PxVec3(1.0f)), flags);
+
+        PxMeshScale pxScale(PxVec3(scale.x, scale.y, scale.z));
+        PxConvexMeshGeometry geometry(convexMesh, pxScale, flags);
+
+        PxShape* pxShape = g_physics->createShape(geometry, *g_defaultMaterial);
+
+        // create rigid dynamic
+        PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
+        PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+        PxTransform pxTransform(pxPos, pxRot);
+        PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
+      
+        pxRigidDynamic->attachShape(*pxShape);
+        pxShape->release();
+        g_scene->addActor(*pxRigidDynamic);
+
+        // create rigid dynamic
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        RigidDynamic& rigidDynamic = g_rigidDynamic[physicsId];
+        rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
+        rigidDynamic.UpdateMassAndInertia(mass);
+
+        return physicsId;
     }
 
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
@@ -233,12 +288,12 @@ namespace Physics {
         return physicsId;
     }
 
-    uint64_t CreateRigidStaticConvexMeshFromVertices(const std::vector<glm::vec3>& vertices, const PhysicsTransformData& transform) {
+    uint64_t CreateRigidStaticConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform) {
         // Convert vertices to PxVec3
         std::vector<PxVec3> pxVertices; 
         pxVertices.reserve(vertices.size());
-        for (const glm::vec3& v : vertices) {
-            pxVertices.emplace_back(v.x, v.y, v.z);
+        for (Vertex& v : vertices) {
+            pxVertices.emplace_back(v.m_Position.x, v.m_Position.y, v.m_Position.z);
         }
 
         PxConvexMeshDesc convexDesc;

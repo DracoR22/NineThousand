@@ -54,7 +54,27 @@ void OpenGLRenderer::DebugPass() {
 	glStencilFunc(GL_ALWAYS, 1, 0xFF);
 	glEnable(GL_DEPTH_TEST);
 
-	// DEBUG Physics
+	// Debug Lights
+	/*solidColorShader->activate();
+	solidColorShader->set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
+	solidColorShader->setMat4("view", camera->GetViewMatrix());
+	solidColorShader->setMat4("projection", camera->GetProjectionMatrix());
+	solidColorShader->setVec3("lightColor", 0.0f, 0.0f, 0.9f);
+	std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+
+	for (LightCreateInfo& light : sceneLights) {
+		if (light.type == LightType::POINT_LIGHT) {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, light.position);
+			model *= glm::mat4(1.0f);
+			model = glm::scale(model, glm::vec3(1.0f));
+
+			DrawCube(*solidColorShader, model);
+		}
+	}*/
+	
+
+	// Debug Physics
 	static bool drawCollisionBoxes = false;
 
 	if (Keyboard::KeyJustPressed(GLFW_KEY_F3)) {
@@ -103,7 +123,17 @@ void OpenGLRenderer::DebugPass() {
 					glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
 					glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-					solidColorShader->setMat4("model", gameObject.GetModelMatrix());
+					PxTransform physxTransform = rigidDynamic->GetPxRigidDynamic()->getGlobalPose();
+					glm::vec3 position = Physics::PxVec3toGlmVec3(physxTransform.p);
+					glm::quat rotation = Physics::PxQuatToGlmQuat(physxTransform.q);
+
+					glm::mat4 fixOrientation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1, 0, 0));
+					glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
+					modelMatrix *= glm::mat4_cast(rotation);
+					modelMatrix *= fixOrientation;
+					modelMatrix = glm::scale(modelMatrix, glmExtents * 2.0f); // Multiply by 2 to get full size
+
+					solidColorShader->setMat4("model", modelMatrix);
 
 					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 

@@ -79,8 +79,8 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
 
     // PCF 2x2 centered
   float shadow = 0.0;
-vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
-vec2 offsets[4] = vec2[](
+  vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+  vec2 offsets[4] = vec2[](
     vec2(-0.5, -0.5),
     vec2(0.5, -0.5),
     vec2(-0.5, 0.5),

@@ -69,5 +69,5 @@ void main() {
    }
 
     FragColor = texture(refractionColor, refractTexCoords);
-    FragColor = mix(FragColor, vec4(0.0, 0.1, 0.2, 1.0), 0.1) + vec4(specularHighlights, 0.0);
+    FragColor = mix(FragColor, vec4(0.0, 0.05, 0.1, 1.0), 0.1) + vec4(specularHighlights, 0.0);
 }

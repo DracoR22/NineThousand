@@ -303,6 +303,7 @@ namespace EditorPanel {
 								Material& material = materials[i];
 
 								Texture* baseTexture = AssetManager::GetTextureByIndex(material.baseTexture);
+								//std::cout << "MATERIAL: " << material.baseTexture << material.name << std::endl;
 
 								if (baseTexture) {
 									ImGui::TableNextColumn();

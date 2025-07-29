@@ -28,6 +28,8 @@
 #include "../../../Common/RendererCommon.h"
 #include "../../../Common/AABB.h"
 
+#include "../../../Editor/EditorPanel.h"
+
 #include "../../../UI/UITextureElement.h"
 #include "../../../UI/UIManager.h"
 
@@ -59,6 +61,7 @@ namespace OpenGLRenderer {
 
 	void LoadShaders();
 	void UpdateFBOs();
+	void DrawCube(Shader& shader, glm::mat4 modelMatrix);
 
 	Shader* GetShaderByName(const std::string& name);
 	FrameBuffer* GetFrameBufferByName(const std::string& name);

@@ -64,12 +64,14 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 		m_physicsId = physicsId;
 	}
 
-	if (createInfo.name == "Cube0") {
+	if (createInfo.name == "Cube0" ) {
 		PhysicsTransformData physicsTransformData;
 		physicsTransformData.position = createInfo.position;
 		physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
 
 		/*std::cout << "CUBE POSITION " << glm::to_string(createInfo.position) << std::endl;*/
+
+		float mass = 1.0f;
 
 		uint64_t physicsId = Physics::CreateRigidDynamicBox(
 			physicsTransformData,
@@ -78,9 +80,23 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 				createInfo.size.y * 0.5f,
 				createInfo.size.z * 0.5f
 			),
-			10.0f
+			mass
 		);
 
+		m_physicsId = physicsId;
+	}
+
+	if (createInfo.modelName == "Barrel") {
+		PhysicsTransformData physicsTransformData;
+		physicsTransformData.position = createInfo.position;
+		physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
+
+		std::vector<Vertex> vertices;
+		for (Mesh& mesh : model->m_meshes) {
+			vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
+		}
+
+		uint64_t physicsId = Physics::CreateRigidDynamicConvexMeshFromVertices(vertices, physicsTransformData, 1.0f, createInfo.size);
 		m_physicsId = physicsId;
 	}
 }

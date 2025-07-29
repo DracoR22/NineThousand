@@ -70,6 +70,7 @@ private:
 	uint64_t m_physicsId;
 
 	bool m_isOnGround = true;
+	bool m_isJumping = false;
 	bool m_isMoving = false;
 	bool m_isSprinting = false;
 	bool m_isAimingWeapon = false;

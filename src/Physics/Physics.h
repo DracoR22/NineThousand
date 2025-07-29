@@ -37,10 +37,11 @@ namespace Physics {
     // Rigid Dynamics
     uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass);
     RigidDynamic* GetRigidDynamicById(uint64_t id);
+    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale);
 
     // Rigid Statics
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents);
-    uint64_t CreateRigidStaticConvexMeshFromVertices(const std::vector<glm::vec3>& vertices, const PhysicsTransformData& transform);
+    uint64_t CreateRigidStaticConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform);
     RigidStatic* GetRigidStaticById(uint64_t id);
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap();
 

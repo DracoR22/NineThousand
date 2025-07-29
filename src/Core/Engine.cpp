@@ -62,7 +62,6 @@ namespace Engine {
 			CameraManager::Update();
 			OpenGLRenderer::Render();
 			UIManager::Update();
-			EditorPanel::Render();
 
 			Mouse::ClearDeltas();
 			Window::ProcessEvents();
@@ -119,7 +118,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("AKS74U", "resources/models/AKS74U_Simple.fbx");
 		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
 		AssetManager::LoadSkinnedModel("Stalker", "resources/models/Stalker.fbx");
-		AssetManager::LoadSkinnedModel("PoolLadder", "resources/models/PoolLadder.obj");
+		AssetManager::LoadSkinnedModel("Barrel", "resources/models/Barrel.obj");
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;
 
