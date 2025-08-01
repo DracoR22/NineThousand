@@ -11,6 +11,7 @@
 namespace Scene {
 	void CreateHardcodedObjects();
 	void AddGameObject(GameObjectCreateInfo createInfo);
+	void RemoveGameObjectByName(const std::string& name);
 
 	std::vector<GameObject>& GetGameObjects();
 	GameObject* GetGameObjectByName(const std::string& name);

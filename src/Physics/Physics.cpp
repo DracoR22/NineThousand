@@ -14,8 +14,8 @@ namespace Physics {
 
     PxRigidDynamic* g_cubeActor = nullptr;
 
-    std::unordered_map<uint64_t, RigidStatic> g_rigidStatic;
-    std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamic;
+    std::unordered_map<uint64_t, RigidStatic> g_rigidStatics;
+    std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamics;
     std::unordered_map<uint64_t, CharacterController> g_charaterControllers;
 
     double g_fixedDeltaTime = 1.0 / 60;
@@ -28,7 +28,7 @@ namespace Physics {
         // Create a CPU dispatcher for multithreading
         g_dispatcher = PxDefaultCpuDispatcherCreate(2);
 
-        PxSceneDesc sceneDesc(g_physics->getTolerancesScale()); 
+        PxSceneDesc sceneDesc(g_physics->getTolerancesScale());
         sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f); // -9.81 earths gravity
         sceneDesc.cpuDispatcher = g_dispatcher;
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
@@ -43,6 +43,25 @@ namespace Physics {
         PxRigidStatic* groundPlane = nullptr;
         groundPlane = PxCreatePlane(*g_physics, PxPlane(0.0f, 1.0f, 0.0f, 0.0f), *g_defaultMaterial);
         g_scene->addActor(*groundPlane);
+    }
+
+    void BeginFrame() {
+        // remove marked rigid dynamics
+        if (!g_rigidDynamics.empty()) {
+            std::vector<uint64_t> idsToRemove;
+
+            // Gather marked actors
+            for (const auto& [id, rigidDynamic] : g_rigidDynamics) {
+                if (rigidDynamic.IsMarkedForRemoval()) {
+                    idsToRemove.push_back(id);
+                }
+            }
+
+            // Remove them
+            for (uint64_t id : idsToRemove) {
+                Physics::RemoveRigidDynamic(id);
+            }
+        }
     }
 
     void Simulate(double deltaTime) {
@@ -92,7 +111,7 @@ namespace Physics {
 
         PxShape* shape = g_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *g_defaultMaterial);
         capsuleActor->attachShape(*shape);
-  
+
         shape->release();
 
         PxRigidBodyExt::updateMassAndInertia(*capsuleActor, mass);
@@ -106,12 +125,12 @@ namespace Physics {
         g_controllerManager = PxCreateControllerManager(*g_scene);
 
         physx::PxCapsuleControllerDesc desc;
-        desc.height = 1.8f;       
-        desc.radius = 0.3f;         
+        desc.height = 1.8f;
+        desc.radius = 0.3f;
         desc.material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
         desc.position = PxExtendedVec3(35.0f, 5.5f, 55.0f);
-        desc.slopeLimit = 0.707f;    
-        desc.stepOffset = 0.5f;      
+        desc.slopeLimit = 0.707f;
+        desc.stepOffset = 0.5f;
         desc.upDirection = PxVec3(0, 1, 0);
 
        g_controller = g_controllerManager->createController(desc);
@@ -179,25 +198,33 @@ namespace Physics {
         return nullptr;
     }
 
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass) {
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
 
         PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
 
-        PxTransform shapeOffset(PxVec3(0, halfExtents.y, 0));
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
+        PxVec3 pxHalfExtents = PxVec3(halfExtents.x, halfExtents.y, halfExtents.z);
+
+        PxTransform shapeOffset(PxVec3(0, pxHalfExtents.y, 0));
+        PxShape* shape = g_physics->createShape(PxBoxGeometry(pxHalfExtents), *g_defaultMaterial);
         shape->setLocalPose(shapeOffset); // this can be wrong
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
-       /* PxRigidBodyExt::updateMassAndInertia(*pxRigidDynamic, mass);*/
+        /* PxRigidBodyExt::updateMassAndInertia(*pxRigidDynamic, mass);*/
         g_scene->addActor(*pxRigidDynamic);
+
+        PxVec3 force = PxVec3(initialForce.x, initialForce.y, initialForce.z);
+        pxRigidDynamic->addForce(force, PxForceMode::eIMPULSE);
+
+        PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
+        pxRigidDynamic->addTorque(torque);
 
         // create rigid dynamic
         uint64_t physicsId = Utils::GenerateUniqueID();
-        RigidDynamic& rigidDynamic = g_rigidDynamic[physicsId];
+        RigidDynamic& rigidDynamic = g_rigidDynamics[physicsId];
         rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
         rigidDynamic.UpdateMassAndInertia(mass);
 
@@ -205,14 +232,14 @@ namespace Physics {
     }
 
     RigidDynamic* GetRigidDynamicById(uint64_t id) {
-        auto it = g_rigidDynamic.find(id);
-        if (it != g_rigidDynamic.end()) {
+        auto it = g_rigidDynamics.find(id);
+        if (it != g_rigidDynamics.end()) {
             return &it->second;
         }
         return nullptr;
     }
 
-    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale) {
+    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
         // Convert vertices to PxVec3
         std::vector<PxVec3> pxVertices;
         pxVertices.reserve(vertices.size());
@@ -239,7 +266,7 @@ namespace Physics {
         PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
         PxConvexMesh* convexMesh = g_physics->createConvexMesh(readBuffer);
         PxConvexMeshGeometryFlags flags(~PxConvexMeshGeometryFlag::eTIGHT_BOUNDS);
-       // PxConvexMeshGeometry geometry(convexMesh, PxMeshScale(PxVec3(1.0f)), flags);
+        // PxConvexMeshGeometry geometry(convexMesh, PxMeshScale(PxVec3(1.0f)), flags);
 
         PxMeshScale pxScale(PxVec3(scale.x, scale.y, scale.z));
         PxConvexMeshGeometry geometry(convexMesh, pxScale, flags);
@@ -251,18 +278,53 @@ namespace Physics {
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
         PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
-      
+
         pxRigidDynamic->attachShape(*pxShape);
         pxShape->release();
         g_scene->addActor(*pxRigidDynamic);
 
+
+        PxVec3 force = PxVec3(initialForce.x, initialForce.y, initialForce.z);
+        pxRigidDynamic->addForce(force, PxForceMode::eIMPULSE);
+
+        PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
+        pxRigidDynamic->addTorque(torque);
+
         // create rigid dynamic
         uint64_t physicsId = Utils::GenerateUniqueID();
-        RigidDynamic& rigidDynamic = g_rigidDynamic[physicsId];
+        RigidDynamic& rigidDynamic = g_rigidDynamics[physicsId];
         rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
         rigidDynamic.UpdateMassAndInertia(mass);
 
         return physicsId;
+    }
+
+    void RemoveRigidDynamic(uint64_t id) {
+        RigidDynamic* rigidDynamic = GetRigidDynamicById(id);
+
+        if (rigidDynamic) {
+            PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
+
+            if (pxRigidDynamic->userData) {
+                pxRigidDynamic->userData = nullptr;
+            }
+            if (pxRigidDynamic->getScene() != nullptr) {
+                g_scene->removeActor(*pxRigidDynamic);
+            }
+
+            pxRigidDynamic->release();
+
+            // Remove from container
+            g_rigidDynamics.erase(id);
+        }
+    }
+
+    void MarkRigidDynamicForRemoval(uint64_t id) {
+        RigidDynamic* rigidDynamic = GetRigidDynamicById(id);
+
+        if (rigidDynamic) {
+            rigidDynamic->MarkForRemoval();
+        }
     }
 
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
@@ -281,7 +343,7 @@ namespace Physics {
 
         // create rigid static
         uint64_t physicsId = Utils::GenerateUniqueID();
-        RigidStatic& rigidStatic = g_rigidStatic[physicsId];
+        RigidStatic& rigidStatic = g_rigidStatics[physicsId];
 
         rigidStatic.SetPxRigidStatic(pxRigidStatic);
 
@@ -331,22 +393,22 @@ namespace Physics {
 
         // store to RigidStatic
         uint64_t physicsId = Utils::GenerateUniqueID();
-        RigidStatic& rigidStatic = g_rigidStatic[physicsId];
+        RigidStatic& rigidStatic = g_rigidStatics[physicsId];
         rigidStatic.SetPxRigidStatic(pxRigidStatic);
 
         return physicsId;
     }
 
     RigidStatic* GetRigidStaticById(uint64_t id) {
-        auto it = g_rigidStatic.find(id);
-        if (it != g_rigidStatic.end()) {
+        auto it = g_rigidStatics.find(id);
+        if (it != g_rigidStatics.end()) {
             return &it->second;
         }
         return nullptr;
     }
 
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap() {
-        return g_rigidStatic;
+        return g_rigidStatics;
     }
 
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec) {
@@ -378,8 +440,8 @@ namespace Physics {
     }
 
     void CleanupPhysX() {
-        g_rigidDynamic.clear();
-        g_rigidStatic.clear();
+        g_rigidDynamics.clear();
+        g_rigidStatics.clear();
         g_charaterControllers.clear();
      
         g_controllerManager->release();

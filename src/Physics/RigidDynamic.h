@@ -10,7 +10,7 @@ using namespace physx;
 class RigidDynamic {
 public:
 	RigidDynamic() = default;
-	~RigidDynamic();
+	//~RigidDynamic();
 
 	void SetPxRigidDynamic(PxRigidDynamic* rigidDynamic);
 	void UpdateMassAndInertia(float mass);
@@ -21,8 +21,12 @@ public:
 
 	PxRigidDynamic* GetPxRigidDynamic();
 
+	void MarkForRemoval();
+	bool IsMarkedForRemoval() const { return m_markedForRemoval; };
+
 	glm::vec3 m_previousPosition;
 	glm::mat4 m_previousRotation;
 private:
 	PxRigidDynamic* m_pxRigidDynamic = nullptr;
+	bool m_markedForRemoval = false;
 };

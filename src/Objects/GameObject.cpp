@@ -5,8 +5,6 @@
 GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 	glm::vec3 radians = glm::radians(createInfo.rotation);
 
-	std::cout << "Model Name" << createInfo.name << std::endl;
-
 	m_name = createInfo.name;
 	m_modelName = createInfo.modelName;
 	m_position = createInfo.position;
@@ -60,7 +58,7 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 			createInfo.size.z * 0.5f
 			)
 		);
-
+	
 		m_physicsId = physicsId;
 	}
 
@@ -72,15 +70,15 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 		/*std::cout << "CUBE POSITION " << glm::to_string(createInfo.position) << std::endl;*/
 
 		float mass = 1.0f;
+		glm::vec3 initialForce = glm::vec3(0.0f);
+		glm::vec3 initialTorque = glm::vec3(0.0f);
 
 		uint64_t physicsId = Physics::CreateRigidDynamicBox(
 			physicsTransformData,
-			PxVec3(
-				createInfo.size.x * 0.5f,
-				createInfo.size.y * 0.5f,
-				createInfo.size.z * 0.5f
-			),
-			mass
+			createInfo.size * 0.5f,
+			mass,
+			initialForce,
+			initialTorque
 		);
 
 		m_physicsId = physicsId;
@@ -96,7 +94,10 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 			vertices.insert(vertices.end(), mesh.vertices.begin(), mesh.vertices.end());
 		}
 
-		uint64_t physicsId = Physics::CreateRigidDynamicConvexMeshFromVertices(vertices, physicsTransformData, 1.0f, createInfo.size);
+		glm::vec3 initialForce = glm::vec3(0.0f);
+		glm::vec3 initialTorque = glm::vec3(0.0f);
+
+		uint64_t physicsId = Physics::CreateRigidDynamicConvexMeshFromVertices(vertices, physicsTransformData, 0.5f, createInfo.size, initialForce, initialTorque);
 		m_physicsId = physicsId;
 	}
 }

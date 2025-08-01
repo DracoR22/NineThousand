@@ -10,7 +10,6 @@ namespace Engine {
 		LoadResources();
 
 		Game::Init();
-		//Game::CreatePlayers();
 
 		Player& player = Game::GetPLayerByIndex(0);
 
@@ -31,6 +30,8 @@ namespace Engine {
 			Window::UpdateDeltaTime();
 			Window::UpdateFPSCount();
 
+			Physics::BeginFrame();
+
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F1)) {
 				if (Game::GetGameState() == Game::GameState::EDITOR) {
 					Game::SetGameState(Game::GameState::PLAYING);
@@ -40,15 +41,11 @@ namespace Engine {
 				}
 			}
 
-			Window::ProcessInput(Window::GetDeltaTime());
-			Physics::Simulate(Window::GetDeltaTime());
-
 			if (Game::GetGameState() == Game::GameState::PLAYING) {
-				CameraManager::SetActiveCamera(0);
-				player.Update(Window::GetDeltaTime());
-				Game::Update(Window::GetDeltaTime());
+			   CameraManager::SetActiveCamera(0);
+			   Game::Update(Window::GetDeltaTime());
 
-				glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			   glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			}
 			else {
 				CameraManager::SetActiveCamera(1);
@@ -103,6 +100,7 @@ namespace Engine {
 		AudioManager::LoadAudio("slosh2.wav");
 		AudioManager::LoadAudio("slosh3.wav");
 		AudioManager::LoadAudio("slosh4.wav");
+		AudioManager::LoadAudio("BulletCasingBounce.wav");
 
 		// fonts
 		Text2D::LoadFont("resources/fonts/sans.fnt");
@@ -119,6 +117,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
 		AssetManager::LoadSkinnedModel("Stalker", "resources/models/Stalker.fbx");
 		AssetManager::LoadSkinnedModel("Barrel", "resources/models/Barrel.obj");
+		AssetManager::LoadSkinnedModel("Bullet_Case_9mm", "resources/models/Bullet_Case_9mm.obj");
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;
 
@@ -134,7 +133,6 @@ namespace Engine {
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
-
 
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);

@@ -329,6 +329,15 @@ bool Player::ReleasedADS() {
     }
 }
 
+bool Player::ReleasedFire() {
+    if (Mouse::ButtonJustReleased(GLFW_MOUSE_BUTTON_LEFT)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool Player::IsInADS() {
     return (m_weaponAction == WeaponAction::ADS_WALK ||
         m_weaponAction == WeaponAction::ADS_OUT ||
@@ -380,12 +389,6 @@ void Player::ReloadWeapon() {
                 m_weaponAction = WeaponAction::FIRE;
             }
 
-            WeaponState* state = GetEquipedWeaponState();
-            if (state && state->ammoInMag > 0) {
-                state->ammoInMag -= 1;
-                m_muzzleFlashTimer = 5;
-            }
-        
         int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
         AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
 
@@ -416,8 +419,17 @@ void Player::ReloadWeapon() {
                 float impulseStrength = 500.0f;  // bullet force
                 dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
             }
+         }
+
+        // spawn muzzle flash
+        WeaponState* state = GetEquipedWeaponState();
+        if (state && state->ammoInMag > 0) {
+            state->ammoInMag -= 1;
+            m_muzzleFlashTimer = 5;
+        }
+
+        SpawnBulletCase();
     }
-}
 
 void Player::MeleeHit() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
@@ -507,6 +519,10 @@ void Player::UpdateWeaponLogic() {
         LeaveADS();
     }
 
+    if (ReleasedFire()) {
+        AudioManager::PlayAudio("BulletCasingBounce.wav", 1.0f, 1.0f);
+    }
+
     // regular walk animation
     if (!PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
         currentWeaponAnimator->PlayAnimation(weaponWalkAnimation);
@@ -564,4 +580,58 @@ void Player::UpdateWeaponLogic() {
 
 void Player::SetWeaponAction(WeaponAction action) {
     m_weaponAction = action;
+}
+
+void Player::SpawnBulletCase() {
+    // remove previous bullet case if it exists
+    if (m_bulletCasePhysicsId != -1) {
+        Physics::MarkRigidDynamicForRemoval(m_bulletCasePhysicsId);
+        m_bulletCasePhysicsId = -1;
+    }
+    Scene::RemoveGameObjectByName("BulletCase1");
+
+    // spawn bullet case
+    GameObjectCreateInfo createInfo;
+    createInfo.modelName = "Bullet_Case_9mm";
+    createInfo.name = "BulletCase1";
+
+    int caseMaterialIndex = AssetManager::GetMaterialIndexByName("Bullet_Case_9mm");
+    int caseMeshIndex = AssetManager::GetMeshIndexByName("9mm_Shell");
+
+    MeshRenderingInfo meshInfo;
+    meshInfo.materialIndex = caseMaterialIndex;
+    meshInfo.meshIndex = caseMeshIndex;
+
+    createInfo.meshRenderingInfo.push_back(meshInfo);
+
+    glm::vec3 bulletCaseOffset = glm::vec3(1.5f, 3.6f, -3.7f);
+    glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), m_currentWeaponGameObject.GetPosition()) * m_currentWeaponGameObject.GetRotationMatrix();
+    glm::vec4 worldBarrelPos = gunTransform * glm::vec4(bulletCaseOffset, 1.0f);
+
+    createInfo.position = worldBarrelPos;
+    createInfo.size = glm::vec3(5.0f);
+
+    Scene::AddGameObject(createInfo);
+
+    // Create rigid dynamic
+    PhysicsTransformData physicsTransformData;
+    physicsTransformData.position = createInfo.position;
+    physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
+
+    float mass = 0.05f;
+    glm::vec3 initialForce = glm::vec3(2.0f, 3.0f, -1.5f) * 4.9f;
+    initialForce = glm::vec3(gunTransform * glm::vec4(initialForce, 0.0f)); // transform to world space
+
+    // Add spin for realism
+    glm::vec3 initialTorque = glm::vec3(3.0f, 5.0f, 1.0f);
+
+    uint64_t physicsId = Physics::CreateRigidDynamicBox(
+        physicsTransformData,
+        createInfo.size * 0.5f,
+        mass,
+        initialForce,
+        initialTorque
+    );
+
+    m_bulletCasePhysicsId = physicsId;
 }

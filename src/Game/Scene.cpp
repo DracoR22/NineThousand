@@ -23,6 +23,16 @@ namespace Scene {
 		g_gameObjects.emplace_back(createInfo);
 	}
 
+	void RemoveGameObjectByName(const std::string& name) {
+		g_gameObjects.erase(
+			std::remove_if(g_gameObjects.begin(), g_gameObjects.end(),
+				[&](const GameObject& obj) {
+					return obj.GetName() == name;
+				}),
+			g_gameObjects.end()
+		);
+	}
+
 	std::vector<GameObject>& GetGameObjects() {
 		return g_gameObjects;
 	}

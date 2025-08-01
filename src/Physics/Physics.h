@@ -18,6 +18,7 @@ namespace Physics {
     using namespace physx;
 
     void Init();
+    void BeginFrame();
     void Simulate(double dt);
 
     // Create
@@ -35,9 +36,11 @@ namespace Physics {
     CharacterController* GetCharacterControllerById(uint64_t physicsId);
 
     // Rigid Dynamics
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const PxVec3& halfExtents, PxReal mass);
     RigidDynamic* GetRigidDynamicById(uint64_t id);
-    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale);
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque);
+    uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque);
+    void RemoveRigidDynamic(uint64_t id);
+    void MarkRigidDynamicForRemoval(uint64_t id);
 
     // Rigid Statics
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents);

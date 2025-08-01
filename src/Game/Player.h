@@ -47,6 +47,7 @@ public:
 	bool PressedADS();
 	bool PressedReload();
 	bool ReleasedADS();
+	bool ReleasedFire();
 	bool IsInADS();
 
 	void ReloadWeapon();
@@ -61,11 +62,13 @@ public:
 
 	WeaponAction GetWeaponAction();
 	void SetWeaponAction(WeaponAction action);
+
+	void SpawnBulletCase();
 public:
 	Camera m_camera;
 	float m_muzzleFlashTimer = 0;
 	GameObject m_currentWeaponGameObject;
-
+	uint64_t m_bulletCasePhysicsId = -1;
 private:
 	uint64_t m_physicsId;
 

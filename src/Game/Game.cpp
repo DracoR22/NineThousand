@@ -16,6 +16,17 @@ namespace Game {
 	}
 
 	void Update(double deltaTime) {
+
+	/*	if (Keyboard::KeyJustPressed(GLFW_KEY_F1)) {
+			if (GetGameState() == GameState::EDITOR) {
+				SetGameState(GameState::PLAYING);
+			}
+			else {
+				Game::SetGameState(GameState::EDITOR);
+			}
+		}*/
+
+		g_players[0].Update(Window::GetDeltaTime());
 		UpdatePhysics();
 
 		// Update enemies
@@ -239,6 +250,7 @@ namespace Game {
 			UpdateWeaponPositionByName(equipedWeapon->name);
 		}
 		
+		Physics::Simulate(Window::GetDeltaTime());
 	}
 
 	void UpdatePhysics() {
@@ -255,6 +267,16 @@ namespace Game {
 					gameObject.SetPosition(rigidDynamic->GetCurrentPosition());
 					gameObject.SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
 				}
+			}
+		}
+
+		// update bullet cases
+		if (g_players[0].m_bulletCasePhysicsId != -1) {
+			GameObject* bulletCase = Scene::GetGameObjectByName("BulletCase1");
+			RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(g_players[0].m_bulletCasePhysicsId);
+			if (rigidDynamic) {
+				bulletCase->SetPosition(rigidDynamic->GetCurrentPosition());
+				bulletCase->SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
 			}
 		}
 	}

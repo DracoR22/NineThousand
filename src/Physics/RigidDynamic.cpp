@@ -1,12 +1,12 @@
 #include "RigidDynamic.h"
 #include <glm/gtx/quaternion.hpp>
 
-RigidDynamic::~RigidDynamic() {
-	if (m_pxRigidDynamic) {
-		m_pxRigidDynamic->release();
-		m_pxRigidDynamic = nullptr;
-	}
-}
+//RigidDynamic::~RigidDynamic() {
+//	if (m_pxRigidDynamic) {
+//		m_pxRigidDynamic->release();
+//		m_pxRigidDynamic = nullptr;
+//	}
+//}
 
 void RigidDynamic::SetPxRigidDynamic(PxRigidDynamic* rigidDynamic) {
 	m_pxRigidDynamic = rigidDynamic;
@@ -42,4 +42,8 @@ glm::mat4 RigidDynamic::GetCurrentRotationMatrix() {
 
 PxRigidDynamic* RigidDynamic::GetPxRigidDynamic() {
 	return m_pxRigidDynamic;
+}
+
+void RigidDynamic::MarkForRemoval() {
+	m_markedForRemoval = true;
 }
