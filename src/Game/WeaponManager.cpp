@@ -39,6 +39,12 @@ namespace WeaponManager {
 		glock.meshMaterials["Glock"] = "Glock";
 		glock.meshMaterials["ArmsMale"] = "Hands";
 		glock.meshMaterials["ArmsFemale"] = "FemaleArms";
+		glock.ammoInfo.caseSpawnOffset = glm::vec3(1.0f, 3.7f, -3.7f);
+		glock.ammoInfo.caseSpawnOffsetADS = glm::vec3(0.0f, 4.3f, 3.7f);
+		glock.ammoInfo.caseModelName = "Bullet_Case_9mm";
+		glock.ammoInfo.caseMaterialName = "Bullet_Case_9mm";
+		glock.ammoInfo.caseMeshName = "9mm_Shell";
+		glock.ammoInfo.caseSize = 5.0f;
 
 		WeaponInfo& katana = g_weapons.emplace_back();
 		katana.name = "Katana";
@@ -100,6 +106,12 @@ namespace WeaponManager {
 		aks74u.meshMaterials["AKS74U_ScopeMain"] = "AKS74U_ScopeMain";
 		aks74u.meshMaterials["AKS74U_ScopeFrontCap"] = "AKS74U_ScopeVxor";
 		aks74u.meshMaterials["AKS74U_ScopeBackCap"] = "AKS74U_ScopeVxor";
+		aks74u.ammoInfo.caseSpawnOffset = glm::vec3(1.5f, 3.6f, -3.7f);
+		aks74u.ammoInfo.caseSpawnOffsetADS = glm::vec3(0.5f, 3.6f, -3.7f);
+		aks74u.ammoInfo.caseModelName = "Bullet_Case_Rifle";
+		aks74u.ammoInfo.caseMaterialName = "Bullet_Case_Rifle";
+		aks74u.ammoInfo.caseMeshName = "sleeve";
+		aks74u.ammoInfo.caseSize = 0.07f;
 
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
@@ -141,12 +153,19 @@ namespace WeaponManager {
 		p90.meshMaterials["SideRailScrews_low"] = "P90_Rails";
 		p90.meshMaterials["Compensator_low"] = "P90_FrontEnd";
 		p90.meshMaterials["ChargingHandle_low"] = "P90_FrontEnd";
-		p90.meshMaterials["ChargingHamdlePlate_low"] = "P90_FrontEnd";
+		p90.meshMaterials["ChargingHandlePlate_low"] = "P90_FrontEnd";
 		p90.meshMaterials["Trigger_low"] = "P90_Main";
 		p90.meshMaterials["FireSelector_low"] = "P90_Main";
 		p90.meshMaterials["MagRelease_low"] = "P90_Main";
 		p90.meshMaterials["Velcro_Clip"] = "P90_Sling";
 		p90.meshMaterials["Object_0.002"] = "P90_Rails";
+		p90.ammoInfo.caseSpawnOffset = glm::vec3(-1.5f, 3.6f, -3.7f);
+		p90.ammoInfo.caseModelName = "Bullet_Case_9mm";
+		p90.ammoInfo.caseMaterialName = "Bullet_Case_9mm";
+		p90.ammoInfo.caseMeshName = "9mm_Shell";
+		p90.ammoInfo.caseSize = 5.0f;
+		p90.ammoInfo.caseSpawnOffset = glm::vec3(-0.5f, 4.3f, 3.7f);
+		p90.ammoInfo.caseSpawnOffsetADS = glm::vec3(-0.5f, 4.3f, 3.7f);
 	}
 
 	WeaponInfo* GetWeaponInfoByName(std::string& name) {

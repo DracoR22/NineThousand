@@ -79,6 +79,8 @@ private:
 	bool m_isAimingWeapon = false;
 	bool m_isOnWaterSurface = false;
 
+	float m_bulletCaseSoundCooldown = 0.0f;
+
 	glm::vec3 m_position;
 	float m_speed = 0.0f;
 	float m_height = 0.0f;

@@ -112,6 +112,7 @@ void Player::UpdateMovement(double deltaTime) {
 }
 
 void Player::UpdateAudio(double deltaTime) {
+    // steps
     const std::vector<const char*> sloshFootSteps = {
         "slosh1.wav",
         "slosh2.wav",
@@ -139,6 +140,20 @@ void Player::UpdateAudio(double deltaTime) {
     else {
         m_footstepTimer = 0.0f;
     }
+
+    // bullet cases
+    if (m_bulletCaseSoundCooldown > 0.0f) {
+        m_bulletCaseSoundCooldown -= Window::GetDeltaTime();
+    }
+
+    WeaponState* weaponState = GetEquipedWeaponState();
+
+    if (ReleasedFire() && weaponState->ammoInMag > 1 && m_bulletCaseSoundCooldown <= 0.0f) {
+        AudioManager::PlayAudio("BulletCasingBounce.wav", 1.0f, 1.0f);
+        float bulletCaseSoundCooldownDuration = 2.0f;
+        m_bulletCaseSoundCooldown = bulletCaseSoundCooldownDuration;
+    }
+
 }
 
 glm::vec3 Player::getPosition() {
@@ -519,10 +534,6 @@ void Player::UpdateWeaponLogic() {
         LeaveADS();
     }
 
-    if (ReleasedFire()) {
-        AudioManager::PlayAudio("BulletCasingBounce.wav", 1.0f, 1.0f);
-    }
-
     // regular walk animation
     if (!PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
         currentWeaponAnimator->PlayAnimation(weaponWalkAnimation);
@@ -583,6 +594,8 @@ void Player::SetWeaponAction(WeaponAction action) {
 }
 
 void Player::SpawnBulletCase() {
+    WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+
     // remove previous bullet case if it exists
     if (m_bulletCasePhysicsId != -1) {
         Physics::MarkRigidDynamicForRemoval(m_bulletCasePhysicsId);
@@ -590,45 +603,64 @@ void Player::SpawnBulletCase() {
     }
     Scene::RemoveGameObjectByName("BulletCase1");
 
-    // spawn bullet case
+    // initialize bullet case game object
     GameObjectCreateInfo createInfo;
-    createInfo.modelName = "Bullet_Case_9mm";
+    createInfo.modelName = weaponInfo->ammoInfo.caseModelName;
     createInfo.name = "BulletCase1";
 
-    int caseMaterialIndex = AssetManager::GetMaterialIndexByName("Bullet_Case_9mm");
-    int caseMeshIndex = AssetManager::GetMeshIndexByName("9mm_Shell");
-
+    // build mesh material
+    int caseMaterialIndex = AssetManager::GetMaterialIndexByName(weaponInfo->ammoInfo.caseMaterialName);
+    int caseMeshIndex = AssetManager::GetMeshIndexByName(weaponInfo->ammoInfo.caseMeshName);
     MeshRenderingInfo meshInfo;
     meshInfo.materialIndex = caseMaterialIndex;
     meshInfo.meshIndex = caseMeshIndex;
-
     createInfo.meshRenderingInfo.push_back(meshInfo);
 
-    glm::vec3 bulletCaseOffset = glm::vec3(1.5f, 3.6f, -3.7f);
+    // apply case spawn position based on the weapon position
+    glm::vec3 bulletCaseOffset = weaponInfo->ammoInfo.caseSpawnOffset;
+    if (IsInADS()) {
+        bulletCaseOffset = weaponInfo->ammoInfo.caseSpawnOffsetADS;
+    }
     glm::mat4 gunTransform = glm::translate(glm::mat4(1.0f), m_currentWeaponGameObject.GetPosition()) * m_currentWeaponGameObject.GetRotationMatrix();
     glm::vec4 worldBarrelPos = gunTransform * glm::vec4(bulletCaseOffset, 1.0f);
-
     createInfo.position = worldBarrelPos;
-    createInfo.size = glm::vec3(5.0f);
+    createInfo.size = glm::vec3(weaponInfo->ammoInfo.caseSize);
 
+    // apply case spawn rotation based on the weapon rotation
+    glm::quat gunWorldRotation = glm::quat_cast(m_currentWeaponGameObject.GetRotationMatrix());
+    glm::quat localCaseRotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 0.0f)));
+
+    if (weaponInfo->name == "AKS74U") {
+        createInfo.rotation = glm::degrees(glm::eulerAngles(gunWorldRotation * localCaseRotation));
+    }
+    else {
+        createInfo.rotation = glm::degrees(glm::eulerAngles(gunWorldRotation));
+    }
+
+    // spawn the case
     Scene::AddGameObject(createInfo);
 
-    // Create rigid dynamic
+    // create rigid dynamic
+    float caseMass = 0.05f;
+    float ejectionForce = 7.0f;
+
     PhysicsTransformData physicsTransformData;
     physicsTransformData.position = createInfo.position;
     physicsTransformData.rotation = Utils::GlmVec3ToGlmQuat(createInfo.rotation);
 
-    float mass = 0.05f;
-    glm::vec3 initialForce = glm::vec3(2.0f, 3.0f, -1.5f) * 4.9f;
-    initialForce = glm::vec3(gunTransform * glm::vec4(initialForce, 0.0f)); // transform to world space
+    // I tweak the initial force direction if the model is rotated or if I rotate it during ADS animation
+    glm::vec3 initialForce = glm::vec3(2.0f, 3.0f, -1.5f) * ejectionForce;
+    if (IsInADS() && weaponInfo->ammoInfo.caseSpawnOffsetADS.z > 0 || !IsInADS() && weaponInfo->ammoInfo.caseSpawnOffset.z > 0) {
+        initialForce = glm::vec3(-2.0f, 3.0f, 1.5f) * ejectionForce;
+    }
 
-    // Add spin for realism
-    glm::vec3 initialTorque = glm::vec3(3.0f, 5.0f, 1.0f);
+    initialForce = glm::vec3(gunTransform * glm::vec4(initialForce, 0.0f)); // transform to world space
+    glm::vec3 initialTorque = glm::vec3(10.0f, 20.0f, 5.0f);
 
     uint64_t physicsId = Physics::CreateRigidDynamicBox(
         physicsTransformData,
         createInfo.size * 0.5f,
-        mass,
+        caseMass,
         initialForce,
         initialTorque
     );

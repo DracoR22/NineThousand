@@ -55,6 +55,15 @@ struct WeaponAudio {
 	std::string draw;
 };
 
+struct AmmoInfo {
+	std::string caseModelName = "";
+	std::string caseMeshName = "";
+	std::string caseMaterialName = "";
+	float caseSize = 1.0f;
+	glm::vec3 caseSpawnOffset = glm::vec3(0.0f);
+	glm::vec3 caseSpawnOffsetADS = glm::vec3(0.0f);
+};
+
 struct WeaponInfo {
 	std::string name = "";
 	std::string modelName = "";
@@ -69,6 +78,7 @@ struct WeaponInfo {
 	int maxAmmo = 0;	
 	bool hasADS = false;
 	std::unordered_map<std::string, std::string> meshMaterials;
+	AmmoInfo ammoInfo;
 };
 
 struct WeaponState {
