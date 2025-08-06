@@ -169,7 +169,7 @@ void main() {
 
    vec3 H = normalize(V + L);
 
-    vec3 F  = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughness);
+   vec3 F  = fresnelSchlickRoughness(max(dot(H, V), 0.0), F0, roughness);
    float NDF = DistributionGGX(N, H, roughness);       
    float G   = GeometrySmith(N, V, L, roughness);    
 

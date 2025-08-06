@@ -140,12 +140,65 @@ namespace AssetManager {
 		return texData;
 	}
 
-	void LoadTexture(const std::string& name, aiTextureType type) {
+	TextureData DecodeHDRTexture(const std::string& dir, const std::string& name) {
+		stbi_set_flip_vertically_on_load(false);
+		TextureData texData;
+		texData.name = name;
+		texData.type = aiTextureType_DIFFUSE;
+
+		std::string fullPath = dir + "/" + name;
+		float* data = stbi_loadf(fullPath.c_str(), &texData.width, &texData.height, &texData.channels, 0);
+
+		if (!data) {
+			std::cout << "AssetManager::DecodeHDRTexture() failed to decode: " << fullPath << std::endl;
+			return texData;
+		}
+
+		switch (texData.channels) {
+		case 1:
+			texData.internalFormat = GL_R16F;
+			texData.format = GL_RED;
+			break;
+		case 3:
+			texData.internalFormat = GL_RGB16F;
+			texData.format = GL_RGB;
+			break;
+		case 4:
+			texData.internalFormat = GL_RGBA16F;
+			texData.format = GL_RGBA;
+			break;
+		}
+
+		size_t size = texData.width * texData.height * texData.channels;
+		texData.floatPixels.assign(data, data + size);
+		stbi_image_free(data);
+		return texData;
+	}
+
+	void LoadHDRTexture(const std::string& directory, const std::string& name) {
 		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
 			return;
 
-		TextureData data = DecodeTexture("resources/fonts", name, type);
-		Texture texture("resources/fonts", name, type);
+		TextureData data = DecodeHDRTexture(directory, name);
+		Texture texture(directory, name, data.type);
+		texture.m_format = data.format;
+		texture.m_internalFormat = data.internalFormat;
+		texture.m_numChannels = data.channels;
+		texture.m_width = data.width;
+		texture.m_height = data.height;
+
+		texture.AllocateMemoryENVMap(data);
+
+		g_textures.push_back(texture);
+		g_textureIndexMap[name] = g_textures.size() - 1;
+	}
+
+	void LoadTexture(const std::string& directory, const std::string& name, aiTextureType type) {
+		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
+			return;
+
+		TextureData data = DecodeTexture(directory, name, type);
+		Texture texture(directory, name, type);
 		texture.m_format = data.format;
 		texture.m_internalFormat = data.internalFormat;
 		texture.m_numChannels = data.channels;

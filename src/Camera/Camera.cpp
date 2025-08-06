@@ -3,13 +3,14 @@
 Camera Camera::defaultCamera(glm::vec3(1.0f));
 
 Camera::Camera(glm::vec3 position)
-: cameraPos(position),
-worldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
-yaw(0.0f),
-pitch(0.0f),
-speed(8.5f),
-zoom(45.0f),
-cameraFront(glm::vec3(1.0f, 0.0f, 0.0f)) {
+    : cameraPos(position),
+    worldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
+    yaw(0.0f),
+    pitch(0.0f),
+    speed(8.5f),
+    zoom(45.0f),
+    m_targetZoom(45.0f),
+    cameraFront(glm::vec3(1.0f, 0.0f, 0.0f)) {
 	updateCameraVectors();
 }
 
@@ -17,6 +18,10 @@ void Camera::Update() {
     m_viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     m_projectionMatrix = glm::perspective(glm::radians(zoom), (float)Window::m_windowWidth / (float)Window::m_windowHeight, m_nearPlane, m_farPlane);
     m_frustum.Update(m_projectionMatrix * m_viewMatrix);
+
+    float zoomSpeed = 10.0f;
+    float zoomLerpFactor = zoomSpeed * Window::GetDeltaTime();
+    zoom = glm::mix(zoom, m_targetZoom, zoomLerpFactor);
 }
 
 // change camera direction (mouse movement)
@@ -101,4 +106,8 @@ void Camera::updateCameraVectors() {
 
 void Camera::setPosition(const glm::vec3& position) {
     cameraPos = position;
+}
+
+void Camera::SetCameraZoom(float targetZoom) {
+    m_targetZoom = glm::clamp(targetZoom, 1.0f, 45.0f);
 }

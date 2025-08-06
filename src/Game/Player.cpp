@@ -431,7 +431,7 @@ void Player::ReloadWeapon() {
 
             if (dynamicActor) {
                 physx::PxVec3 impulseDirection = direction.getNormalized();
-                float impulseStrength = 500.0f;  // bullet force
+                float impulseStrength = 5000.0f;  // bullet force
                 dynamicActor->addForce(impulseDirection * impulseStrength, physx::PxForceMode::eIMPULSE);
             }
          }
@@ -475,6 +475,7 @@ void Player::EnterADS() {
     Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
 
     if (PressedADS()) {
+        m_camera.SetCameraZoom(35.0f);
         currentWeaponAnimator->PlayAnimation(weaponADSInAnimation, 2.5f);
         SetWeaponAction(WeaponAction::ADS_IN);
     }
@@ -493,6 +494,7 @@ void Player::LeaveADS() {
         Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
         Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
 
+        //m_camera.SetCameraZoom(45.0f);
         currentWeaponAnimator->PlayAnimation(weaponADSOutAnimation, 1.5f);
         SetWeaponAction(WeaponAction::ADS_OUT);
     }
@@ -532,6 +534,11 @@ void Player::UpdateWeaponLogic() {
 
     if (IsInADS()) {
         LeaveADS();
+    }
+
+    if (!PressingADS() || !IsInADS()) {
+        // TODO: use player's fov
+        m_camera.SetCameraZoom(45.0f);
     }
 
     // regular walk animation

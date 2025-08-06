@@ -69,7 +69,7 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 
 		/*std::cout << "CUBE POSITION " << glm::to_string(createInfo.position) << std::endl;*/
 
-		float mass = 1.0f;
+		float mass = 5.0f;
 		glm::vec3 initialForce = glm::vec3(0.0f);
 		glm::vec3 initialTorque = glm::vec3(0.0f);
 
@@ -96,8 +96,9 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 
 		glm::vec3 initialForce = glm::vec3(0.0f);
 		glm::vec3 initialTorque = glm::vec3(0.0f);
+		float barrelMass = 10.0f;
 
-		uint64_t physicsId = Physics::CreateRigidDynamicConvexMeshFromVertices(vertices, physicsTransformData, 0.5f, createInfo.size, initialForce, initialTorque);
+		uint64_t physicsId = Physics::CreateRigidDynamicConvexMeshFromVertices(vertices, physicsTransformData, barrelMass, createInfo.size, initialForce, initialTorque);
 		m_physicsId = physicsId;
 	}
 }

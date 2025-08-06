@@ -18,12 +18,6 @@ enum class CameraDirection {
 };
 
 class Camera {
-private:
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
-	Frustum m_frustum;
-	float m_nearPlane = 0.005f;
-	float m_farPlane = 256.0f;
 public:
 	Camera() = default;
 	Camera(glm::vec3 position);
@@ -48,6 +42,7 @@ public:
 	void updateCameraZoom(double dy);
 
 	void setPosition(const glm::vec3& position);
+	void SetCameraZoom(float targetZoom);
 
 	float getZoom();
 	float GetNearPlane() const { return m_nearPlane; };
@@ -61,4 +56,12 @@ public:
 
 private:
 	void updateCameraVectors();
+
+private:
+	glm::mat4 m_viewMatrix;
+	glm::mat4 m_projectionMatrix;
+	Frustum m_frustum;
+	float m_nearPlane = 0.005f;
+	float m_farPlane = 256.0f;
+	float m_targetZoom = 45.0f;
 };

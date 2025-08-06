@@ -51,8 +51,8 @@ void ShadowMap::InitCSM(int shadowCascadeCount) {
 	glGenTextures(1, &m_depthTexture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, m_depthTexture);
 	glTexImage3D(
-		GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, m_depthMapResolution, m_depthMapResolution, shadowCascadeCount + 1,
-		0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT24, m_depthMapResolution, m_depthMapResolution, shadowCascadeCount + 1,
+		0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

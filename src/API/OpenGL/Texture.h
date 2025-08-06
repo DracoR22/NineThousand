@@ -14,6 +14,7 @@ struct TextureData {
 	GLenum internalFormat = GL_RGB;
 	GLenum format = GL_RGB;
 	std::vector<unsigned char> pixels = {};
+	std::vector<float> floatPixels = {}; // for hdr images
 	std::string name = "undefined";
 	aiTextureType type = aiTextureType_NONE;
 };
@@ -24,6 +25,7 @@ public:
 	Texture(std::string dir, std::string path, aiTextureType type);
 	void Generate();
 	void AllocateMemory(TextureData& texData);
+	void AllocateMemoryENVMap(TextureData& texData);
 	void Bind();
 
 public:

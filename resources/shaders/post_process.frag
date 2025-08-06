@@ -79,7 +79,7 @@ void main()
 
     vec3 colorWithBloom = hdrColor + bloom;
 
-    vec3 toneMapped = uncharted2(hdrColor * exposure);
+    vec3 toneMapped = uncharted2(colorWithBloom * exposure);
     toneMapped = pow(toneMapped, vec3(1.0 / gamma));
 
      FragColor = vec4(toneMapped, 1.0);

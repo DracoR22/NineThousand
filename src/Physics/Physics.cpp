@@ -18,7 +18,7 @@ namespace Physics {
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamics;
     std::unordered_map<uint64_t, CharacterController> g_charaterControllers;
 
-    double g_fixedDeltaTime = 1.0 / 60;
+    double g_fixedDeltaTime = 1.0 / 60.0;
     double g_accumulatedTime = 0.0;
 
     void Init() {
@@ -34,7 +34,7 @@ namespace Physics {
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
         g_scene = g_physics->createScene(sceneDesc);
 
-        g_defaultMaterial = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
+        g_defaultMaterial = g_physics->createMaterial(0.5f, 0.5f, 0.6f);
 
         // initialize character controller manager
         g_controllerManager = PxCreateControllerManager(*g_scene);

@@ -18,6 +18,7 @@ public:
 	void LoadTextures(std::vector<Texture>& faceTextures);
 	void Init();
 	void Draw(Shader shader, glm::mat4 viewMatrix, glm::mat4 projection);
+	unsigned int GetVAO() const { return VAO; };
 	void Cleanup();
 	void FlipImageHorizontally(unsigned char* data, int width, int height, int channels);
 	unsigned int getId() const;

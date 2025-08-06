@@ -104,7 +104,10 @@ namespace Engine {
 
 		// fonts
 		Text2D::LoadFont("resources/fonts/sans.fnt");
-		AssetManager::LoadTexture("sans.png", aiTextureType_DIFFUSE);
+		AssetManager::LoadTexture("resources/fonts", "sans.png", aiTextureType_DIFFUSE);
+
+		// hdr
+		AssetManager::LoadHDRTexture("resources/hdr", "newport_loft.hdr");
 
 		// textures
 		AssetManager::LoadAllTexturesAsync();

@@ -8,7 +8,7 @@ class ShadowMap {
 private:
 	unsigned int m_depthMapFBO = 0;
 	unsigned int m_depthTexture = 0;
-	const unsigned int m_depthMapResolution = 512;
+	const unsigned int m_depthMapResolution = 1024;
 public:
 	ShadowMap() = default;
 	void Init();

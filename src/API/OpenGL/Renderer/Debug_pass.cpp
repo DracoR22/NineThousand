@@ -3,6 +3,7 @@
 void OpenGLRenderer::DebugPass() {
 	Shader* outlineAnimatedShader = GetShaderByName("OutlineAnimated");
 	Shader* solidColorShader = GetShaderByName("SolidColor");
+	Shader* bloomShader = GetShaderByName("Bloom");
 
 	Camera* camera = CameraManager::GetActiveCamera();
 
@@ -55,23 +56,23 @@ void OpenGLRenderer::DebugPass() {
 	glEnable(GL_DEPTH_TEST);
 
 	// Debug Lights
-	/*solidColorShader->activate();
-	solidColorShader->set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
-	solidColorShader->setMat4("view", camera->GetViewMatrix());
-	solidColorShader->setMat4("projection", camera->GetProjectionMatrix());
-	solidColorShader->setVec3("lightColor", 0.0f, 0.0f, 0.9f);
+	bloomShader->activate();
+	bloomShader->set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
+	bloomShader->setMat4("view", camera->GetViewMatrix());
+	bloomShader->setMat4("projection", camera->GetProjectionMatrix());
+	bloomShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 	std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
 
 	for (LightCreateInfo& light : sceneLights) {
 		if (light.type == LightType::POINT_LIGHT) {
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, light.position);
+			model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
 			model *= glm::mat4(1.0f);
 			model = glm::scale(model, glm::vec3(1.0f));
 
-			DrawCube(*solidColorShader, model);
+			DrawCube(*bloomShader, model);
 		}
-	}*/
+	}
 	
 
 	// Debug Physics

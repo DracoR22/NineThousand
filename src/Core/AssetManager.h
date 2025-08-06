@@ -46,9 +46,10 @@ namespace AssetManager {
 
 	// textures
 	TextureData DecodeTexture(const std::string& dir, const std::string& name, aiTextureType type);
-	void LoadTexture(const std::string& name, aiTextureType type);
+	TextureData DecodeHDRTexture(const std::string& dir, const std::string& name);
+	void LoadHDRTexture(const std::string& directory, const std::string& name);
+	void LoadTexture(const std::string& directory, const std::string& name, aiTextureType type);
 	void LoadAllTexturesAsync();
-	aiTextureType GetFileTextureType(const std::string& filename);
 	aiTextureType GetFileTextureType(const std::string& filename);
 	Texture* GetTextureByName(const std::string& name);
 	Texture* GetTextureByIndex(int index);
