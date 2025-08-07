@@ -4,50 +4,13 @@ void OpenGLRenderer::PostProcessingPass() {
 	RendererType rendererType = GetRenderType();
 	RendererCommon::PostProcessMode currentMode = GetPostProcessMode();
 
-	FrameBuffer* msaaFBO = GetFrameBufferByName("MSAA");
+	FrameBuffer* msaaFBO = GetFrameBufferByName("MSAAPostProcess");
 	FrameBuffer* postProcessingFBO = GetFrameBufferByName("PostProcess");
 
 	Shader* postProcessShader = GetShaderByName("PostProcess");
 	Shader* sobelEdgesShader = GetShaderByName("SobelEdges");
 
 	Mesh2D* postProcessQuad = GetQuadMeshByName("PostProcess");
-
-
-	FrameBuffer* pingFBO = GetFrameBufferByName("BloomPing");
-	FrameBuffer* pongFBO = GetFrameBufferByName("BloomPong");
-
-	GLuint pingTex = pingFBO->GetColorAttachmentTextureIdByIndex(0);
-	GLuint pongTex = pongFBO->GetColorAttachmentTextureIdByIndex(0);
-
-	bool horizontal = true, firstIteration = true;
-	int blurPasses = 10;
-
-	Shader* blurShader = GetShaderByName("GaussianBlur");
-	blurShader->activate();
-
-	for (int i = 0; i < blurPasses; ++i) {
-		FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;
-		currentFBO->Bind();
-
-		blurShader->setBool("horizontal", horizontal);
-
-		GLuint srcTex = firstIteration ? postProcessingFBO->GetColorAttachmentTextureIdByIndex(1) : (horizontal ? pingTex : pongTex);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, srcTex);
-		blurShader->setInt("image", 0);
-
-		// draw quad
-		glBindVertexArray(postProcessQuad->GetVAO());
-		glDisable(GL_DEPTH_TEST);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		horizontal = !horizontal;
-		if (firstIteration)
-			firstIteration = false;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	float gamma = GetGammaValue();
 	float exposure = GetExposure();
@@ -95,7 +58,7 @@ void OpenGLRenderer::PostProcessingPass() {
 	glBindTexture(GL_TEXTURE_2D, postProcessingFBO->GetColorAttachmentTextureIdByIndex(0));
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, horizontal ? pingTex : pongTex);
+	glBindTexture(GL_TEXTURE_2D, GetFinalBlurTexture());
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }

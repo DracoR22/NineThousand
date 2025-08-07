@@ -56,12 +56,14 @@ namespace OpenGLRenderer {
 	void OutlinePass();
 	void BillboardPass();
 	void UIPass();
+	void BloomPass();
 	void PostProcessingPass();
 	void CubeMapPass();
 
 	void LoadShaders();
 	void UpdateFBOs();
 	void DrawCube(Shader& shader, glm::mat4 modelMatrix);
+	GLuint GetFinalBlurTexture();
 
 	Shader* GetShaderByName(const std::string& name);
 	FrameBuffer* GetFrameBufferByName(const std::string& name);

@@ -110,11 +110,11 @@ namespace OpenGLRenderer {
 		g_frameBuffers["PostProcess"].DrawBuffers();
 		g_frameBuffers["PostProcess"].Unbind();
 
-		g_frameBuffers["MSAA"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["MSAA"].Bind();
-		g_frameBuffers["MSAA"].CreateMSAAAttachment("msaaAttachment");
-		g_frameBuffers["MSAA"].DrawBuffer();
-		g_frameBuffers["MSAA"].Unbind();
+		g_frameBuffers["MSAAPostProcess"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["MSAAPostProcess"].Bind();
+		g_frameBuffers["MSAAPostProcess"].CreateMSAAAttachment("msaaAttachment");
+		g_frameBuffers["MSAAPostProcess"].DrawBuffer();
+		g_frameBuffers["MSAAPostProcess"].Unbind();
 
 		g_frameBuffers["BloomPing"] = FrameBuffer(Window::m_windowWidth, Window::m_windowHeight);
 		g_frameBuffers["BloomPing"].Bind();
@@ -194,7 +194,6 @@ namespace OpenGLRenderer {
 		}
 		ShadowPass();
 		PreWaterPass();
-		//RenderEnvMap();
 		UpdateFBOs();
 		AnimationPass();
 		LightingPass();
@@ -203,6 +202,7 @@ namespace OpenGLRenderer {
 		DebugPass();
 		BillboardPass();
 		UIPass();
+		BloomPass();
 		PostProcessingPass();
 
 		EditorPanel::Render();
@@ -224,12 +224,13 @@ namespace OpenGLRenderer {
 		g_Shaders["SobelEdges"].load("sobel_edges.vert", "sobel_edges.frag");
 		g_Shaders["PostProcess"].load("post_process.vert", "post_process.frag");
 		g_Shaders["Instanced"].load("instanced.vert", "instanced.frag");
-		g_Shaders["GaussianBlur"].load("blur.vert", "blur.frag");
 		g_Shaders["SimpleTexture"].load("simple_texture.vert", "simple_texture.frag");
 		g_Shaders["HDRSkybox"].load("hdr_skybox.vert", "hdr_skybox.frag");
 		g_Shaders["Irradiance"].load("irradiance_convolution.vert", "irradiance_convolution.frag");
 		g_Shaders["EquirectangularToCubemap"].load("equirectangularMap.vert", "equirectangularMap.frag");
 		g_Shaders["Bloom"].load("solid_color.vert", "bloom.frag");
+		g_Shaders["BlurHorizontal"].load("blur.vert", "blur_horizontal.frag");
+		g_Shaders["BlurVertical"].load("blur.vert", "blur_vertical.frag");
 	}
 
 	void RenderEnvMap() {
@@ -417,9 +418,9 @@ namespace OpenGLRenderer {
 
 	void CubeMapPass() {
 		Camera* camera = CameraManager::GetActiveCamera();
-		//g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), camera->GetProjectionMatrix());
+		g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), camera->GetProjectionMatrix());
 
-		Shader* shader = GetShaderByName("HDRSkybox");
+		/*Shader* shader = GetShaderByName("HDRSkybox");
 		glDepthFunc(GL_LEQUAL);
 		shader->activate();
 
@@ -433,7 +434,7 @@ namespace OpenGLRenderer {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
-		glDepthFunc(GL_LESS);
+		glDepthFunc(GL_LESS);*/
 
 	}
 
@@ -515,7 +516,7 @@ namespace OpenGLRenderer {
 
 	void SetRenderResolution(int x, int y) {
 		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
-		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAA");
+		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAAPostProcess");
 
 		postProcessingFrameBuffer->Resize(x, y);
 		if (g_rendererType == RendererType::FORWARD) {
