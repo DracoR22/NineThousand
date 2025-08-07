@@ -77,7 +77,7 @@ namespace OpenGLRenderer {
 		cubeLampLight2.strength = 1.0f;
 		cubeLampLight2.type = LightType::POINT_LIGHT;
 
-		//g_renderData.sceneLights.push_back(cubeLampLight);
+		g_renderData.sceneLights.push_back(cubeLampLight);
 		g_renderData.sceneLights.push_back(cubeLampLight2);
 
 		glm::vec2 viewPortResolution = GetRenderResolution();

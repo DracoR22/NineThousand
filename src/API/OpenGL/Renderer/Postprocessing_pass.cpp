@@ -18,14 +18,12 @@ void OpenGLRenderer::PostProcessingPass() {
 	// copy the depth buffer of msaa fbo to the postprocess fbo
 	/*if (rendererType == RendererType::FORWARD) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFBO->GetFBO());
-	
+	}
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessingFBO->GetFBO());
 	if (postProcessingFBO->GetWidth() == GetRenderResolution().x) {
 		glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	 }*/
 
-	  }
-	}
-	*/
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);

@@ -19,7 +19,7 @@ namespace OpenGLRenderer {
 		GLuint pongTex = pongFBO->GetColorAttachmentTextureIdByIndex(0);
 
 		bool horizontal = true, firstIteration = true;
-		int blurPasses = 10;
+		int blurPasses = 6;
 
 		for (int i = 0; i < blurPasses; ++i) {
 			FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;
@@ -33,6 +33,7 @@ namespace OpenGLRenderer {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, srcTex);
 			activeShader->setInt("image", 0);
+			activeShader->setFloat("sampleDistance", 2.0f);
 
 			glBindVertexArray(postProcessQuad->GetVAO());
 			glDisable(GL_DEPTH_TEST);
