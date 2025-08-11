@@ -56,7 +56,7 @@ void OpenGLRenderer::DebugPass() {
 	glEnable(GL_DEPTH_TEST);
 
 	// Debug Lights
-	bloomShader->activate();
+	/*bloomShader->activate();
 	bloomShader->set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
 	bloomShader->setMat4("view", camera->GetViewMatrix());
 	bloomShader->setMat4("projection", camera->GetProjectionMatrix());
@@ -72,7 +72,7 @@ void OpenGLRenderer::DebugPass() {
 
 			DrawCube(*bloomShader, model);
 		}
-	}
+	}*/
 	
 
 	// Debug Physics

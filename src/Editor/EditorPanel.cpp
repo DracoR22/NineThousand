@@ -4,7 +4,7 @@ namespace EditorPanel {
 	bool g_saveLevelPanel = false;
 	bool g_addModelPanel = false;
 
-	std::string g_selectedObjectName = "None";
+	int g_selectedObjectIndex = 0;
 	int g_selectedModelIndex = 0;
 	int g_selectedLevelIndex = 0;
 	int g_selectedMeshIndex = 0;
@@ -178,30 +178,31 @@ namespace EditorPanel {
 
 				std::vector<GameObject>& objects = Scene::GetGameObjects();
 
-				for (GameObject& gameObject : objects) {
-					if (gameObject.IsSelected()) {
-						g_selectedObjectName = gameObject.GetName();
+				for (int i = 0; i < objects.size(); i++) {
+					if (objects[i].IsSelected()) {
+						g_selectedObjectIndex = i + 1;
 						break;
 					}
 				}
 
-				if (ImGui::BeginCombo("Select Object", g_selectedObjectName.c_str())) {
-					if (ImGui::Selectable("None", g_selectedObjectName == "None")) {
+				std::string currentLabel = (g_selectedObjectIndex == 0) ? "None": objects[g_selectedObjectIndex - 1].GetName();
+				if (ImGui::BeginCombo("Select Object", currentLabel.c_str())) {
+					if (ImGui::Selectable("None", g_selectedObjectIndex == 0)) {
 						for (GameObject& obj : objects)
 							obj.SetSelected(false); // Deselect all
 
-						g_selectedObjectName = "None";
+						g_selectedObjectIndex = 0;
 						g_selectedMeshIndex = 0;
 					}
-					for (GameObject& gameObject : objects) {
-						bool isSelected = (g_selectedObjectName == gameObject.GetName()); // get only the first one selected
+					for (int i = 0; i < objects.size(); i++) {
+						bool isSelected = (g_selectedObjectIndex == i + 1); // get only the first one selected
 
-						if (ImGui::Selectable(gameObject.GetName().c_str(), isSelected)) {
+						if (ImGui::Selectable(objects[i].GetName().c_str(), isSelected)) {
 							for (GameObject& obj : objects)
 								obj.SetSelected(false); // Deselect all
 
-							gameObject.SetSelected(true);
-							g_selectedObjectName = gameObject.GetName();
+							objects[i].SetSelected(true);
+							g_selectedObjectIndex = i + 1;
 							g_selectedMeshIndex = 0;
 						}
 

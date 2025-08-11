@@ -19,7 +19,7 @@ namespace OpenGLRenderer {
 		GLuint pongTex = pongFBO->GetColorAttachmentTextureIdByIndex(0);
 
 		bool horizontal = true, firstIteration = true;
-		int blurPasses = 6;
+		int blurPasses = 4;
 
 		for (int i = 0; i < blurPasses; ++i) {
 			FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;

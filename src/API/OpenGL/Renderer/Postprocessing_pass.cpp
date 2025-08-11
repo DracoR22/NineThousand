@@ -25,6 +25,27 @@ void OpenGLRenderer::PostProcessingPass() {
 	 }*/
 
 
+
+
+	//FrameBuffer* msaaFBO = GetFrameBufferByName("MSAAPostProcess");
+	//FrameBuffer* postProcessingFBO = GetFrameBufferByName("PostProcess");
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, msaaFBO->GetFBO());
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessingFBO->GetFBO());
+
+	//glReadBuffer(GL_COLOR_ATTACHMENT0);
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	//glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+
+	//glReadBuffer(GL_COLOR_ATTACHMENT1);
+	//glDrawBuffer(GL_COLOR_ATTACHMENT1);
+	//glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	//// Restore original state.
+	//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	//glDrawBuffers(2, attachments);
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
 

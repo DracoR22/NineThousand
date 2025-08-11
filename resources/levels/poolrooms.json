@@ -10,14 +10,14 @@
             "modelName": "Cube",
             "name": "Cube0",
             "position": {
-                "x": -49.01947021484375,
-                "y": 0.7849904894828796,
-                "z": -39.705833435058594
+                "x": -49.01950454711914,
+                "y": 0.784990131855011,
+                "z": -39.705867767333984
             },
             "rotation": {
-                "x": 151.6404266357422,
-                "y": 0.000630084949079901,
-                "z": 90.00070190429688
+                "x": 151.64068603515625,
+                "y": 0.0006309387390501797,
+                "z": 90.000732421875
             },
             "size": {
                 "x": 1.5700000524520874,
@@ -561,14 +561,14 @@
             "modelName": "Barrel",
             "name": "Barrel19",
             "position": {
-                "x": 5.819515228271484,
-                "y": -3.5762786865234375e-06,
-                "z": -1.280476689338684
+                "x": 2.5584311485290527,
+                "y": 1.403069257736206,
+                "z": 17.371061325073242
             },
             "rotation": {
-                "x": -6.039142681402154e-05,
-                "y": -5.255920886993408,
-                "z": 0.0004139338561799377
+                "x": 88.39199829101563,
+                "y": -1.3927887678146362,
+                "z": -130.8652801513672
             },
             "size": {
                 "x": 3.86899995803833,
@@ -590,9 +590,70 @@
             "modelName": "Barrel",
             "name": "Barrel20",
             "position": {
-                "x": 6.0,
-                "y": 4.0,
-                "z": -1.2799999713897705
+                "x": -2.120189905166626,
+                "y": 1.0496711730957031,
+                "z": 19.547605514526367
+            },
+            "rotation": {
+                "x": 34.096214294433594,
+                "y": 10.490864753723145,
+                "z": -82.97422790527344
+            },
+            "size": {
+                "x": 3.86899995803833,
+                "y": 3.86899995803833,
+                "z": 3.86899995803833
+            },
+            "textureScale": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        },
+        {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Chain_link"
+                },
+                {
+                    "materialName": "Default",
+                    "meshName": "Lamp_Outer_Glass"
+                },
+                {
+                    "materialName": "Default",
+                    "meshName": "Lamp_Inner_Glass"
+                },
+                {
+                    "materialName": "Default",
+                    "meshName": "Lamp_light"
+                },
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Pub_Lamp_Top"
+                },
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Lamp_support004"
+                },
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Lamp_support001"
+                },
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Lamp_support002"
+                },
+                {
+                    "materialName": "DiamondPlate",
+                    "meshName": "Lamp_support003"
+                }
+            ],
+            "modelName": "Hanging_Light",
+            "name": "Hanging_Light33",
+            "position": {
+                "x": 28.0,
+                "y": 5.0,
+                "z": 18.0
             },
             "rotation": {
                 "x": 0.0,
@@ -600,9 +661,38 @@
                 "z": 0.0
             },
             "size": {
-                "x": 3.86899995803833,
-                "y": 3.86899995803833,
-                "z": 3.86899995803833
+                "x": 3.0490000247955322,
+                "y": 3.0490000247955322,
+                "z": 3.0490000247955322
+            },
+            "textureScale": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        },
+        {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "Bullet_Case_9mm",
+                    "meshName": "9mm_Shell"
+                }
+            ],
+            "modelName": "Bullet_Case_9mm",
+            "name": "BulletCase1",
+            "position": {
+                "x": 65.70518493652344,
+                "y": 2.980327606201172,
+                "z": -79.36235046386719
+            },
+            "rotation": {
+                "x": 83.68252563476563,
+                "y": 30.585615158081055,
+                "z": 74.23995971679688
+            },
+            "size": {
+                "x": 5.0,
+                "y": 5.0,
+                "z": 5.0
             },
             "textureScale": {
                 "x": 1.0,

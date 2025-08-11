@@ -14,6 +14,8 @@ namespace OpenGLRenderer {
 
 	void ForwardLightingPass() {
 		Shader* lightingShader = GetShaderByName("Lighting");
+		Shader* bloomShader = GetShaderByName("Bloom");
+
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
 
 		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
@@ -74,6 +76,9 @@ namespace OpenGLRenderer {
 				//model->draw(*lightingShader);
 
 				for (Mesh& mesh : model->m_meshes) {
+					// TODO: dont hardcode!!
+					if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Lamp_Inner_Glass") continue;
+
 					int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
 					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
 					Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
@@ -98,6 +103,21 @@ namespace OpenGLRenderer {
 
 					glActiveTexture(GL_TEXTURE0);
 					glBindTexture(GL_TEXTURE_2D, 0);
+				}
+			}
+
+			// draw bloomed stuff
+			for (Mesh& mesh : model->m_meshes) {
+				if (mesh.m_Name == "Lamp_Outer_Glass") {
+					bloomShader->activate();
+					bloomShader->setMat4("model", gameObject.GetModelMatrix());
+					bloomShader->setMat4("view", camera->GetViewMatrix());
+					bloomShader->setMat4("projection", camera->GetProjectionMatrix());
+					bloomShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+					glBindVertexArray(mesh.GetVAO());
+					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+					glBindVertexArray(0);
+					lightingShader->activate();
 				}
 			}
 		}
