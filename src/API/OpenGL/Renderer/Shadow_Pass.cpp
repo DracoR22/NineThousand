@@ -33,7 +33,7 @@ namespace OpenGLRenderer {
 
 	void DrawShadows(Shader& shader) {
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			if (gameObject.GetModelName() == "Cube") {
+			if (gameObject.GetModelName() == "Cube" || gameObject.GetModelName() == "Barrel") {
 				Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
 				shader.setMat4("model", gameObject.GetModelMatrix());

@@ -22,6 +22,7 @@ namespace WeaponManager {
 		glock.animations.ADSFire.push_back("Glock_ADS_Fire");
 		glock.animationCancelFrames.fire = 4;
 		glock.animationCancelFrames.reload = 40;
+		glock.animationCancelFrames.ADSWalk = 7;
 		glock.audioFiles.fire.push_back("Glock_Fire0.wav");
 		glock.audioFiles.fire.push_back("Glock_Fire1.wav");
 		glock.audioFiles.fire.push_back("Glock_Fire2.wav");
@@ -80,6 +81,7 @@ namespace WeaponManager {
 		aks74u.animations.ADSFire.push_back("AKS74U_ADS_Fire");
 		aks74u.animationCancelFrames.fire = 2;
 		aks74u.animationCancelFrames.reload = 40;
+		aks74u.animationCancelFrames.ADSWalk = 11;
 		aks74u.audioFiles.fire.push_back("AKS74U_Fire0.wav");
 		aks74u.audioFiles.fire.push_back("AKS74U_Fire1.wav");
 		aks74u.audioFiles.fire.push_back("AKS74U_Fire2.wav");
@@ -128,6 +130,7 @@ namespace WeaponManager {
 		p90.animations.ADSFire.push_back("P90_ADS_Fire");
 		p90.animationCancelFrames.fire = 2;
 		p90.animationCancelFrames.reload = 50;
+		p90.animationCancelFrames.ADSWalk = 7;
 		p90.audioFiles.fire.push_back("P90_Fire0.wav");
 		p90.audioFiles.fire.push_back("P90_Fire1.wav");
 		p90.audioFiles.fire.push_back("P90_Fire2.wav");

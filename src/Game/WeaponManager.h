@@ -46,6 +46,7 @@ struct WeaponAnimationCancelFrames {
 	int reload = 0;
 	int reloadEmpty = 0;
 	int draw = 0;
+	int ADSWalk = 0;
 };
 
 struct WeaponAudio {

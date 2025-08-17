@@ -33,6 +33,8 @@ public:
 
 	WeaponInfo* GetEquipedWeaponInfo();
 	WeaponState* GetEquipedWeaponState();
+	WeaponAction GetWeaponAction();
+	std::string GetStringWeaponAction();
 
 	bool CanReloadWeapon();	
 	bool CanAutoReloadWeapon();
@@ -60,7 +62,6 @@ public:
 	
 	void UpdateWeaponLogic();
 
-	WeaponAction GetWeaponAction();
 	void SetWeaponAction(WeaponAction action);
 
 	void SpawnBulletCase();

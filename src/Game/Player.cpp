@@ -88,7 +88,7 @@ void Player::UpdateMovement(double deltaTime) {
 
     // Handle mouse movement for camera rotation
     static glm::vec2 smoothedDelta = glm::vec2(0.0f);
-    const float smoothingFactor = 0.95f; // Lower = smoother, but more latency
+    const float smoothingFactor = 0.5f; // Lower = smoother, but more latency
 
     double dx = Mouse::getDX();
     double dy = Mouse::getDY();
@@ -97,7 +97,7 @@ void Player::UpdateMovement(double deltaTime) {
     smoothedDelta.x += (dx - smoothedDelta.x) * smoothingFactor;
     smoothedDelta.y += (dy - smoothedDelta.y) * smoothingFactor;
 
-    float sensitivity = 0.007f;
+    float sensitivity = 0.01f;
     m_camera.updateCameraDirection(smoothedDelta.x * sensitivity, smoothedDelta.y * sensitivity);
 
     glm::vec3 characterControllerPos = Physics::GetCharacterControllerPosition(m_physicsId);
@@ -279,6 +279,51 @@ WeaponState* Player::GetEquipedWeaponState() {
 
 WeaponAction Player::GetWeaponAction() {
     return m_weaponAction;
+}
+
+
+std::string Player::GetStringWeaponAction() {
+    std::string action = "";
+
+    switch (m_weaponAction) {
+    case WeaponAction::ADS_FIRE:
+        action = "ADS_FIRE";
+        break;
+    case WeaponAction::ADS_WALK:
+        action = "ADS_WALK";
+        break;
+    case WeaponAction::ADS_IN:
+        action = "ADS_IN";
+        break;
+    case WeaponAction::ADS_OUT:
+        action = "ADS_OUT";
+        break;
+    case WeaponAction::ADS_IDLE:
+        action = "ADS_IDLE";
+        break;
+    case WeaponAction::IDLE:
+        action = "IDLE";
+        break;
+    case WeaponAction::DRAW:
+        action = "DRAW";
+        break;
+    case WeaponAction::WALK:
+        action = "WALK";
+        break;
+    case WeaponAction::RELOAD:
+        action = "RELOAD";
+        break;
+    case WeaponAction::RELOAD_EMPTY:
+        action = "RELOAD_EMPTY";
+        break;
+    case WeaponAction::FIRE:
+        action = "FIRE";
+        break;
+;    default:
+        break;
+    }
+
+    return action;
 }
 
 bool Player::PressingSprintKey() {
@@ -480,12 +525,12 @@ void Player::EnterADS() {
         SetWeaponAction(WeaponAction::ADS_IN);
     }
 
-    if (!IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
+   /* if (!IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
         if (currentWeaponAnimator->IsAnimationFinished()) {
             currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
             SetWeaponAction(WeaponAction::ADS_IDLE);
         }
-    }
+    }*/
 }
 
 void Player::LeaveADS() {
@@ -494,7 +539,6 @@ void Player::LeaveADS() {
         Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
         Animation* weaponADSOutAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSOut);
 
-        //m_camera.SetCameraZoom(45.0f);
         currentWeaponAnimator->PlayAnimation(weaponADSOutAnimation, 1.5f);
         SetWeaponAction(WeaponAction::ADS_OUT);
     }
@@ -506,8 +550,6 @@ void Player::UpdateWeaponLogic() {
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
 
     Animation* weaponIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.idle);
-  /*  Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
-    Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);*/
     Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
 
     if (PressingFire() && CanFireWeapon()) {
@@ -546,22 +588,43 @@ void Player::UpdateWeaponLogic() {
         currentWeaponAnimator->PlayAnimation(weaponWalkAnimation);
         m_weaponAction = WeaponAction::WALK;
     }
-
-    // if its moving and ADS is pressed
-    //if (IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
-    //    Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
-    //    if (currentWeaponAnimator->IsAnimationFinished()) {
-    //        currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
-    //        m_weaponAction = WeaponAction::ADS_WALK;
-    //    }
-    //}
-
-    // if ADS is pressed and then move
-  /*  if (PressingADS() && IsMoving() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSIdleAnimation) {
+ 
+    if (weaponInfo->hasADS && weaponInfo->name != "P90") {
+        Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
+        Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
         Animation* weaponADSWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSWalk);
-        currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
-        m_weaponAction = WeaponAction::ADS_WALK;
-    }*/
+
+        // if ADS is pressed and then move
+        if (PressingADS() && IsMoving() && m_weaponAction == WeaponAction::ADS_IDLE || PressingADS() && IsMoving() && (currentWeaponAnimator->IsAnimationFinished() && m_weaponAction == WeaponAction::ADS_WALK)) {
+               currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
+               m_weaponAction = WeaponAction::ADS_WALK;
+        }
+
+        // if its moving and ADS is pressed
+        if (IsMoving() && PressingADS() && currentWeaponAnimator->GetCurrentAnimation() == weaponADSInAnimation) {
+            if (currentWeaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.ADSWalk)) {
+                currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
+                m_weaponAction = WeaponAction::ADS_WALK;
+            }
+        }
+
+        // transition from ads fire to ads walk
+        if (PressingADS() && IsMoving() && (m_weaponAction == WeaponAction::ADS_FIRE) && currentWeaponAnimator->AnimationIsPastFrameNumber(5)) {
+            currentWeaponAnimator->PlayAnimation(weaponADSWalkAnimation);
+            m_weaponAction = WeaponAction::ADS_WALK;
+        }
+
+      /*  if (PressingADS() && !IsMoving() && m_weaponAction == WeaponAction::ADS_WALK && currentWeaponAnimator->AnimationIsPastFrameNumber(3)) {
+            currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
+            m_weaponAction = WeaponAction::ADS_IDLE;
+        }*/
+
+        // go back to ads-idle after any ads action
+        if (PressingADS() && !IsMoving() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() != weaponIdleAnimation && m_weaponAction != WeaponAction::ADS_WALK) {
+            //currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
+            m_weaponAction = WeaponAction::ADS_IDLE;
+        }
+    }
 
     // go back to idle when getting out ADS
     if (!PressingADS() && m_weaponAction == WeaponAction::ADS_OUT) {
@@ -576,18 +639,6 @@ void Player::UpdateWeaponLogic() {
         currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
         m_weaponAction = WeaponAction::IDLE;
     }
-
-    // go back to ads-idle after any ads action
- /*   if (PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() != weaponIdleAnimation && m_weaponAction != WeaponAction::RELOAD) {
-        currentWeaponAnimator->PlayAnimation(weaponADSIdleAnimation);
-        m_weaponAction = WeaponAction::ADS_IDLE;
-    }*/
-
-    // cut walk animation if player stops moving!
-    //if (m_weaponAction == WeaponAction::WALK && !IsMoving()) {
-    //    currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
-    //    m_weaponAction = WeaponAction::IDLE;
-    //}
 
     // loop idle animation
     if (!PressingADS() && currentWeaponAnimator->IsAnimationFinished() && currentWeaponAnimator->GetCurrentAnimation() == weaponIdleAnimation) {
@@ -662,7 +713,7 @@ void Player::SpawnBulletCase() {
     }
 
     initialForce = glm::vec3(gunTransform * glm::vec4(initialForce, 0.0f)); // transform to world space
-    glm::vec3 initialTorque = glm::vec3(10.0f, 20.0f, 5.0f);
+    glm::vec3 initialTorque = glm::vec3(100.0f, 0.0f, 0.0f);
 
     uint64_t physicsId = Physics::CreateRigidDynamicBox(
         physicsTransformData,
