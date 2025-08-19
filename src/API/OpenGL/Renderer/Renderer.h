@@ -77,6 +77,12 @@ namespace OpenGLRenderer {
 	RendererCommon::PostProcessMode GetPostProcessMode();
 	void ChangePostProcessMode(RendererCommon::PostProcessMode mode);
 
+	bool BloomEnabled();
+	void SetBloom();
+
+	bool ShadowsEnabled();
+	void SetShadows();
+
 	float GetExposure();
 	void SetExposureValue(float value);
 
@@ -87,6 +93,7 @@ namespace OpenGLRenderer {
 	void UpdateLightStrength(int index, float strength);
 	void UpdateLightRadius(int index, float radius);
 	void UpdateLightPosition(int index, glm::vec3 newPosition);
+	void SetLightColor(int index, float r, float g, float b);
 
 	glm::vec2 GetRenderResolution();
 	void SetRenderResolution(int x, int y);

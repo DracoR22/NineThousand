@@ -32,6 +32,8 @@ namespace OpenGLRenderer {
 	}
 
 	void DrawShadows(Shader& shader) {
+		if (!ShadowsEnabled()) return;
+
 		for (GameObject& gameObject : Scene::GetGameObjects()) {
 			if (gameObject.GetModelName() == "Cube" || gameObject.GetModelName() == "Barrel") {
 				Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());

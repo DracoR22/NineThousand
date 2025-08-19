@@ -8,6 +8,7 @@ namespace EditorPanel {
 	int g_selectedModelIndex = 0;
 	int g_selectedLevelIndex = 0;
 	int g_selectedMeshIndex = 0;
+	int g_selectedLightIndex = 0;
 
 	const char* g_resolutionOptions[] = {
 	"1280 x 720",
@@ -96,13 +97,8 @@ namespace EditorPanel {
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
 			if (ImGui::CollapsingHeader("Post Process")) {
-				if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
-					OpenGLRenderer::ChangeGammaValue(gamma);
-				}
-
-				if (ImGui::SliderFloat("Exposure", &exposure, 0.01f, 10.0f, "%.3f")) {
-					OpenGLRenderer::SetExposureValue(exposure);
-				}
+				ImGui::Dummy(ImVec2(0.0f, 5.0f));
+				ImGui::Text("ViewPort");
 
 				if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
 					if (ImGui::Selectable("None", postProcessMode == RendererCommon::PostProcessMode::NONE)) {
@@ -130,37 +126,79 @@ namespace EditorPanel {
 					ImGui::EndCombo();
 				}
 
+				ImGui::Dummy(ImVec2(0.0f, 5.0f));
+				ImGui::Text("Effects");
+
+				if (ImGui::SliderFloat("Gamma", &gamma, 0.1f, 5.0f, "%.2f")) {
+					OpenGLRenderer::ChangeGammaValue(gamma);
+				}
+
+				if (ImGui::SliderFloat("Exposure", &exposure, 0.01f, 10.0f, "%.3f")) {
+					OpenGLRenderer::SetExposureValue(exposure);
+				}
+
+				bool isBloomEnabled = OpenGLRenderer::BloomEnabled();
+
+				if (ImGui::Checkbox("Bloom", &isBloomEnabled)) {
+					OpenGLRenderer::SetBloom();
+				}
+
+				bool areShadowsEnabled = OpenGLRenderer::ShadowsEnabled();
+
+				if (ImGui::Checkbox("Cast Shadows", &areShadowsEnabled)) {
+					OpenGLRenderer::SetShadows();
+				}
+
 			}
 
 			if (ImGui::CollapsingHeader("Lights")) {
 				std::vector<LightCreateInfo>& lights = OpenGLRenderer::GetSceneLights();
-				for (int i = 0; i < lights.size(); ++i) {
-					ImGui::PushID(i);
+				std::string previewLabel = "Light " + std::to_string(g_selectedLightIndex + 1);
 
-					ImGui::Text("Light %d", i + 1);
-					if (ImGui::SliderFloat("Strength", &lights[i].strength, 0.0f, 100.0f)) {
-						OpenGLRenderer::UpdateLightStrength(i, lights[i].strength);
+				if (ImGui::BeginCombo("Selected Light", previewLabel.c_str())) {
+					for (int i = 0; i < lights.size(); ++i) {
+						bool isSelected = (i == g_selectedLightIndex);
+						//light.SetSelected(false); // TODO: ADD SOME VISUAL RERESENTATION OF THE SELECTED LIGHT
+
+						std::string lightToSelect = "Light " + std::to_string(i + 1);
+						if (ImGui::Selectable(lightToSelect.c_str())) {
+							g_selectedLightIndex = i;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+
 					}
 
-					if (lights[i].type == LightType::POINT_LIGHT) {
-						if (ImGui::SliderFloat("Radius", &lights[i].radius, 0.0f, 100.0f)) {
-							OpenGLRenderer::UpdateLightRadius(i, lights[i].radius);
+					ImGui::EndCombo();
+				}
+
+					LightCreateInfo& light = lights[g_selectedLightIndex];
+
+					if (ImGui::SliderFloat("Strength", &light.strength, 0.0f, 100.0f)) {
+						OpenGLRenderer::UpdateLightStrength(g_selectedLightIndex, light.strength);
+					}
+
+					if (light.type == LightType::POINT_LIGHT) {
+						if (ImGui::SliderFloat("Radius", &light.radius, 0.0f, 100.0f)) {
+							OpenGLRenderer::UpdateLightRadius(g_selectedLightIndex, light.radius);
 						}
 
-						if (ImGui::InputFloat("Position X", &lights[i].position.x, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						if (ImGui::InputFloat("Position X", &light.position.x, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
 						}
 
-						if (ImGui::InputFloat("Position Y", &lights[i].position.y, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						if (ImGui::InputFloat("Position Y", &light.position.y, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
 						}
 
-						if (ImGui::InputFloat("Position Z", &lights[i].position.z, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(i, lights[i].position);
+						if (ImGui::InputFloat("Position Z", &light.position.z, 1.0f, 10.0f, "%.2f")) {
+							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
 						}
 					}
 					// TODO
-					else if (lights[i].type == LightType::DIRECTIONAL_LIGHT) {
+					else if (light.type == LightType::DIRECTIONAL_LIGHT) {
 						static float yaw = 0.0f;   // Horizontal angle
 						static float pitch = -45.0f; // Vertical angle
 
@@ -168,9 +206,12 @@ namespace EditorPanel {
 						ImGui::SliderFloat("Pitch", &pitch, -89.0f, 89.0f);
 					}
 
-					ImGui::Separator();
-					ImGui::PopID();
-				}
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					ImGui::Text("Pick Color");
+					ImVec4 lightColor = ImVec4(light.color.r, light.color.g, light.color.b, 1.0f);
+					if (ImGui::ColorPicker3("Color", (float*)&lightColor)) {
+						OpenGLRenderer::SetLightColor(g_selectedLightIndex, lightColor.x, lightColor.y, lightColor.z);
+					}
 			}
 
 			if (ImGui::CollapsingHeader("Game Objects")) {

@@ -21,29 +21,41 @@ namespace OpenGLRenderer {
 		bool horizontal = true, firstIteration = true;
 		int blurPasses = 4;
 
-		for (int i = 0; i < blurPasses; ++i) {
-			FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;
-			currentFBO->Bind();
+		if (!BloomEnabled()) {
+			pingFBO->Bind();
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+			pongFBO->Bind();
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
 
-			Shader* activeShader = horizontal ? blurHShader : blurVShader;
-			activeShader->activate();
+			g_finalBlurTexture = 0;
+		}
+		else {
+			for (int i = 0; i < blurPasses; ++i) {
+				FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;
+				currentFBO->Bind();
 
-			GLuint srcTex = firstIteration ? postProcessingFBO->GetColorAttachmentTextureIdByIndex(1) : (horizontal ? pingTex : pongTex);
+				Shader* activeShader = horizontal ? blurHShader : blurVShader;
+				activeShader->activate();
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, srcTex);
-			activeShader->setInt("image", 0);
-			activeShader->setFloat("sampleDistance", 2.0f);
+				GLuint srcTex = firstIteration ? postProcessingFBO->GetColorAttachmentTextureIdByIndex(1) : (horizontal ? pingTex : pongTex);
 
-			glBindVertexArray(postProcessQuad->GetVAO());
-			glDisable(GL_DEPTH_TEST);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, srcTex);
+				activeShader->setInt("image", 0);
+				activeShader->setFloat("sampleDistance", 2.0f);
 
-			g_finalBlurTexture = currentFBO->GetColorAttachmentTextureIdByIndex(0);
+				glBindVertexArray(postProcessQuad->GetVAO());
+				glDisable(GL_DEPTH_TEST);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
 
-			horizontal = !horizontal;
-			if (firstIteration)
-				firstIteration = false;
+				g_finalBlurTexture = currentFBO->GetColorAttachmentTextureIdByIndex(0);
+
+				horizontal = !horizontal;
+				if (firstIteration)
+					firstIteration = false;
+			}
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -23,6 +23,9 @@ namespace OpenGLRenderer {
 		float exposure = 1.0f;;
 	} g_renderData;
 
+	bool g_enableBloom = true;
+	bool g_castShadows = true;
+
 	void RenderEnvMap();
 
 	unsigned int g_captureFBO, g_captureRBO;
@@ -479,6 +482,21 @@ namespace OpenGLRenderer {
 		g_renderData.currentMode = mode;
 	}
 
+	bool BloomEnabled() {
+		return g_enableBloom;
+	}
+
+	void SetBloom() {
+		g_enableBloom = !g_enableBloom;
+	}
+
+	bool ShadowsEnabled() {
+		return g_castShadows;
+	}
+	void SetShadows() {
+		g_castShadows = !g_castShadows;
+	}
+
 	float GetExposure() {
 		return g_renderData.exposure;
 	}
@@ -508,6 +526,12 @@ namespace OpenGLRenderer {
 
 	void UpdateLightPosition(int index, glm::vec3 newPosition) {
 		g_renderData.sceneLights[index].position = newPosition;
+	}
+
+	void SetLightColor(int index, float r, float g, float b) {
+		g_renderData.sceneLights[index].color.r = r;
+		g_renderData.sceneLights[index].color.g = g;
+		g_renderData.sceneLights[index].color.b = b;
 	}
 
 	glm::vec2 GetRenderResolution() {
