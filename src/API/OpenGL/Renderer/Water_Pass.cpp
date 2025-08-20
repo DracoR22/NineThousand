@@ -10,7 +10,7 @@ namespace OpenGLRenderer {
 		Shader* lightingShader = GetShaderByName("Lighting");
 
 		Camera* camera = CameraManager::GetActiveCamera();
-		std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 		std::vector<float>& shadowCascadeLevels = GetShadowCascadeLevels();
 
 		refractionFBO->Bind();
@@ -22,17 +22,23 @@ namespace OpenGLRenderer {
 		lightingShader->setMat4("projection", camera->GetProjectionMatrix());
 
 		for (int i = 0; i < sceneLights.size(); i++) {
+			float lightStrength = sceneLights[i].GetStrength();
+			float lightRadius = sceneLights[i].GetRadius();
+			glm::vec3 lightPosition = sceneLights[i].GetPosition();
+			glm::vec3 lightColor = sceneLights[i].GetColor();
+			LightType lightType = sceneLights[i].GetLightType();
+
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			lightingShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-			lightingShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-			lightingShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-			lightingShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
-			lightingShader->setFloat(lightUniform + ".strength", sceneLights[i].strength);
-			lightingShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-			lightingShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-			lightingShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-			lightingShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
+			lightingShader->setFloat(lightUniform + ".posX", lightPosition.x);
+			lightingShader->setFloat(lightUniform + ".posY", lightPosition.y);
+			lightingShader->setFloat(lightUniform + ".posZ", lightPosition.z);
+			lightingShader->setFloat(lightUniform + ".radius", lightRadius);
+			lightingShader->setFloat(lightUniform + ".strength", lightStrength);
+			lightingShader->setFloat(lightUniform + ".colorR", lightColor.r);
+			lightingShader->setFloat(lightUniform + ".colorG", lightColor.g);
+			lightingShader->setFloat(lightUniform + ".colorB", lightColor.b);
+			lightingShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
 		}
 		lightingShader->setInt("noLights", sceneLights.size());
 		lightingShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
@@ -95,7 +101,7 @@ namespace OpenGLRenderer {
 		Texture* distortionTexture = AssetManager::GetTextureByName("WaterDUDV.png");
 		Texture* normalMapTexture = AssetManager::GetTextureByName("WaterNormal.png");
 
-		std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 
 		static float moveFactor = 0.0f;
 		float waveSpeed = 0.03f;
@@ -109,15 +115,21 @@ namespace OpenGLRenderer {
 		waterShader->setVec3("camPos", CameraManager::GetActiveCamera()->cameraPos);
 
 		for (int i = 0; i < sceneLights.size(); i++) {
+			float lightStrength = sceneLights[i].GetStrength();
+			float lightRadius = sceneLights[i].GetRadius();
+			glm::vec3 lightPosition = sceneLights[i].GetPosition();
+			glm::vec3 lightColor = sceneLights[i].GetColor();
+			LightType lightType = sceneLights[i].GetLightType();
+
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			waterShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-			waterShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-			waterShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-			waterShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-			waterShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-			waterShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-			waterShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
+			waterShader->setFloat(lightUniform + ".posX", lightPosition.x);
+			waterShader->setFloat(lightUniform + ".posY", lightPosition.y);
+			waterShader->setFloat(lightUniform + ".posZ", lightPosition.z);
+			waterShader->setFloat(lightUniform + ".colorR", lightColor.r);
+			waterShader->setFloat(lightUniform + ".colorG", lightColor.g);
+			waterShader->setFloat(lightUniform + ".colorB", lightColor.b);
+			waterShader->setFloat(lightUniform + ".radius", lightRadius);
 		}
 		waterShader->setInt("lightsNr", sceneLights.size());
 

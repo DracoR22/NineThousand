@@ -28,6 +28,11 @@ namespace nlohmann {
         static void to_json(nlohmann::json& j, const GameObjectCreateInfo& obj);
         static void from_json(const nlohmann::json& j, GameObjectCreateInfo& obj);
     };
+    template <>
+    struct adl_serializer<LightCreateInfo> {
+        static void to_json(nlohmann::json& j, const LightCreateInfo& obj);
+        static void from_json(const nlohmann::json& j, LightCreateInfo& obj);
+    };
 }
 
 namespace JSON {

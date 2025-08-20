@@ -71,6 +71,24 @@ namespace nlohmann {
 		j.at("rotation").get_to(obj.rotation);
 		j.at("textureScale").get_to(obj.textureScale);
 	}
+
+	void adl_serializer<LightCreateInfo>::to_json(nlohmann::json& j, const LightCreateInfo& light) {
+		j = {
+			{"position", light.position},
+			{"color", light.color},
+			{"strength", light.strength},
+			{"radius", light.radius},
+			{"type", light.type}
+		};
+	}
+
+	void adl_serializer<LightCreateInfo>::from_json(const nlohmann::json& j, LightCreateInfo& light) {
+		j.at("position").get_to(light.position);
+		j.at("color").get_to(light.color);
+		j.at("strength").get_to(light.strength);
+		j.at("radius").get_to(light.radius);
+		j.at("type").get_to(light.type);
+	}
 }
 
 namespace JSON {
@@ -104,8 +122,10 @@ namespace JSON {
 	void SaveLevel(const std::string& filePath, LevelCreateInfo& levelCreateInfo) {
 		nlohmann::json json;
 
-		json["LevelName"] = levelCreateInfo.name;
 		json["GameObjects"] = nlohmann::json::array();
+		json["Lights"] = nlohmann::json::array();
+
+		json["LevelName"] = levelCreateInfo.name;
 
 		for (const GameObjectCreateInfo& createInfo : levelCreateInfo.gameObjects) {
 			json["GameObjects"].push_back(nlohmann::json{
@@ -116,7 +136,17 @@ namespace JSON {
 				{ "rotation", createInfo.rotation },
 		    	{ "textureScale", createInfo.textureScale },
 				{ "meshRenderingInfo", createInfo.meshRenderingInfo }
-				});
+			});
+		}
+
+		for (const LightCreateInfo& createInfo : levelCreateInfo.lights) {
+			json["Lights"].push_back(nlohmann::json{
+			  {"position", createInfo.position},
+			  {"color", createInfo.color},
+			  {"strength", createInfo.strength},
+			  {"radius", createInfo.radius},
+			  {"type", createInfo.type}
+			});
 		}
 
 		SaveToFile(json, filePath);
@@ -142,6 +172,15 @@ namespace JSON {
 			createInfo.size = jsonObject["size"];
 			createInfo.textureScale = jsonObject["textureScale"];
 			createInfo.meshRenderingInfo = jsonObject["meshRenderingInfo"];
+		}
+
+		for (auto& jsonLight : json["Lights"]) {
+			LightCreateInfo& createInfo = levelCreateInfo.lights.emplace_back();
+			createInfo.position = jsonLight["position"];
+			createInfo.color = jsonLight["color"];
+			createInfo.radius = jsonLight["radius"];
+			createInfo.strength = jsonLight["strength"];
+			createInfo.type = jsonLight["type"];
 		}
 
 		return levelCreateInfo;

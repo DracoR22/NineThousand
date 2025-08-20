@@ -92,7 +92,7 @@ namespace EditorPanel {
 
 		if (Game::GetGameState() == Game::GameState::EDITOR) {
 			ImGui::SetNextWindowSize(ImVec2(400.0f, Window::m_windowHeight), ImGuiCond_Always);
-			ImGui::Begin("Game Editor");
+			ImGui::Begin("Game Editor", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
@@ -152,55 +152,85 @@ namespace EditorPanel {
 			}
 
 			if (ImGui::CollapsingHeader("Lights")) {
-				std::vector<LightCreateInfo>& lights = OpenGLRenderer::GetSceneLights();
+				std::vector<LightObject>& lights = Scene::GetLightObjects();
 				std::string previewLabel = "Light " + std::to_string(g_selectedLightIndex + 1);
 
-				if (ImGui::BeginCombo("Selected Light", previewLabel.c_str())) {
-					for (int i = 0; i < lights.size(); ++i) {
-						bool isSelected = (i == g_selectedLightIndex);
-						//light.SetSelected(false); // TODO: ADD SOME VISUAL RERESENTATION OF THE SELECTED LIGHT
+			
+				if (lights.empty()) {
+					ImGui::Text("No Lights");
+				}
+				else {
+					if (ImGui::BeginCombo("Selected Light", previewLabel.c_str())) {
+						for (int i = 0; i < lights.size(); ++i) {
+							bool isSelected = (i == g_selectedLightIndex);
+							//light.SetSelected(false); // TODO: ADD SOME VISUAL RERESENTATION OF THE SELECTED LIGHT
 
-						std::string lightToSelect = "Light " + std::to_string(i + 1);
-						if (ImGui::Selectable(lightToSelect.c_str())) {
-							g_selectedLightIndex = i;
+							std::string lightToSelect = "Light " + std::to_string(i + 1);
+							if (ImGui::Selectable(lightToSelect.c_str())) {
+								g_selectedLightIndex = i;
+							}
+
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}
+
 						}
 
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-
+						ImGui::EndCombo();
 					}
-
-					ImGui::EndCombo();
 				}
 
-					LightCreateInfo& light = lights[g_selectedLightIndex];
+				if (g_selectedLightIndex >= 0 && g_selectedLightIndex < lights.size()) {
+					LightObject& light = lights[g_selectedLightIndex];
+					float lightStrength = light.GetStrength();
+					float lightRadius = light.GetRadius();
+					glm::vec3 lightPosition = light.GetPosition();
+					glm::vec3 lightColor = light.GetColor();
+					LightType lightType = light.GetLightType();
 
-					if (ImGui::SliderFloat("Strength", &light.strength, 0.0f, 100.0f)) {
-						OpenGLRenderer::UpdateLightStrength(g_selectedLightIndex, light.strength);
+					if (ImGui::BeginCombo("Light Type", lightType == LightType::POINT_LIGHT ? "Point Light" : "Directional Light")) {
+						if (ImGui::Selectable("Point Light", lightType == LightType::POINT_LIGHT)) {
+							light.SetLightType(LightType::POINT_LIGHT);
+						}
+						if (ImGui::Selectable("Directional Light", lightType == LightType::DIRECTIONAL_LIGHT)) {
+							light.SetLightType(LightType::DIRECTIONAL_LIGHT);
+						}
+						ImGui::EndCombo();
 					}
 
-					if (light.type == LightType::POINT_LIGHT) {
-						if (ImGui::SliderFloat("Radius", &light.radius, 0.0f, 100.0f)) {
-							OpenGLRenderer::UpdateLightRadius(g_selectedLightIndex, light.radius);
+					if (light.GetLightType() == LightType::POINT_LIGHT) {
+						ImGui::Dummy(ImVec2(0.0f, 5.0f));
+						ImGui::Text("Properties");
+						if (ImGui::SliderFloat("Strength", &lightStrength, 0.0f, 100.0f)) {
+							light.SetStrength(lightStrength);
 						}
 
-						if (ImGui::InputFloat("Position X", &light.position.x, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
+						if (ImGui::SliderFloat("Radius", &lightRadius, 0.0f, 100.0f)) {
+							light.SetRadius(lightRadius);
 						}
 
-						if (ImGui::InputFloat("Position Y", &light.position.y, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
+						ImGui::Dummy(ImVec2(0.0f, 5.0f));
+						ImGui::Text("Transform");
+						if (ImGui::InputFloat("Position X", &lightPosition.x, 1.0f, 10.0f, "%.2f")) {
+							light.SetPosition(lightPosition);
 						}
 
-						if (ImGui::InputFloat("Position Z", &light.position.z, 1.0f, 10.0f, "%.2f")) {
-							OpenGLRenderer::UpdateLightPosition(g_selectedLightIndex, light.position);
+						if (ImGui::InputFloat("Position Y", &lightPosition.y, 1.0f, 10.0f, "%.2f")) {
+							light.SetPosition(lightPosition);
+						}
+
+						if (ImGui::InputFloat("Position Z", &lightPosition.z, 1.0f, 10.0f, "%.2f")) {
+							light.SetPosition(lightPosition);
 						}
 					}
 					// TODO
-					else if (light.type == LightType::DIRECTIONAL_LIGHT) {
+					else if (light.GetLightType() == LightType::DIRECTIONAL_LIGHT) {
 						static float yaw = 0.0f;   // Horizontal angle
 						static float pitch = -45.0f; // Vertical angle
+
+						if (ImGui::SliderFloat("Strength", &lightStrength, 0.0f, 100.0f)) {
+							light.SetStrength(lightStrength);
+						}
 
 						ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f);
 						ImGui::SliderFloat("Pitch", &pitch, -89.0f, 89.0f);
@@ -208,9 +238,19 @@ namespace EditorPanel {
 
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 					ImGui::Text("Pick Color");
-					ImVec4 lightColor = ImVec4(light.color.r, light.color.g, light.color.b, 1.0f);
-					if (ImGui::ColorPicker3("Color", (float*)&lightColor)) {
-						OpenGLRenderer::SetLightColor(g_selectedLightIndex, lightColor.x, lightColor.y, lightColor.z);
+					ImVec4 imguiColor = ImVec4(lightColor.r, lightColor.g, lightColor.b, 1.0f);
+					if (ImGui::ColorPicker3("Color", (float*)&imguiColor)) {
+						light.SetColor(glm::vec3(imguiColor.x, imguiColor.y, imguiColor.z));
+					}
+
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+				}
+
+				    ImGui::Separator();
+					if (ImGui::Button("Add Light")) {
+						LightCreateInfo lightCreateInfo;
+						Scene::AddLightObject(lightCreateInfo);
+						g_selectedLightIndex = lights.size() - 1;
 					}
 			}
 
@@ -458,12 +498,24 @@ namespace EditorPanel {
 
 			if (ImGui::Button("Save")) {
 				std::vector<GameObject> gameObjects = Scene::GetGameObjects();
+				std::vector<LightObject> lightObjects = Scene::GetLightObjects();
+
 				LevelCreateInfo levelCreateInfo;
 				levelCreateInfo.name = levels[g_selectedLevelIndex];
 				for (GameObject& object : gameObjects) {
 					levelCreateInfo.gameObjects.emplace_back(object.GetLatestCreateInfo());
 				}
-				
+
+				for (LightObject& light : lightObjects) {
+					LightCreateInfo newLightCreateInfo;
+					newLightCreateInfo.color = light.GetColor();
+					newLightCreateInfo.position = light.GetPosition();
+					newLightCreateInfo.radius = light.GetRadius();
+					newLightCreateInfo.strength = light.GetStrength();
+					newLightCreateInfo.type = light.GetLightType();
+
+					levelCreateInfo.lights.emplace_back(newLightCreateInfo);
+				}
 				
 				JSON::SaveLevel("resources/levels/" + levelCreateInfo.name + ".json", levelCreateInfo);
 				JSON::SaveLevel("../../../resources/levels/" + levelCreateInfo.name + ".json", levelCreateInfo);

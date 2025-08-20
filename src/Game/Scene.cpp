@@ -4,6 +4,7 @@ namespace Scene {
 	std::vector<GameObject> g_gameObjects;
 	std::vector<GameObject> g_animatedObjects;
 	std::vector<WaterObject> g_waterPlaneObjects;
+	std::vector<LightObject> g_lightObjects;
 
 	void CreateHardcodedObjects() {
 		WaterObjectCreateInfo waterPlaneCreateInfo{
@@ -48,6 +49,30 @@ namespace Scene {
 		return nullptr;
 	}
 
+	std::vector<LightObject>& GetLightObjects() {
+		return g_lightObjects;
+	}
+
+	LightObject* GetLightObjectByIndex(int index) {
+		if (index < 0 || index >= (int)g_lightObjects.size()) {
+			std::cout << "Scene::GetLightObjectByIndex() failed because index " << index << "is out of range!\n";
+			return nullptr;
+		}
+
+		for (int i = 0; i < g_lightObjects.size(); i++) {
+			if (i == index) {
+				return &g_lightObjects[i];
+			}
+		}
+
+		std::cout << "Scene::GetLightObjectByIndex() failed because " << "could not get light by index!\n";
+		return nullptr;
+	}
+
+	void AddLightObject(LightCreateInfo& createInfo) {
+		g_lightObjects.emplace_back(createInfo);
+	}
+
 	std::vector<WaterObject>& GetWaterPlaneObjects() {
 		return g_waterPlaneObjects;
 	}
@@ -56,9 +81,14 @@ namespace Scene {
 		LevelCreateInfo levelCreateInfo = JSON::LoadLevel(filePath);
 
 		g_gameObjects.clear();
+		g_lightObjects.clear();
 		
 		for (GameObjectCreateInfo& createInfo : levelCreateInfo.gameObjects) {
 			g_gameObjects.emplace_back(createInfo);
+		}
+
+		for (LightCreateInfo& createInfo : levelCreateInfo.lights) {
+			g_lightObjects.emplace_back(createInfo);
 		}
 	}
 }

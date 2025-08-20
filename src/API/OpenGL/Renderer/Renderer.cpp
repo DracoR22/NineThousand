@@ -14,7 +14,6 @@ namespace OpenGLRenderer {
 	glm::vec2 g_renderResolution = { 1280, 720 };
 
 	struct RenderData {
-		std::vector<LightCreateInfo> sceneLights = {};
 		std::vector<CubeMap> cubeMaps = {};
 
 		RendererCommon::PostProcessMode currentMode = RendererCommon::PostProcessMode::NONE;
@@ -64,24 +63,6 @@ namespace OpenGLRenderer {
 		g_quadMeshes["Text"] = Mesh2D(RendererCommon::UI_VERTICES, sizeof(RendererCommon::UI_VERTICES));
 		g_quadMeshes["Texture"] = Mesh2D(RendererCommon::UI_VERTICES, sizeof(RendererCommon::UI_VERTICES));
 		g_quadMeshes["PostProcess"] = Mesh2D(RendererCommon::POSTPROCESS_QUAD_VERTICES, sizeof(RendererCommon::POSTPROCESS_QUAD_VERTICES));
-
-		// load lights (TODO: MOVE TO SCENE LEVEL)
-		LightCreateInfo cubeLampLight;
-		cubeLampLight.position = glm::vec3(10.0f, 5.0f, 5.0f);
-		cubeLampLight.color = glm::vec3(0.8f);
-		cubeLampLight.radius = 70.0f;
-		cubeLampLight.strength = 1.0f;
-		cubeLampLight.type = LightType::DIRECTIONAL_LIGHT;
-
-		LightCreateInfo cubeLampLight2;
-		cubeLampLight2.position = glm::vec3(14.0f, 15.0f, 24.0f);
-		cubeLampLight2.color = glm::vec3(0.8f);
-		cubeLampLight2.radius = 100.0f;
-		cubeLampLight2.strength = 1.0f;
-		cubeLampLight2.type = LightType::POINT_LIGHT;
-
-		g_renderData.sceneLights.push_back(cubeLampLight);
-		g_renderData.sceneLights.push_back(cubeLampLight2);
 
 		glm::vec2 viewPortResolution = GetRenderResolution();
 
@@ -510,28 +491,6 @@ namespace OpenGLRenderer {
 	}
 	void ChangeGammaValue(float value) {
 		g_renderData.gamma = value;
-	}
-
-	std::vector<LightCreateInfo>& GetSceneLights() {
-		return g_renderData.sceneLights;
-	}
-
-	void UpdateLightStrength(int index, float strength) {
-		g_renderData.sceneLights[index].strength = strength;
-	}
-
-	void UpdateLightRadius(int index, float radius) {
-		g_renderData.sceneLights[index].radius = radius;
-	}
-
-	void UpdateLightPosition(int index, glm::vec3 newPosition) {
-		g_renderData.sceneLights[index].position = newPosition;
-	}
-
-	void SetLightColor(int index, float r, float g, float b) {
-		g_renderData.sceneLights[index].color.r = r;
-		g_renderData.sceneLights[index].color.g = g;
-		g_renderData.sceneLights[index].color.b = b;
 	}
 
 	glm::vec2 GetRenderResolution() {

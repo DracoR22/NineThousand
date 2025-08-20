@@ -21,24 +21,30 @@ namespace OpenGLRenderer {
 		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
 		Camera* camera = CameraManager::GetActiveCamera();
 
-		std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 		std::vector<float>& shadowCascadeLevels = GetShadowCascadeLevels();
 
 		lightingShader->activate();
 		lightingShader->setMat4("view", camera->GetViewMatrix());
 		lightingShader->setMat4("projection", camera->GetProjectionMatrix());
 		for (int i = 0; i < sceneLights.size(); i++) {
+			float lightStrength = sceneLights[i].GetStrength();
+			float lightRadius = sceneLights[i].GetRadius();
+			glm::vec3 lightPosition = sceneLights[i].GetPosition();
+			glm::vec3 lightColor = sceneLights[i].GetColor();
+			LightType lightType = sceneLights[i].GetLightType();
+
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			lightingShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-			lightingShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-			lightingShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-			lightingShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
-			lightingShader->setFloat(lightUniform + ".strength", sceneLights[i].strength);
-			lightingShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-			lightingShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-			lightingShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-			lightingShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
+			lightingShader->setFloat(lightUniform + ".posX", lightPosition.x);
+			lightingShader->setFloat(lightUniform + ".posY", lightPosition.y);
+			lightingShader->setFloat(lightUniform + ".posZ", lightPosition.z);
+			lightingShader->setFloat(lightUniform + ".radius", lightRadius);
+			lightingShader->setFloat(lightUniform + ".strength", lightStrength);
+			lightingShader->setFloat(lightUniform + ".colorR", lightColor.r);
+			lightingShader->setFloat(lightUniform + ".colorG", lightColor.g);
+			lightingShader->setFloat(lightUniform + ".colorB", lightColor.b);
+			lightingShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
 		}
 		lightingShader->setInt("noLights", sceneLights.size());
 		lightingShader->set3Float("camPos", camera->cameraPos);
@@ -173,7 +179,7 @@ namespace OpenGLRenderer {
 		FrameBuffer* gBuffer = GetFrameBufferByName("GBuffer");
 		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
 
-		std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 
 		postProcessingFrameBuffer->Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -192,17 +198,23 @@ namespace OpenGLRenderer {
 		deferredLightingShader->setInt("normalTexture", 2);
 		deferredLightingShader->setInt("rmaTexture", 3);
 		for (int i = 0; i < sceneLights.size(); i++) {
+			float lightStrength = sceneLights[i].GetStrength();
+			float lightRadius = sceneLights[i].GetRadius();
+			glm::vec3 lightPosition = sceneLights[i].GetPosition();
+			glm::vec3 lightColor = sceneLights[i].GetColor();
+			LightType lightType = sceneLights[i].GetLightType();
+
 			std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-			deferredLightingShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-			deferredLightingShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-			deferredLightingShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-			deferredLightingShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
-			deferredLightingShader->setFloat(lightUniform + ".strength", sceneLights[i].strength);
-			deferredLightingShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-			deferredLightingShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-			deferredLightingShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-			deferredLightingShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
+			deferredLightingShader->setFloat(lightUniform + ".posX", lightPosition.x);
+			deferredLightingShader->setFloat(lightUniform + ".posY", lightPosition.y);
+			deferredLightingShader->setFloat(lightUniform + ".posZ", lightPosition.z);
+			deferredLightingShader->setFloat(lightUniform + ".radius", lightRadius);
+			deferredLightingShader->setFloat(lightUniform + ".strength", lightStrength);
+			deferredLightingShader->setFloat(lightUniform + ".colorR", lightColor.r);
+			deferredLightingShader->setFloat(lightUniform + ".colorG", lightColor.g);
+			deferredLightingShader->setFloat(lightUniform + ".colorB", lightColor.b);
+			deferredLightingShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
 		}
 		deferredLightingShader->setInt("noLights", sceneLights.size());
 		deferredLightingShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);

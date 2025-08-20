@@ -5,7 +5,7 @@ void OpenGLRenderer::AnimationPass() {
 
 	Player& player = Game::GetPLayerByIndex(0);
 	Camera* camera = CameraManager::GetActiveCamera();
-	std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
+	std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 
 	Model* currentWeaponModel = AssetManager::GetModelByName(player.GetEquipedWeaponInfo()->name);
 	WeaponInfo* currentWeaponInfo = player.GetEquipedWeaponInfo();
@@ -15,17 +15,23 @@ void OpenGLRenderer::AnimationPass() {
 	animationShader->setMat4("projection", camera->GetProjectionMatrix());
 	animationShader->setInt("noLights", sceneLights.size());
 	for (int i = 0; i < sceneLights.size(); i++) {
+		float lightStrength = sceneLights[i].GetStrength();
+		float lightRadius = sceneLights[i].GetRadius();
+		glm::vec3 lightPosition = sceneLights[i].GetPosition();
+		glm::vec3 lightColor = sceneLights[i].GetColor();
+		LightType lightType = sceneLights[i].GetLightType();
+
 		std::string lightUniform = "lights[" + std::to_string(i) + "]";
 
-		animationShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-		animationShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-		animationShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-		animationShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
-		animationShader->setFloat(lightUniform + ".strength", sceneLights[i].strength);
-		animationShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-		animationShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-		animationShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-		animationShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
+		animationShader->setFloat(lightUniform + ".posX", lightPosition.x);
+		animationShader->setFloat(lightUniform + ".posY", lightPosition.y);
+		animationShader->setFloat(lightUniform + ".posZ", lightPosition.z);
+		animationShader->setFloat(lightUniform + ".radius", lightRadius);
+		animationShader->setFloat(lightUniform + ".strength", lightStrength);
+		animationShader->setFloat(lightUniform + ".colorR", lightColor.r);
+		animationShader->setFloat(lightUniform + ".colorG", lightColor.g);
+		animationShader->setFloat(lightUniform + ".colorB", lightColor.b);
+		animationShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
 	}
 	animationShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 

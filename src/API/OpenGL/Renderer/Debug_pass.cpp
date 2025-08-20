@@ -35,7 +35,7 @@ void OpenGLRenderer::DebugPass() {
 
 		stModel = glm::translate(stModel, outlineObject.GetPosition());
 
-		stModel = glm::scale(stModel, outlineObject.GetSize() * outlineScale);
+		stModel = glm::scale(stModel, outlineObject.GetSize());
 		stModel *= outlineObject.GetRotationMatrix();
 
 		outlineAnimatedShader->setMat4("model", stModel);

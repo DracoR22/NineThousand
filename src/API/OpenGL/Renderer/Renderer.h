@@ -89,12 +89,6 @@ namespace OpenGLRenderer {
 	float GetGammaValue();
 	void ChangeGammaValue(float value);
 
-	std::vector<LightCreateInfo>& GetSceneLights();
-	void UpdateLightStrength(int index, float strength);
-	void UpdateLightRadius(int index, float radius);
-	void UpdateLightPosition(int index, glm::vec3 newPosition);
-	void SetLightColor(int index, float r, float g, float b);
-
 	glm::vec2 GetRenderResolution();
 	void SetRenderResolution(int x, int y);
 
