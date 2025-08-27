@@ -106,7 +106,7 @@ void Player::UpdateMovement(double deltaTime) {
     glm::vec3 currentCamPos = m_camera.cameraPos;
     glm::vec3 targetCamPos = glm::vec3(characterControllerPos.x, characterControllerPos.y + m_height * 0.8f, characterControllerPos.z);
 
-    float camSmoothFactor = 10.0f; // tweak as needed
+    float camSmoothFactor = 10.0f;
     m_camera.setPosition(glm::mix(currentCamPos, targetCamPos, camSmoothFactor * static_cast<float>(deltaTime)));
     //m_camera.setPosition(targetCamPos);
 }
@@ -658,8 +658,9 @@ void Player::SpawnBulletCase() {
     if (m_bulletCasePhysicsId != -1) {
         Physics::MarkRigidDynamicForRemoval(m_bulletCasePhysicsId);
         m_bulletCasePhysicsId = -1;
+
+        Scene::RemoveGameObjectByName("BulletCase1");
     }
-    Scene::RemoveGameObjectByName("BulletCase1");
 
     // initialize bullet case game object
     GameObjectCreateInfo createInfo;
@@ -675,7 +676,7 @@ void Player::SpawnBulletCase() {
     createInfo.meshRenderingInfo.push_back(meshInfo);
 
     // apply case spawn position based on the weapon position
-    glm::vec3 bulletCaseOffset = weaponInfo->ammoInfo.caseSpawnOffset;
+    glm::vec3 bulletCaseOffset =  weaponInfo->ammoInfo.caseSpawnOffset; //glm::vec3(1.0f, 2.7f, -3.7f);
     if (IsInADS()) {
         bulletCaseOffset = weaponInfo->ammoInfo.caseSpawnOffsetADS;
     }
@@ -699,8 +700,8 @@ void Player::SpawnBulletCase() {
     Scene::AddGameObject(createInfo);
 
     // create rigid dynamic
-    float caseMass = 0.05f;
-    float ejectionForce = 7.0f;
+    float caseMass = 0.5f;
+    float ejectionForce = 6.0f;
 
     PhysicsTransformData physicsTransformData;
     physicsTransformData.position = createInfo.position;
@@ -713,14 +714,20 @@ void Player::SpawnBulletCase() {
     }
 
     initialForce = glm::vec3(gunTransform * glm::vec4(initialForce, 0.0f)); // transform to world space
-    glm::vec3 initialTorque = glm::vec3(100.0f, 0.0f, 0.0f);
+
+    glm::vec3 localTorque = glm::vec3(
+        20.0f + Utils::RandomFloat(-20.0f, 20.0f),
+        Utils::RandomFloat(-3.0f, 3.0f),
+        20.0f + Utils::RandomFloat(0.0f, 20.0f)
+    );
+    glm::vec3 worldTorque = glm::vec3(gunTransform * glm::vec4(localTorque, 0.0f));
 
     uint64_t physicsId = Physics::CreateRigidDynamicBox(
         physicsTransformData,
-        createInfo.size * 0.5f,
+        glm::vec3(0.07f) * 0.5f,
         caseMass,
         initialForce,
-        initialTorque
+        worldTorque
     );
 
     m_bulletCasePhysicsId = physicsId;

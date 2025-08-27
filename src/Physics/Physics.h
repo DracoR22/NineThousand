@@ -41,15 +41,18 @@ namespace Physics {
     uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque);
     void RemoveRigidDynamic(uint64_t id);
     void MarkRigidDynamicForRemoval(uint64_t id);
+    void SetRigidDynamicGlobalPose(uint64_t id, glm::mat4 transformMatrix);
 
     // Rigid Statics
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents);
     uint64_t CreateRigidStaticConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform);
     RigidStatic* GetRigidStaticById(uint64_t id);
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap();
+    void SetRigidStaticGlobalPose(uint64_t id, glm::mat4 transformMatrix);
 
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec);
     glm::quat PxQuatToGlmQuat(PxQuat quat);
+    PxMat44 GlmMat4ToPxMat44(glm::mat4 glmMatrix);
 
     PxScene* GetScene();
 

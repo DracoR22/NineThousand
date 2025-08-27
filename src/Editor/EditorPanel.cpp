@@ -91,8 +91,12 @@ namespace EditorPanel {
 		ImGui::NewFrame();
 
 		if (Game::GetGameState() == Game::GameState::EDITOR) {
-			ImGui::SetNextWindowSize(ImVec2(400.0f, Window::m_windowHeight), ImGuiCond_Always);
-			ImGui::Begin("Game Editor", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+			ImGui::SetNextWindowSize(ImVec2(380.0f, Window::m_windowHeight), ImGuiCond_Always);
+			ImGui::SetNextWindowSizeConstraints(
+				ImVec2(380.0f, Window::m_windowHeight),
+				ImVec2(700.0f, Window::m_windowHeight) 
+			);
+			ImGui::Begin("Game Editor", nullptr, ImGuiWindowFlags_NoMove);
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
@@ -100,7 +104,7 @@ namespace EditorPanel {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f));
 				ImGui::Text("ViewPort");
 
-				if (ImGui::BeginCombo("Post Processing Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
+				if (ImGui::BeginCombo("Mode", postProcessMode == RendererCommon::PostProcessMode::NONE ? "None" : "Sharpen")) {
 					if (ImGui::Selectable("None", postProcessMode == RendererCommon::PostProcessMode::NONE)) {
 						OpenGLRenderer::ChangePostProcessMode(RendererCommon::PostProcessMode::NONE);
 					}
@@ -111,7 +115,7 @@ namespace EditorPanel {
 				}
 
 				glm::vec2 renderResolution = OpenGLRenderer::GetRenderResolution();
-				if (ImGui::BeginCombo("Render Resolution", g_resolutionOptions[g_currentResolutionIndex])) {
+				if (ImGui::BeginCombo("Resolution", g_resolutionOptions[g_currentResolutionIndex])) {
 					for (int i = 0; i < IM_ARRAYSIZE(g_resolutionOptions); i++) {
 						bool isSelected = (g_currentResolutionIndex == i);
 						if (ImGui::Selectable(g_resolutionOptions[i], isSelected)) {

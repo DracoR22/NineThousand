@@ -15,15 +15,54 @@ namespace Editor {
 		UpdateCamera();
 		UpdateMouseRays();
 
-		/*if (Mouse::buttonWentDown(GLFW_MOUSE_BUTTON_LEFT)) {
-			GameObject* plane = Scene::GetGameObjectByName("Plane1");
+		// update physics collitions
+		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			if (gameObject.GetPhysicsId() > 0) {
+				Physics::SetRigidDynamicGlobalPose(gameObject.GetPhysicsId(), gameObject.GetModelMatrix());
+				Physics::SetRigidStaticGlobalPose(gameObject.GetPhysicsId(), gameObject.GetModelMatrix());
+			}
+		}
+
+		if (Mouse::ButtonJustPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+
+			/*GameObject* plane = Scene::GetGameObjectByName("Plane1");
 			glm::vec3 localUp(0, 1, 0);
 			glm::vec3 planeNormal = glm::normalize(glm::vec3(plane->GetRotationMatrix() * glm::vec4(localUp, 0.0f)));
 
 			glm::vec3 hit = GetMouseRayPlaneIntersection(plane->GetPosition(), planeNormal);
 
-			std::cout << "HIT OBJECT AT " << glm::to_string(hit) << std::endl;
-		}*/
+			std::cout << "HIT OBJECT AT " << glm::to_string(hit) << std::endl;*/
+
+			PxRaycastBuffer hit;
+			PxQueryFilterData filterData = PxQueryFilterData(PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
+
+			bool status = Physics::GetScene()->raycast(
+				PxVec3(g_rayOrigin.x, g_rayOrigin.y, g_rayOrigin.z),    // origin
+				PxVec3(g_rayDirection.x, g_rayDirection.y, g_rayDirection.z), // direction (normalized)
+				1000.0f,                                                // max distance
+				hit,
+				PxHitFlag::eDEFAULT,                                    // hit info flags
+				filterData                                              // query filter
+			);
+
+			if (!ImGui::GetIO().WantCaptureMouse) {
+				if (status && hit.hasBlock) {
+					for (GameObject& gameObject : Scene::GetGameObjects()) {
+						gameObject.SetSelected(false);
+
+						RigidStatic* rigidStatic = Physics::GetRigidStaticById(gameObject.GetPhysicsId());
+						RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
+
+						PxRaycastHit rayHit = hit.block;
+						PxRigidActor* actor = rayHit.actor;
+
+						if ((rigidStatic && rigidStatic->GetPxRigidStatic() == actor) || (rigidDynamic && rigidDynamic->GetPxRigidDynamic() == actor)) {
+							gameObject.SetSelected(true);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	void UpdateCamera() {
@@ -65,14 +104,19 @@ namespace Editor {
 	void UpdateMouseRays() {
 		glm::mat4 viewMatrx = CameraManager::GetActiveCamera()->GetViewMatrix();
 		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
+
 		float x = (2.0f * Mouse::getMouseX()) / Window::m_windowWidth -1.0f;
 		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::m_windowHeight;
+
 		glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
 
 		glm::vec4 rayEye = glm::inverse(projectionMatrix) * rayClip;
 		rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
-		g_rayDirection = glm::normalize(glm::vec3(glm::inverse(viewMatrx) * rayEye));
+		glm::vec3 rayWorld = glm::vec3(glm::inverse(viewMatrx) * rayEye);
+		rayWorld = glm::normalize(rayWorld);
+
+		g_rayDirection = rayWorld;
 		g_rayOrigin = glm::vec3(glm::inverse(viewMatrx)[3]);
 	}
 
@@ -95,6 +139,25 @@ namespace Editor {
 
 	glm::vec3 GetMouseRayDirection() {
 		return g_rayDirection;
+	}
+
+	bool RayIntersectsAABB(const glm::vec3& aabbMin, const glm::vec3& aabbMax, float& t) {
+		float t1 = (aabbMin.x - g_rayOrigin.x) / g_rayDirection.x;
+		float t2 = (aabbMax.x - g_rayOrigin.x) / g_rayDirection.x;
+		float t3 = (aabbMin.y - g_rayOrigin.y) / g_rayDirection.y;
+		float t4 = (aabbMax.y - g_rayOrigin.y) / g_rayDirection.y;
+		float t5 = (aabbMin.z - g_rayOrigin.z) / g_rayDirection.z;
+		float t6 = (aabbMax.z - g_rayOrigin.z) / g_rayDirection.z;
+
+		float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+		float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+		if (tmax < 0) return false;           // AABB is behind ray
+		if (tmin > tmax) return false;        // No intersection
+
+		t = tmin;
+		return true;
+
 	}
 
 	Camera& GetCamera() {

@@ -25,6 +25,7 @@ namespace OpenGLRenderer {
 	bool g_enableBloom = true;
 	bool g_castShadows = true;
 
+	///////////////////////////////////////
 	void RenderEnvMap();
 
 	unsigned int g_captureFBO, g_captureRBO;
@@ -32,6 +33,7 @@ namespace OpenGLRenderer {
 	unsigned int g_irradianceMap;
 	glm::mat4 g_captureProjection = {};
 	glm::mat4 g_captureViews[6];
+	///////////////////////////////////////
 
 	void Init() {
 		LoadShaders();
@@ -111,54 +113,6 @@ namespace OpenGLRenderer {
 		g_frameBuffers["BloomPong"].CreateAttachment("pongColor", GL_RGBA16F);
 		g_frameBuffers["BloomPong"].DrawBuffer();
 		g_frameBuffers["BloomPong"].Unbind();
-
-		//glGenFramebuffers(1, &g_captureFBO);
-		//glGenRenderbuffers(1, &g_captureRBO);
-
-		//glBindFramebuffer(GL_FRAMEBUFFER, g_captureFBO);
-		//glBindRenderbuffer(GL_RENDERBUFFER, g_captureRBO);
-		//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, g_captureRBO);
-
-		//glGenTextures(1, &g_envCubemap);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, g_envCubemap);
-		//for (unsigned int i = 0; i < 6; ++i)
-		//{
-		//	// note that we store each face with 16 bit floating point values
-		//	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-		//		512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-		//}
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-
-		//glGenTextures(1, &g_irradianceMap);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, g_irradianceMap);
-		//for (unsigned int i = 0; i < 6; ++i)
-		//{
-		//	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0,
-		//		GL_RGB, GL_FLOAT, nullptr);
-		//}
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		/*Camera* camera = CameraManager::GetActiveCamera();
-		glm::vec3 position = camera->cameraPos;
-
-		g_captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, camera->GetNearPlane(), camera->GetFarPlane());
-
-		g_captureViews[0] = glm::lookAt(position, position + glm::vec3(1, 0, 0), glm::vec3(0, -1, 0));
-		g_captureViews[1] = glm::lookAt(position, position + glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0));
-		g_captureViews[2] = glm::lookAt(position, position + glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
-		g_captureViews[3] = glm::lookAt(position, position + glm::vec3(0, -1, 0), glm::vec3(0, 0, -1));
-		g_captureViews[4] = glm::lookAt(position, position + glm::vec3(0, 0, 1), glm::vec3(0, -1, 0));
-		g_captureViews[5] = glm::lookAt(position, position + glm::vec3(0, 0, -1), glm::vec3(0, -1, 0));*/
 
 		// load shadow maps
 		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));

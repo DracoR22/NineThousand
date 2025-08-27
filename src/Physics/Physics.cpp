@@ -209,7 +209,7 @@ namespace Physics {
 
         PxTransform shapeOffset(PxVec3(0, pxHalfExtents.y, 0));
         PxShape* shape = g_physics->createShape(PxBoxGeometry(pxHalfExtents), *g_defaultMaterial);
-        shape->setLocalPose(shapeOffset); // this can be wrong
+        shape->setLocalPose(shapeOffset);
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
@@ -220,7 +220,9 @@ namespace Physics {
         pxRigidDynamic->addForce(force, PxForceMode::eIMPULSE);
 
         PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
-        pxRigidDynamic->addTorque(torque);
+        pxRigidDynamic->addTorque(torque, PxForceMode::eIMPULSE);
+
+        //pxRigidDynamic->setMaxAngularVelocity(1.0f);
 
         // create rigid dynamic
         uint64_t physicsId = Utils::GenerateUniqueID();
@@ -327,6 +329,20 @@ namespace Physics {
         }
     }
 
+    void SetRigidDynamicGlobalPose(uint64_t id, glm::mat4 transformMatrix) {
+        RigidDynamic* rigidDynamic = GetRigidDynamicById(id);
+
+        if (!rigidDynamic) return;
+
+        PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
+
+        if (!pxRigidDynamic) return;
+
+        PxMat44 pxMatrix = GlmMat4ToPxMat44(transformMatrix);
+        PxTransform pxTransform = PxTransform(pxMatrix);
+        pxRigidDynamic->setGlobalPose(pxTransform);
+    }
+
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
@@ -411,12 +427,34 @@ namespace Physics {
         return g_rigidStatics;
     }
 
+    void SetRigidStaticGlobalPose(uint64_t id, glm::mat4 transformMatrix) {
+        RigidStatic* rigidStatic = GetRigidStaticById(id);
+
+        if (!rigidStatic) return;
+
+        PxRigidStatic* pxRigidStatic = rigidStatic->GetPxRigidStatic();
+        
+        if (!pxRigidStatic) return;
+
+        PxMat44 pxMatrix = GlmMat4ToPxMat44(transformMatrix);
+        PxTransform pxTransform = PxTransform(pxMatrix);
+        pxRigidStatic->setGlobalPose(pxTransform);
+    }
+
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec) {
         return { vec.x, vec.y, vec.z };
     }
 
     glm::quat PxQuatToGlmQuat(PxQuat quat) {
         return { quat.x, quat.y, quat.z, quat.w };
+    }
+
+    PxMat44 GlmMat4ToPxMat44(glm::mat4 glmMatrix) {
+        PxMat44 matrix;
+        std::copy(glm::value_ptr(glmMatrix),
+            glm::value_ptr(glmMatrix) + 16,
+            reinterpret_cast<float*>(&matrix));
+        return matrix;
     }
 
     PxScene* GetScene() {
