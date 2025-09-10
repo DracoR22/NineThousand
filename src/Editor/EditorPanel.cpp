@@ -415,7 +415,7 @@ namespace EditorPanel {
 
 						ImGui::BeginChild("MaterialPreview", ImVec2(0, 200), true);
 
-						const int itemsPerRow = 4;
+						const int itemsPerRow = 3;
 
 						if (ImGui::BeginTable("Materials", itemsPerRow, ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit)) {
 							for (int i = 0; i < materials.size(); i++) {

@@ -10,6 +10,7 @@ namespace OpenGLRenderer {
 	std::unordered_map<std::string, UBO> g_ubos;
 	std::unordered_map<std::string, Mesh2D> g_quadMeshes;
 
+	glm::vec2 g_viewportResolution = { 1280 , 720 };
 	std::vector<float> g_shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
 
 	struct RenderData {

@@ -44,9 +44,6 @@ void OpenGLRenderer::PostProcessingPass() {
 	//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	//glDrawBuffers(2, attachments);
 
-	glm::vec2 viewPortPos = GetViewportPos();
-	glm::vec2 viewPortSize = GetViewportSize();
-
 	glBindFramebuffer(GL_FRAMEBUFFER, finalImageFBO->GetFBO());
 	glViewport(0, 0, finalImageFBO->GetWidth(), finalImageFBO->GetHeight());
 
