@@ -90,13 +90,46 @@ namespace EditorPanel {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		float fourthWidth = Window::m_windowWidth / 4.0f;
+		float fourthHeight = Window::m_windowHeight / 4.0f;
 		if (Game::GetGameState() == Game::GameState::EDITOR) {
-			ImGui::SetNextWindowSize(ImVec2(380.0f, Window::m_windowHeight), ImGuiCond_Always);
-			ImGui::SetNextWindowSizeConstraints(
+
+			ImGui::SetNextWindowSize(ImVec2(Window::m_windowWidth - fourthWidth, Window::m_windowHeight - fourthHeight), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(ImVec2(fourthWidth, 0), ImGuiCond_Always);
+
+			ImGui::Begin("Editor Viewport", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+
+			ImVec2 panelPos = ImGui::GetWindowPos();
+			ImVec2 panelSize = ImGui::GetWindowSize();
+
+
+			Editor::SetViewportPos(panelPos.x, panelPos.y); 
+			Editor::SetViewportSize(panelSize.x, panelSize.y);
+
+			FrameBuffer* postProcessingFBO = OpenGLRenderer::GetFrameBufferByName("FinalImage");
+
+			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+			ImTextureID sceneTexture = (ImTextureID)(intptr_t)postProcessingFBO->GetColorAttachmentTextureIdByIndex(0);
+
+			ImGui::Image(sceneTexture, viewportPanelSize, ImVec2(0, 1), ImVec2(1, 0));
+
+			ImGui::End();
+
+			ImGui::SetNextWindowSize(ImVec2(Window::m_windowWidth, fourthHeight), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(ImVec2(fourthWidth, Window::m_windowHeight - fourthHeight), ImGuiCond_Always);
+
+			ImGui::Begin("Debug Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoFocusOnAppearing);
+
+			ImGui::End();
+
+			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2(fourthWidth, Window::m_windowHeight), ImGuiCond_Always);
+			/*ImGui::SetNextWindowSizeConstraints(
 				ImVec2(380.0f, Window::m_windowHeight),
 				ImVec2(700.0f, Window::m_windowHeight) 
-			);
-			ImGui::Begin("Game Editor", nullptr, ImGuiWindowFlags_NoMove);
+			);*/
+			ImGui::Begin("Scene Editor", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoFocusOnAppearing);
 			ImGui::Text("FPS: %d", Window::GetFPSCount());
 			ImGui::Text("Player Position: (%.2f, %.2f, %.2f)", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 
@@ -563,6 +596,8 @@ namespace EditorPanel {
 
 				ImGui::End();
 			}
+
+
 	}
 
 	void Render() {

@@ -7,6 +7,11 @@ namespace Editor {
 	glm::vec3 g_rayOrigin;
 	glm::vec3 g_rayDirection;
 
+	int g_viewportWidth = Window::m_windowWidth;
+	int g_viewportHeight = Window::m_windowHeight;
+	int g_viewportPosX = 0;
+	int g_viewportPosY = 0;
+
 	void Init() {
 		g_camera = Camera(glm::vec3(5.0f));
 	}
@@ -24,15 +29,6 @@ namespace Editor {
 		}
 
 		if (Mouse::ButtonJustPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-
-			/*GameObject* plane = Scene::GetGameObjectByName("Plane1");
-			glm::vec3 localUp(0, 1, 0);
-			glm::vec3 planeNormal = glm::normalize(glm::vec3(plane->GetRotationMatrix() * glm::vec4(localUp, 0.0f)));
-
-			glm::vec3 hit = GetMouseRayPlaneIntersection(plane->GetPosition(), planeNormal);
-
-			std::cout << "HIT OBJECT AT " << glm::to_string(hit) << std::endl;*/
-
 			PxRaycastBuffer hit;
 			PxQueryFilterData filterData = PxQueryFilterData(PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
 
@@ -45,7 +41,19 @@ namespace Editor {
 				filterData                                              // query filter
 			);
 
-			if (!ImGui::GetIO().WantCaptureMouse) {
+			glm::vec2 mousePos = glm::vec2(Mouse::getMouseX(), Mouse::getMouseY());
+
+			glm::vec2 viewportPos = GetViewportPos();
+			glm::vec2 viewportSize = GetViewportSize();
+
+			// check if mouse is inside viewport rect
+			bool mouseInViewport =
+				mousePos.x >= viewportPos.x &&
+				mousePos.x <= viewportPos.x + viewportSize.x &&
+				mousePos.y >= viewportPos.y &&
+				mousePos.y <= viewportPos.y + viewportSize.y;
+
+			if (mouseInViewport) {
 				if (status && hit.hasBlock) {
 					for (GameObject& gameObject : Scene::GetGameObjects()) {
 						gameObject.SetSelected(false);
@@ -102,11 +110,21 @@ namespace Editor {
 	}
 
 	void UpdateMouseRays() {
+		glm::vec2 viewportPos = GetViewportPos();
+		glm::vec2 viewportSize = GetViewportSize();
+
 		glm::mat4 viewMatrx = CameraManager::GetActiveCamera()->GetViewMatrix();
 		glm::mat4 projectionMatrix = CameraManager::GetActiveCamera()->GetProjectionMatrix();
 
-		float x = (2.0f * Mouse::getMouseX()) / Window::m_windowWidth -1.0f;
-		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::m_windowHeight;
+		float mouseX = (Mouse::getMouseX() - viewportPos.x) / viewportSize.x;
+		float mouseY = (Mouse::getMouseY() - viewportPos.y) / viewportSize.y;
+
+		// Convert to NDC
+		float x = mouseX * 2.0f - 1.0f;
+		float y = 1.0f - mouseY * 2.0f;  // flip Y
+
+	/*	float x = (2.0f * Mouse::getMouseX()) / Window::m_windowWidth -1.0f;
+		float y = 1.0f - (2.0f * Mouse::getMouseY()) / Window::m_windowHeight;*/
 
 		glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
 
@@ -162,5 +180,23 @@ namespace Editor {
 
 	Camera& GetCamera() {
 		return g_camera;
+	}
+
+	void SetViewportSize(int width, int height) {
+		g_viewportWidth = width;
+		g_viewportHeight = height;
+	}
+
+	void SetViewportPos(int x, int y) {
+		g_viewportPosX = x;
+		g_viewportPosY = y;
+	}
+
+	glm::vec2 GetViewportPos() {
+		return glm::vec2(g_viewportPosX, g_viewportPosY);
+	}
+
+	glm::vec2 GetViewportSize() {
+		return glm::vec2(g_viewportWidth, g_viewportHeight);
 	}
 }

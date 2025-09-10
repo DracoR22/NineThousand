@@ -5,7 +5,6 @@
 #include "../Core/Window.h"
 #include "../Input/Keyboard.h"
 #include "../Input/Mouse.h"
-#include "../Editor/EditorPanel.h"
 #include "../Game/Scene.h"
 #include "../Physics/Physics.h"
 
@@ -23,4 +22,9 @@ namespace Editor {
 	bool RayIntersectsAABB(const glm::vec3& aabbMin, const glm::vec3& aabbMax, float& t);
 
 	Camera& GetCamera();
+
+	void SetViewportSize(int width, int height);
+	void SetViewportPos(int x, int y);
+	glm::vec2 GetViewportPos();
+	glm::vec2 GetViewportSize();
 }

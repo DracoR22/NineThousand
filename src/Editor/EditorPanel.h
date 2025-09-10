@@ -10,6 +10,7 @@
 #include "../Game/Player.h"
 #include "../Game/Scene.h"
 #include "../Utils/JSON.h"
+#include "./Editor.h"
 
 namespace EditorPanel {
 	void Init();

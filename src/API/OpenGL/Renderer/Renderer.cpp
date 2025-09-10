@@ -11,7 +11,6 @@ namespace OpenGLRenderer {
 	std::unordered_map<std::string, Mesh2D> g_quadMeshes;
 
 	std::vector<float> g_shadowCascadeLevels{ 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
-	glm::vec2 g_renderResolution = { 1280, 720 };
 
 	struct RenderData {
 		std::vector<CubeMap> cubeMaps = {};
@@ -81,7 +80,7 @@ namespace OpenGLRenderer {
 			g_frameBuffers["GBuffer"].Unbind();
 		}
 
-		g_frameBuffers["Refraction"] = FrameBuffer(Window::m_windowWidth, Window::m_windowHeight);
+		g_frameBuffers["Refraction"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["Refraction"].Bind();
 		g_frameBuffers["Refraction"].CreateAttachment("refractionAttachment", GL_RGBA16F);
 		g_frameBuffers["Refraction"].CreateDepthTextureAttachment();
@@ -96,19 +95,25 @@ namespace OpenGLRenderer {
 		g_frameBuffers["PostProcess"].DrawBuffers();
 		g_frameBuffers["PostProcess"].Unbind();
 
+		g_frameBuffers["FinalImage"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["FinalImage"].Bind();
+		g_frameBuffers["FinalImage"].CreateAttachment("colorAttachment", GL_RGBA16F);
+		g_frameBuffers["FinalImage"].DrawBuffer();
+		g_frameBuffers["FinalImage"].Unbind();
+
 		g_frameBuffers["MSAAPostProcess"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["MSAAPostProcess"].Bind();
 		g_frameBuffers["MSAAPostProcess"].CreateMSAAAttachment("msaaAttachment");
 		g_frameBuffers["MSAAPostProcess"].DrawBuffer();
 		g_frameBuffers["MSAAPostProcess"].Unbind();
 
-		g_frameBuffers["BloomPing"] = FrameBuffer(Window::m_windowWidth, Window::m_windowHeight);
+		g_frameBuffers["BloomPing"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["BloomPing"].Bind();
 		g_frameBuffers["BloomPing"].CreateAttachment("pingColor", GL_RGBA16F);
 		g_frameBuffers["BloomPing"].DrawBuffer();
 		g_frameBuffers["BloomPing"].Unbind();
 
-		g_frameBuffers["BloomPong"] = FrameBuffer(Window::m_windowWidth, Window::m_windowHeight);
+		g_frameBuffers["BloomPong"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["BloomPong"].Bind();
 		g_frameBuffers["BloomPong"].CreateAttachment("pongColor", GL_RGBA16F);
 		g_frameBuffers["BloomPong"].DrawBuffer();
@@ -326,9 +331,9 @@ namespace OpenGLRenderer {
 		FrameBuffer* refractionFrameBuffer = GetFrameBufferByName("Refraction");
 		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("PostProcess");
 
-		if (refractionFrameBuffer->GetWidth() != Window::m_windowWidth) {
+		/*if (refractionFrameBuffer->GetWidth() != Window::m_windowWidth) {
 			refractionFrameBuffer->ResizeRefraction(Window::m_windowWidth, Window::m_windowHeight);
-		}
+		}*/
 
 		if (g_rendererType == RendererType::FORWARD) {
 			msaaFrameBuffer->Bind();
@@ -448,7 +453,7 @@ namespace OpenGLRenderer {
 	}
 
 	glm::vec2 GetRenderResolution() {
-		return g_renderResolution;
+		return g_viewportResolution;
 	}
 
 	void SetRenderResolution(int x, int y) {
@@ -460,8 +465,8 @@ namespace OpenGLRenderer {
 			msaaFrameBuffer->ResizeMSAA(x, y);
 		}
 
-		g_renderResolution.x = x;
-		g_renderResolution.y = y;
+		g_viewportResolution.x = x;
+		g_viewportResolution.y = y;
 	}
 
 	void Cleanup() {

@@ -8,16 +8,18 @@
 using namespace physx;
 
 class RigidStatic {
-private:
-	PxRigidStatic* m_pxRigidStatic = nullptr;
 public:
 	RigidStatic() = default;
-	~RigidStatic();
 
-	void SetPxRigidStatic(PxRigidStatic* rigidStatic);
+	void SetPxRigidStatic(PxRigidStatic* rigidStatic, PxShape* shape);
 
 	glm::vec3 GetCurrentPosition();
 	glm::quat GetCurrentRotation();
 
 	PxRigidStatic* GetPxRigidStatic();
+	PxShape* GetPxShape() { return m_pxShape; };
+
+private:
+	PxRigidStatic* m_pxRigidStatic = nullptr;
+	PxShape* m_pxShape = nullptr;
 };

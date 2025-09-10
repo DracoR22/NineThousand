@@ -1,14 +1,8 @@
 #include "RigidStatic.h"
 
-RigidStatic::~RigidStatic() {
-	if (m_pxRigidStatic) {
-		m_pxRigidStatic->release();
-		m_pxRigidStatic = nullptr;
-	}
-}
-
-void RigidStatic::SetPxRigidStatic(PxRigidStatic* rigidStatic) {
+void RigidStatic::SetPxRigidStatic(PxRigidStatic* rigidStatic, PxShape* shape) {
 	m_pxRigidStatic = rigidStatic;
+	m_pxShape = shape;
 }
 
 PxRigidStatic* RigidStatic::GetPxRigidStatic() {

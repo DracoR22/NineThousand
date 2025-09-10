@@ -353,7 +353,6 @@ namespace Physics {
         // create shape
         PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
         pxRigidStatic->attachShape(*shape);
-        shape->release();
 
         g_scene->addActor(*pxRigidStatic);
 
@@ -361,7 +360,7 @@ namespace Physics {
         uint64_t physicsId = Utils::GenerateUniqueID();
         RigidStatic& rigidStatic = g_rigidStatics[physicsId];
 
-        rigidStatic.SetPxRigidStatic(pxRigidStatic);
+        rigidStatic.SetPxRigidStatic(pxRigidStatic, shape);
 
         return physicsId;
     }
@@ -404,13 +403,13 @@ namespace Physics {
 
         PxRigidStatic* pxRigidStatic = g_physics->createRigidStatic(pxTransform);
         pxRigidStatic->attachShape(*pxShape);
-        pxShape->release();
+
         g_scene->addActor(*pxRigidStatic);
 
         // store to RigidStatic
         uint64_t physicsId = Utils::GenerateUniqueID();
         RigidStatic& rigidStatic = g_rigidStatics[physicsId];
-        rigidStatic.SetPxRigidStatic(pxRigidStatic);
+        rigidStatic.SetPxRigidStatic(pxRigidStatic, pxShape);
 
         return physicsId;
     }
@@ -478,8 +477,24 @@ namespace Physics {
     }
 
     void CleanupPhysX() {
+        // release rigid dynamic pointers
+        for (auto& [id, rigidDynamic] : g_rigidDynamics) {
+            PxRigidDynamic* pxRigidDynamic = rigidDynamic.GetPxRigidDynamic();
+            
+            pxRigidDynamic->release();
+        }
         g_rigidDynamics.clear();
+
+        // release rigid static pointers
+        for (auto& [id, rigidStatic] : g_rigidStatics) {
+            PxRigidStatic* pxRigidStatic = rigidStatic.GetPxRigidStatic();
+            PxShape* pxShape = rigidStatic.GetPxShape();
+
+            pxRigidStatic->release();
+            pxShape->release();
+        }
         g_rigidStatics.clear();
+
         g_charaterControllers.clear();
      
         g_controllerManager->release();

@@ -6,6 +6,7 @@ void OpenGLRenderer::PostProcessingPass() {
 
 	FrameBuffer* msaaFBO = GetFrameBufferByName("MSAAPostProcess");
 	FrameBuffer* postProcessingFBO = GetFrameBufferByName("PostProcess");
+	FrameBuffer* finalImageFBO = GetFrameBufferByName("FinalImage");
 
 	Shader* postProcessShader = GetShaderByName("PostProcess");
 	Shader* sobelEdgesShader = GetShaderByName("SobelEdges");
@@ -23,8 +24,6 @@ void OpenGLRenderer::PostProcessingPass() {
 	if (postProcessingFBO->GetWidth() == GetRenderResolution().x) {
 		glBlitFramebuffer(0, 0, GetRenderResolution().x, GetRenderResolution().y, 0, 0, GetRenderResolution().x, GetRenderResolution().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	 }*/
-
-
 
 
 	//FrameBuffer* msaaFBO = GetFrameBufferByName("MSAAPostProcess");
@@ -45,9 +44,11 @@ void OpenGLRenderer::PostProcessingPass() {
 	//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	//glDrawBuffers(2, attachments);
 
+	glm::vec2 viewPortPos = GetViewportPos();
+	glm::vec2 viewPortSize = GetViewportSize();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, finalImageFBO->GetFBO());
+	glViewport(0, 0, finalImageFBO->GetWidth(), finalImageFBO->GetHeight());
 
 	switch (currentMode) {
 	case RendererCommon::PostProcessMode::NONE:
@@ -80,4 +81,13 @@ void OpenGLRenderer::PostProcessingPass() {
 	glBindTexture(GL_TEXTURE_2D, GetFinalBlurTexture());
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	// final pass (copy stuff from final image fbo to the main fbo)
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, finalImageFBO->GetFBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(
+		0, 0, finalImageFBO->GetWidth(), finalImageFBO->GetHeight(),
+		0, 0, Window::m_windowWidth, Window::m_windowHeight,
+		GL_COLOR_BUFFER_BIT, GL_NEAREST
+	);
 }
