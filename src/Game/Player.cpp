@@ -654,26 +654,13 @@ void Player::SetWeaponAction(WeaponAction action) {
 void Player::SpawnBulletCase() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
 
-    // remove previous bullet case if it exists
-    if (m_bulletCasePhysicsId != -1) {
-        Physics::MarkRigidDynamicForRemoval(m_bulletCasePhysicsId);
-        m_bulletCasePhysicsId = -1;
-
-        Scene::RemoveGameObjectByName("BulletCase1");
+    for (int i = 0; i < Scene::GetBulletCaseObjects().size(); i++) {
+        Scene::RemoveBulletCaseObjectByIndex(i);
     }
 
-    // initialize bullet case game object
-    GameObjectCreateInfo createInfo;
+    BulletCaseCreateInfo createInfo;
     createInfo.modelName = weaponInfo->ammoInfo.caseModelName;
-    createInfo.name = "BulletCase1";
-
-    // build mesh material
-    int caseMaterialIndex = AssetManager::GetMaterialIndexByName(weaponInfo->ammoInfo.caseMaterialName);
-    int caseMeshIndex = AssetManager::GetMeshIndexByName(weaponInfo->ammoInfo.caseMeshName);
-    MeshRenderingInfo meshInfo;
-    meshInfo.materialIndex = caseMaterialIndex;
-    meshInfo.meshIndex = caseMeshIndex;
-    createInfo.meshRenderingInfo.push_back(meshInfo);
+    createInfo.materialIndex = AssetManager::GetMaterialIndexByName(weaponInfo->ammoInfo.caseMaterialName);
 
     // apply case spawn position based on the weapon position
     glm::vec3 bulletCaseOffset =  weaponInfo->ammoInfo.caseSpawnOffset; //glm::vec3(1.0f, 2.7f, -3.7f);
@@ -695,9 +682,6 @@ void Player::SpawnBulletCase() {
     else {
         createInfo.rotation = glm::degrees(glm::eulerAngles(gunWorldRotation));
     }
-
-    // spawn the case
-    Scene::AddGameObject(createInfo);
 
     // create rigid dynamic
     float caseMass = 0.5f;
@@ -730,5 +714,9 @@ void Player::SpawnBulletCase() {
         worldTorque
     );
 
-    m_bulletCasePhysicsId = physicsId;
+    createInfo.physicsId = physicsId;
+
+    // spawn the case
+    Scene::AddBulletCaseObject(createInfo);
+
 }

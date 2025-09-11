@@ -44,7 +44,7 @@ namespace OpenGLRenderer {
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, srcTex);
 				activeShader->setInt("image", 0);
-				activeShader->setFloat("sampleDistance", 2.0f);
+				activeShader->setFloat("sampleDistance", 3.0f);
 
 				glBindVertexArray(postProcessQuad->GetVAO());
 				glDisable(GL_DEPTH_TEST);

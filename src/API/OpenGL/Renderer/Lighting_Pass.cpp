@@ -1,7 +1,8 @@
 #include "./Renderer.h"
 
 namespace OpenGLRenderer {
-	void DrawModel();
+	void DrawGameObjects(Shader& lightingShader);
+	void DrawBulletCases(Shader& lightingShader);
 
 	void LightingPass() {
 		if (GetRenderType() == RendererType::DEFERRED) {
@@ -59,74 +60,8 @@ namespace OpenGLRenderer {
 		glBindTexture(GL_TEXTURE_2D_ARRAY, csmDepth->GetTextureID());
 		lightingShader->setInt("shadowMap", 3);
 
-		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			lightingShader->setMat4("model", gameObject.GetModelMatrix());
-			lightingShader->setVec2("textureScale", gameObject.GetTextureScale());
-			lightingShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
-
-			if (gameObject.IsSelected()) {
-				glStencilFunc(GL_ALWAYS, 1, 0xFF);
-				glStencilMask(0xFF);
-			}
-			else {
-				glStencilMask(0x00);
-			}
-
-			Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
-			AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
-
-			glm::mat4 modelMatrix = gameObject.GetModelMatrix();
-			AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
-
-			if (camFrustum.IntersectsAABB(worldAABB)) {
-				//model->draw(*lightingShader);
-
-				for (Mesh& mesh : model->m_meshes) {
-					// TODO: dont hardcode!!
-					if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Lamp_Inner_Glass") continue;
-
-					int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
-					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
-					Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
-					Texture* normalTexture = AssetManager::GetTextureByIndex(meshMaterial->normalTexture);
-					Texture* rmaTexture = AssetManager::GetTextureByIndex(meshMaterial->rmaTexture);
-
-					glActiveTexture(GL_TEXTURE0);
-					lightingShader->setInt("baseTexture", 0);
-					baseTexture->Bind();
-
-					glActiveTexture(GL_TEXTURE1);
-					lightingShader->setInt("normalTexture", 1);
-					normalTexture->Bind();
-
-					glActiveTexture(GL_TEXTURE2);
-					lightingShader->setInt("rmaTexture", 2);
-					rmaTexture->Bind();
-
-					glBindVertexArray(mesh.GetVAO());
-					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-					glBindVertexArray(0);
-
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, 0);
-				}
-			}
-
-			// draw bloomed stuff
-			for (Mesh& mesh : model->m_meshes) {
-				if (mesh.m_Name == "Lamp_Outer_Glass") {
-					bloomShader->activate();
-					bloomShader->setMat4("model", gameObject.GetModelMatrix());
-					bloomShader->setMat4("view", camera->GetViewMatrix());
-					bloomShader->setMat4("projection", camera->GetProjectionMatrix());
-					bloomShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-					glBindVertexArray(mesh.GetVAO());
-					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-					glBindVertexArray(0);
-					lightingShader->activate();
-				}
-			}
-		}
+		DrawGameObjects(*lightingShader);
+		DrawBulletCases(*lightingShader);
 
 		Model* stalkerModel = AssetManager::GetModelByName("Stalker");
 		for (Stalker& stalkerObject : Game::GetAllStalkers()) {
@@ -251,6 +186,117 @@ namespace OpenGLRenderer {
 			GL_DEPTH_BUFFER_BIT, GL_NEAREST
 		);
 		glBindFramebuffer(GL_FRAMEBUFFER, postProcessingFrameBuffer->GetFBO());
+	}
+
+	void DrawGameObjects(Shader& lightingShader) {
+		Shader* bloomShader = GetShaderByName("Bloom");
+		Frustum camFrustum = CameraManager::GetActiveCamera()->GetFrustum();
+		Camera* camera = CameraManager::GetActiveCamera();
+
+		for (GameObject& gameObject : Scene::GetGameObjects()) {
+			lightingShader.setMat4("model", gameObject.GetModelMatrix());
+			lightingShader.setVec2("textureScale", gameObject.GetTextureScale());
+			lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
+
+			if (gameObject.IsSelected()) {
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glStencilMask(0xFF);
+			}
+			else {
+				glStencilMask(0x00);
+			}
+
+			Model* model = AssetManager::GetModelByName(gameObject.GetModelName());
+			AABB modelAABB = AABB(model->GetAABBMin(), model->GetAABBMax());
+
+			glm::mat4 modelMatrix = gameObject.GetModelMatrix();
+			AABB worldAABB = modelAABB.TransformModelToWorldMatrix(modelMatrix);
+
+			if (camFrustum.IntersectsAABB(worldAABB)) {
+				for (Mesh& mesh : model->m_meshes) {
+					// TODO: dont hardcode!!
+					if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Lamp_Inner_Glass") continue;
+
+					int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
+					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
+					Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
+					Texture* normalTexture = AssetManager::GetTextureByIndex(meshMaterial->normalTexture);
+					Texture* rmaTexture = AssetManager::GetTextureByIndex(meshMaterial->rmaTexture);
+
+					glActiveTexture(GL_TEXTURE0);
+					lightingShader.setInt("baseTexture", 0);
+					baseTexture->Bind();
+
+					glActiveTexture(GL_TEXTURE1);
+					lightingShader.setInt("normalTexture", 1);
+					normalTexture->Bind();
+
+					glActiveTexture(GL_TEXTURE2);
+					lightingShader.setInt("rmaTexture", 2);
+					rmaTexture->Bind();
+
+					glBindVertexArray(mesh.GetVAO());
+					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+					glBindVertexArray(0);
+
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, 0);
+				}
+			}
+
+			// draw bloomed stuff
+			for (Mesh& mesh : model->m_meshes) {
+				if (mesh.m_Name == "Lamp_Outer_Glass") {
+					bloomShader->activate();
+					bloomShader->setMat4("model", gameObject.GetModelMatrix());
+					bloomShader->setMat4("view", camera->GetViewMatrix());
+					bloomShader->setMat4("projection", camera->GetProjectionMatrix());
+					bloomShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+					glBindVertexArray(mesh.GetVAO());
+					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+					glBindVertexArray(0);
+					lightingShader.activate();
+				}
+			}
+		}
+	}
+
+	void DrawBulletCases(Shader& lightingShader) {
+		for (BulletCaseObject& bulletCase : Scene::GetBulletCaseObjects()) {
+			lightingShader.setMat4("model", bulletCase.GetModelMatrix());
+			lightingShader.setVec2("textureScale", glm::vec2(1.0f));
+			lightingShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(bulletCase.GetModelMatrix()))));
+
+			Model* model = AssetManager::GetModelByName(bulletCase.GetModelName());
+			glm::mat4 modelMatrix = bulletCase.GetModelMatrix();
+
+			 for (Mesh& mesh : model->m_meshes) {
+					int materialIndex = bulletCase.GetMaterialIndex();
+					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
+					Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
+					Texture* normalTexture = AssetManager::GetTextureByIndex(meshMaterial->normalTexture);
+					Texture* rmaTexture = AssetManager::GetTextureByIndex(meshMaterial->rmaTexture);
+
+					glActiveTexture(GL_TEXTURE0);
+					lightingShader.setInt("baseTexture", 0);
+					baseTexture->Bind();
+
+					glActiveTexture(GL_TEXTURE1);
+					lightingShader.setInt("normalTexture", 1);
+					normalTexture->Bind();
+
+					glActiveTexture(GL_TEXTURE2);
+					lightingShader.setInt("rmaTexture", 2);
+					rmaTexture->Bind();
+
+					glBindVertexArray(mesh.GetVAO());
+					glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+					glBindVertexArray(0);
+
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, 0);
+			}
+		}
 	}
 }
 

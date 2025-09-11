@@ -5,6 +5,7 @@ namespace Scene {
 	std::vector<GameObject> g_animatedObjects;
 	std::vector<WaterObject> g_waterPlaneObjects;
 	std::vector<LightObject> g_lightObjects;
+	std::vector<BulletCaseObject> g_bulletCaseObjects;
 
 	void CreateHardcodedObjects() {
 		WaterObjectCreateInfo waterPlaneCreateInfo{
@@ -73,8 +74,27 @@ namespace Scene {
 		g_lightObjects.emplace_back(createInfo);
 	}
 
+	void RemoveLightObjectByIndex(int index) {
+		if (index < g_lightObjects.size()) {
+			g_lightObjects.erase(g_lightObjects.begin() + index);
+		}
+	}
+
 	std::vector<WaterObject>& GetWaterPlaneObjects() {
 		return g_waterPlaneObjects;
+	}
+
+	std::vector<BulletCaseObject>& GetBulletCaseObjects() {
+		return g_bulletCaseObjects;
+	}
+	void AddBulletCaseObject(BulletCaseCreateInfo& createInfo) {
+		g_bulletCaseObjects.emplace_back(createInfo);
+	}
+
+	void RemoveBulletCaseObjectByIndex(int index) {
+		if (index < g_bulletCaseObjects.size()) {
+			g_bulletCaseObjects.erase(g_bulletCaseObjects.begin() + index);
+		}
 	}
 
 	void LoadSceneFromFile(const std::string& filePath) {

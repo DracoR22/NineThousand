@@ -7,6 +7,7 @@
 #include "../Objects/GameObject.h"
 #include "../Objects/WaterObject.h"
 #include "../Objects/LightObject.h"
+#include "../Objects/BulletCaseObject.h"
 #include "../Utils/JSON.h"
 
 namespace Scene {
@@ -20,8 +21,13 @@ namespace Scene {
 	std::vector<LightObject>& GetLightObjects();
 	LightObject* GetLightObjectByIndex(int index);
 	void AddLightObject(LightCreateInfo& createInfo);
+	void RemoveLightObjectByIndex(int index);
 
 	std::vector<WaterObject>& GetWaterPlaneObjects();
+
+	std::vector<BulletCaseObject>& GetBulletCaseObjects();
+	void AddBulletCaseObject(BulletCaseCreateInfo& createInfo);
+	void RemoveBulletCaseObjectByIndex(int index);
 
 	void LoadSceneFromFile(const std::string& filePath);
 	void SaveCurrentSceneToFile();

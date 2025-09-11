@@ -270,15 +270,30 @@ namespace Game {
 			}
 		}
 
+		for (BulletCaseObject& bulletCase : Scene::GetBulletCaseObjects()) {
+			//std::cout << "UPDATING CASEEE" << bulletCase.GetPhysicsId() << std::endl;
+			if (bulletCase.GetPhysicsId() != 0) {
+				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(bulletCase.GetPhysicsId());
+				if (rigidDynamic) {
+					rigidDynamic->m_previousPosition = bulletCase.GetPosition();
+					rigidDynamic->m_previousRotation = bulletCase.GetRotationMatrix();
+
+					int smoothFactor = 10;
+					bulletCase.SetPosition(rigidDynamic->GetCurrentPosition());
+					bulletCase.SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
+				}
+			}
+		}
+
 		// update bullet cases
-		if (g_players[0].m_bulletCasePhysicsId != -1) {
+		/*if (g_players[0].m_bulletCasePhysicsId != -1) {
 			GameObject* bulletCase = Scene::GetGameObjectByName("BulletCase1");
 			RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(g_players[0].m_bulletCasePhysicsId);
 			if (rigidDynamic) {
 				bulletCase->SetPosition(rigidDynamic->GetCurrentPosition());
 				bulletCase->SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
 			}
-		}
+		}*/
 	}
 
 	void CreatePlayers() {
