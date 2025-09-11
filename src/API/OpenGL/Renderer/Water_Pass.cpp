@@ -14,7 +14,7 @@ namespace OpenGLRenderer {
 		std::vector<float>& shadowCascadeLevels = GetShadowCascadeLevels();
 
 		refractionFBO->Bind();
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
+		glViewport(0, 0, refractionFBO->GetWidth(), refractionFBO->GetHeight());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		lightingShader->activate();
@@ -89,7 +89,7 @@ namespace OpenGLRenderer {
 		}
 
 		refractionFBO->Unbind();
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
+		glViewport(0, 0, refractionFBO->GetWidth(), refractionFBO->GetHeight());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 

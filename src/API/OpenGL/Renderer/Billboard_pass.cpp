@@ -9,8 +9,6 @@ void OpenGLRenderer::BillboardPass() {
 
 	Mesh2D* quadMesh = GetQuadMeshByName("Texture");
 
-	glm::vec3 glockOffset = glm::vec3(1.35f, 1.4f, 6.7f);
-
 	glm::vec3 barrelOffset = player.IsInADS() ? player.GetEquipedWeaponInfo()->ADSMuzzleFlashOffset : player.GetEquipedWeaponInfo()->muzzleFlashOffset;
 	glm::vec3 muzzleFlashSize = player.GetEquipedWeaponInfo()->muzzleFlashSize;
 
@@ -20,7 +18,6 @@ void OpenGLRenderer::BillboardPass() {
 	glm::mat4 muzzleFlashModel = glm::mat4(1.0f);
 
 	muzzleFlashModel = glm::translate(muzzleFlashModel, glm::vec3(worldBarrelPos));
-
 	muzzleFlashModel *= glm::inverse(glm::mat4(glm::mat3(camera->GetViewMatrix())));
 	muzzleFlashModel = glm::scale(muzzleFlashModel, muzzleFlashSize);
 
@@ -37,7 +34,6 @@ void OpenGLRenderer::BillboardPass() {
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, muzzleFlashTexture->m_id);
-
 	muzzleFlashShader->setInt("baseTexture", 0);
 
 	if (player.m_muzzleFlashTimer > 0) {

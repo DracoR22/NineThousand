@@ -63,6 +63,7 @@ public:
 	void UpdateWeaponLogic();
 
 	void SetWeaponAction(WeaponAction action);
+	void SetAmmoMode(AmmoMode mode);
 
 	void SpawnBulletCase();
 public:

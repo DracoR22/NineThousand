@@ -260,6 +260,7 @@ void Player::InitWeaponStates() {
     for (WeaponInfo& weapon : allWeapons) {
         WeaponState state;
         state.ammoInMag = weapon.magSize;
+        state.ammoMode = AmmoMode::DEFAULT;
 
         m_weaponStates[weapon.name] = state;
     }
@@ -570,6 +571,16 @@ void Player::UpdateWeaponLogic() {
         weaponState->waitingForReload = false;
     }
 
+    // change ammo mode
+    if (Keyboard::KeyJustPressed(GLFW_KEY_5)) {
+        if (GetEquipedWeaponState()->ammoMode == AmmoMode::DEFAULT) {
+            SetAmmoMode(AmmoMode::PLASMA);
+        }
+        else {
+            SetAmmoMode(AmmoMode::DEFAULT);
+        }
+    }
+
     if (CanEnterADS()) {
         EnterADS();
     }
@@ -589,6 +600,7 @@ void Player::UpdateWeaponLogic() {
         m_weaponAction = WeaponAction::WALK;
     }
  
+    // if player is in ADS state
     if (weaponInfo->hasADS && weaponInfo->name != "P90") {
         Animation* weaponADSIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIdle);
         Animation* weaponADSInAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.ADSIn);
@@ -651,8 +663,14 @@ void Player::SetWeaponAction(WeaponAction action) {
     m_weaponAction = action;
 }
 
+void Player::SetAmmoMode(AmmoMode mode) {
+    WeaponState* weaponState = GetEquipedWeaponState();
+    weaponState->ammoMode = mode;
+}
+
 void Player::SpawnBulletCase() {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
+    WeaponState* weaponState = GetEquipedWeaponState();
 
     for (int i = 0; i < Scene::GetBulletCaseObjects().size(); i++) {
         Scene::RemoveBulletCaseObjectByIndex(i);
@@ -715,6 +733,7 @@ void Player::SpawnBulletCase() {
     );
 
     createInfo.physicsId = physicsId;
+    createInfo.isEmissive = weaponState->ammoMode == AmmoMode::DEFAULT ? false : true;
 
     // spawn the case
     Scene::AddBulletCaseObject(createInfo);

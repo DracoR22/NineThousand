@@ -30,6 +30,7 @@ struct BulletCaseCreateInfo {
 	glm::vec3 rotation = glm::vec3(0.0f);
 	int materialIndex = 0;
 	int physicsId = 0;
+	bool isEmissive = false;
 };
 
 struct WaterObjectCreateInfo {

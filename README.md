@@ -5,7 +5,7 @@ This project is inspired by <a href="https://github.com/livinamuk/Hell2025">livi
 
 <p align="center"><img src="./showcase/pools.png" width="95%" alt="Pool rooms level"/></>
 
-<p align="center"><img src="./showcase/object-editor.png" width="95%" alt="Normal mapped scene and gamma corrected"/></>
+<p align="center"><img src="./showcase/new-editor.png" width="95%" alt="Normal mapped scene and gamma corrected"/></>
 
 <p align="center"><img src="./showcase/kernel-shader.png" width="95%" alt="Pool rooms level with sobel edges shader activated"/></>
 

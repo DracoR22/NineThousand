@@ -47,9 +47,6 @@ public:
 	}
 
     void RenderTexture(Shader& shader) {
-        shader.activate();
-        shader.setVec3("tintColor", glm::vec3(1.0f));
-     
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -11,6 +11,7 @@ BulletCaseObject::BulletCaseObject(BulletCaseCreateInfo& createInfo) {
 	m_eulerRotation = createInfo.rotation;
 	m_materialIndex = createInfo.materialIndex;
 	m_physicsId = createInfo.physicsId;
+	m_isEmissive = createInfo.isEmissive;
 }
 
 void BulletCaseObject::SetPosition(glm::vec3 position) {
@@ -35,6 +36,10 @@ void BulletCaseObject::SetRotationEuler(const glm::vec3& eulerDegrees) {
 
 void BulletCaseObject::SetSize(glm::vec3 size) {
 	m_size = size;
+}
+
+void BulletCaseObject::SetEmissive(bool value) {
+	m_isEmissive = value;
 }
 
 glm::mat4 BulletCaseObject::GetModelMatrix() {

@@ -27,6 +27,12 @@ enum class WeaponType {
 	AUTO
 };
 
+enum class AmmoMode {
+	PLASMA,
+	EMBER,
+	DEFAULT
+};
+
 struct WeaponAnimations {
 	std::string idle;
 	std::string walk;
@@ -85,6 +91,7 @@ struct WeaponInfo {
 struct WeaponState {
 	int ammoInMag = 0;
 	bool waitingForReload = false;
+	AmmoMode ammoMode = AmmoMode::DEFAULT;
 };
 
 namespace WeaponManager {

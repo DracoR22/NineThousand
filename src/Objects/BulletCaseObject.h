@@ -11,11 +11,13 @@ public:
 	void SetRotationMatrix(glm::mat4 rotation);
 	void SetRotationEuler(const glm::vec3& eulerDegrees);
 	void SetSize(glm::vec3 size);
+	void SetEmissive(bool value);
 
 	glm::vec3 GetPosition() const { return m_position; };
 	glm::vec3 GetSize() const { return m_size; };
 	glm::mat4 GetRotationMatrix() const { return m_rotationMatrix; };
 	glm::vec3 GetRotationEuler() const { return m_eulerRotation; };
+	bool GetIsEmissive() const { return m_isEmissive; };
 	glm::mat4 GetModelMatrix();
 
 	uint64_t GetPhysicsId() const { return m_physicsId; };
@@ -32,5 +34,5 @@ private:
 	uint64_t m_physicsId;
 
     int m_materialIndex;
-	int m_isEmissive = false;
+	int m_isEmissive;
 };

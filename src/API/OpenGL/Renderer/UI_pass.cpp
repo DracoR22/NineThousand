@@ -25,12 +25,13 @@ void OpenGLRenderer::UIPass() {
 	for (UITextureElement& uiTextureElement : UIManager::GetTextureElements()) {
 		uiShader->setMat4("projection", UiProjection);
 		uiShader->setMat4("model", uiTextureElement.GetModelMatrix());
-		uiShader->setInt("baseTexture", 0);
+		uiShader->setVec3("tintColor", glm::vec3(1.0f));
 
 		Texture* texture = AssetManager::GetTextureByName(uiTextureElement.m_textureName);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->m_id);
+		uiShader->setInt("baseTexture", 0);
 
 		if (uiTextureElement.m_isVisible) {
 			textureMesh->RenderTexture(*uiShader);
