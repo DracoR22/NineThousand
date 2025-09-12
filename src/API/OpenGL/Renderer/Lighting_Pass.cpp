@@ -132,7 +132,7 @@ namespace OpenGLRenderer {
 			if (camFrustum.IntersectsAABB(worldAABB)) {
 				for (Mesh& mesh : model->m_meshes) {
 					// TODO: dont hardcode!!
-					if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Lamp_Inner_Glass") continue;
+					if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Lamp_Inner_Glass" || mesh.m_Name == "Symmetry_1") continue;
 
 					int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
 					Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
@@ -163,7 +163,7 @@ namespace OpenGLRenderer {
 
 			// draw bloomed stuff
 			for (Mesh& mesh : model->m_meshes) {
-				if (mesh.m_Name == "Lamp_Outer_Glass") {
+				if (mesh.m_Name == "Lamp_Outer_Glass" || mesh.m_Name == "Symmetry_1") {
 					bloomShader->activate();
 					bloomShader->setMat4("model", gameObject.GetModelMatrix());
 					bloomShader->setMat4("view", camera->GetViewMatrix());

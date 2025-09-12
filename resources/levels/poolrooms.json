@@ -10,14 +10,14 @@
             "modelName": "Cube",
             "name": "Cube0",
             "position": {
-                "x": -49.01959228515625,
-                "y": 0.7849910259246826,
-                "z": -39.705970764160156
+                "x": -52.052555084228516,
+                "y": 0.7849900722503662,
+                "z": -41.30073928833008
             },
             "rotation": {
-                "x": 151.64102172851563,
-                "y": 0.0005771510186605155,
-                "z": 90.00071716308594
+                "x": -179.87818908691406,
+                "y": -2.8681458275059413e-07,
+                "z": 90.00098419189453
             },
             "size": {
                 "x": 1.5700000524520874,
@@ -561,14 +561,14 @@
             "modelName": "Barrel",
             "name": "Barrel19",
             "position": {
-                "x": 0.39695221185684204,
-                "y": 1.5243933200836182,
-                "z": -10.358802795410156
+                "x": 2.7435860633850098,
+                "y": -0.002855539321899414,
+                "z": -9.968908309936523
             },
             "rotation": {
-                "x": 96.20482635498047,
-                "y": 20.244483947753906,
-                "z": -162.5597381591797
+                "x": 1.722877823340241e-05,
+                "y": -4.365279674530029,
+                "z": -3.534222923917696e-05
             },
             "size": {
                 "x": 3.86899995803833,
@@ -590,80 +590,19 @@
             "modelName": "Barrel",
             "name": "Barrel20",
             "position": {
-                "x": 7.846502304077148,
-                "y": 1.478231430053711,
-                "z": -21.8798885345459
+                "x": 6.180891513824463,
+                "y": 1.3828307390213013,
+                "z": -1.3742077350616455
             },
             "rotation": {
-                "x": 73.34671020507813,
-                "y": -23.9777889251709,
-                "z": -143.65045166015625
+                "x": -55.32558059692383,
+                "y": 26.260305404663086,
+                "z": 57.39924240112305
             },
             "size": {
                 "x": 3.86899995803833,
                 "y": 3.86899995803833,
                 "z": 3.86899995803833
-            },
-            "textureScale": {
-                "x": 1.0,
-                "y": 1.0
-            }
-        },
-        {
-            "meshRenderingInfo": [
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Chain_link"
-                },
-                {
-                    "materialName": "Default",
-                    "meshName": "Lamp_Outer_Glass"
-                },
-                {
-                    "materialName": "Default",
-                    "meshName": "Lamp_Inner_Glass"
-                },
-                {
-                    "materialName": "Default",
-                    "meshName": "Lamp_light"
-                },
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Pub_Lamp_Top"
-                },
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Lamp_support004"
-                },
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Lamp_support001"
-                },
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Lamp_support002"
-                },
-                {
-                    "materialName": "DiamondPlate",
-                    "meshName": "Lamp_support003"
-                }
-            ],
-            "modelName": "Hanging_Light",
-            "name": "Hanging_Light33",
-            "position": {
-                "x": 28.0,
-                "y": 5.0,
-                "z": 18.0
-            },
-            "rotation": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "size": {
-                "x": 3.0490000247955322,
-                "y": 3.0490000247955322,
-                "z": 3.0490000247955322
             },
             "textureScale": {
                 "x": 1.0,
@@ -698,6 +637,43 @@
                 "x": 1.0,
                 "y": 1.0
             }
+        },
+        {
+            "meshRenderingInfo": [
+                {
+                    "materialName": "Default",
+                    "meshName": "Symmetry_1"
+                },
+                {
+                    "materialName": "AKS74U_0",
+                    "meshName": "Symmetry"
+                },
+                {
+                    "materialName": "Concrete",
+                    "meshName": "Cube"
+                }
+            ],
+            "modelName": "Ceiling_Light",
+            "name": "Ceiling_Light23",
+            "position": {
+                "x": 8.0,
+                "y": 9.0,
+                "z": 7.0
+            },
+            "rotation": {
+                "x": 0.0,
+                "y": 90.0,
+                "z": 0.0
+            },
+            "size": {
+                "x": 10.375,
+                "y": 10.375,
+                "z": 10.375
+            },
+            "textureScale": {
+                "x": 1.0,
+                "y": 1.0
+            }
         }
     ],
     "LevelName": "poolrooms",
@@ -714,7 +690,7 @@
                 "z": 0.0
             },
             "radius": 10.0,
-            "strength": 1.0,
+            "strength": 0.10000000149011612,
             "type": 1
         },
         {
@@ -724,9 +700,9 @@
                 "z": 0.991525411605835
             },
             "position": {
-                "x": 4.0,
-                "y": 9.0,
-                "z": 0.0
+                "x": 6.0,
+                "y": 14.0,
+                "z": 14.0
             },
             "radius": 100.0,
             "strength": 1.8200000524520874,

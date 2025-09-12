@@ -121,6 +121,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Stalker", "resources/models/Stalker.fbx");
 		AssetManager::LoadSkinnedModel("Barrel", "resources/models/Barrel.obj");
 		AssetManager::LoadSkinnedModel("Hanging_Light", "resources/models/Hanging_Light.obj");
+		AssetManager::LoadSkinnedModel("Ceiling_Light", "resources/models/CeilingLamp.obj");
 		AssetManager::LoadSkinnedModel("Bullet_Case_9mm", "resources/models/Bullet_Case_9mm.obj");
 		AssetManager::LoadSkinnedModel("Bullet_Case_Rifle", "resources/models/Bullet_Case_Rifle.obj");
 		auto end = std::chrono::high_resolution_clock::now();

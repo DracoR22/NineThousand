@@ -8,7 +8,7 @@ namespace EditorPanel {
 	int g_selectedModelIndex = 0;
 	int g_selectedLevelIndex = 0;
 	int g_selectedMeshIndex = 0;
-	int g_selectedLightIndex = 0;
+	int g_selectedLightIndex = -1;
 
 	const char* g_resolutionOptions[] = {
 	"1280 x 720",
@@ -190,7 +190,7 @@ namespace EditorPanel {
 
 			if (ImGui::CollapsingHeader("Lights")) {
 				std::vector<LightObject>& lights = Scene::GetLightObjects();
-				std::string previewLabel = "Light " + std::to_string(g_selectedLightIndex + 1);
+				std::string previewLabel = g_selectedLightIndex < 0 ? "No Selected" : "Light " + std::to_string(g_selectedLightIndex + 1);
 
 			
 				if (lights.empty()) {
@@ -280,6 +280,11 @@ namespace EditorPanel {
 						light.SetColor(glm::vec3(imguiColor.x, imguiColor.y, imguiColor.z));
 					}
 
+					ImGui::Dummy(ImVec2(0.0f, 5.0f));
+					if (ImGui::Button("Remove Light")) {
+						Scene::RemoveLightObjectByIndex(g_selectedLightIndex);
+						g_selectedLightIndex = -1;
+					}
 					ImGui::Dummy(ImVec2(0.0f, 5.0f));
 				}
 
@@ -603,6 +608,10 @@ namespace EditorPanel {
 	void Render() {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
+	void SetSelectedMesh(int index) {
+		g_selectedMeshIndex = index;
 	}
 
 	void Cleanup() {

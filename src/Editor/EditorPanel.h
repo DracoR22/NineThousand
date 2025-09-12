@@ -16,5 +16,6 @@ namespace EditorPanel {
 	void Init();
 	void Update();
 	void Render();
+	void SetSelectedMesh(int index);
 	void Cleanup();
 }

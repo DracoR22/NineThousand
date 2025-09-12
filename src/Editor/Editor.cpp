@@ -1,4 +1,5 @@
 #include "./Editor.h"
+#include "./EditorPanel.h"
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/string_cast.hpp>
 
@@ -65,6 +66,7 @@ namespace Editor {
 						PxRigidActor* actor = rayHit.actor;
 
 						if ((rigidStatic && rigidStatic->GetPxRigidStatic() == actor) || (rigidDynamic && rigidDynamic->GetPxRigidDynamic() == actor)) {
+							EditorPanel::SetSelectedMesh(0);
 							gameObject.SetSelected(true);
 						}
 					}
