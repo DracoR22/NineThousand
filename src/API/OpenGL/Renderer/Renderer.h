@@ -6,6 +6,7 @@
 #include "../Mesh2D.hpp"
 #include "../FrameBuffer.h"
 #include "../UBO.hpp"
+#include "../SSBO.hpp"
 
 #include "../../../Camera/Camera.h"
 #include "../../../Camera/CameraManager.h"
@@ -46,7 +47,7 @@ namespace OpenGLRenderer {
 
 	void GBufferPass();
 	void ShadowPass();
-	void PreWaterPass();
+	void RefractionPass();
 	void WaterPass();
 	void AnimationPass();
 	void LightingPass();
@@ -69,6 +70,7 @@ namespace OpenGLRenderer {
 	FrameBuffer* GetFrameBufferByName(const std::string& name);
 	ShadowMap* GetShadowMapByName(const std::string& name);
 	UBO* GetUBOByName(const std::string& name);
+	SSBO* GetSSBOByName(const std::string& name);
 	Mesh2D* GetQuadMeshByName(const std::string& name);
 	std::vector<float>& GetShadowCascadeLevels();
 	RendererType GetRenderType();

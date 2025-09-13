@@ -112,18 +112,14 @@ namespace Utils {
 
 	std::vector<glm::mat4> GetLightSpaceMatrices(const float nearPlane, const float farPlane, std::vector<float>& shadowCascadeLevels, float windowWidth, float windowHeight, float fov, glm::mat4& viewMatrix) {
 		std::vector<glm::mat4> ret;
-		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
-		{
-			if (i == 0)
-			{
+		for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i) {
+			if (i == 0) {
 				ret.push_back(GetLightSpaceMatrix(nearPlane, shadowCascadeLevels[i], windowWidth, windowHeight, fov, viewMatrix));
 			}
-			else if (i < shadowCascadeLevels.size())
-			{
+			else if (i < shadowCascadeLevels.size()) {
 				ret.push_back(GetLightSpaceMatrix(shadowCascadeLevels[i - 1], shadowCascadeLevels[i], windowWidth, windowHeight, fov, viewMatrix));
 			}
-			else
-			{
+			else {
 				ret.push_back(GetLightSpaceMatrix(shadowCascadeLevels[i - 1], farPlane, windowWidth, windowHeight, fov, viewMatrix));
 			}
 		}

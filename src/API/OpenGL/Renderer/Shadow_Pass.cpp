@@ -6,7 +6,8 @@ namespace OpenGLRenderer {
 	void ShadowPass() {
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
 		Shader* csmDepthShader = GetShaderByName("CSM");
-		UBO* csmDepthUBO = GetUBOByName("CSM");
+		//UBO* csmDepthUBO = GetUBOByName("CSM");
+		SSBO* lightsSpaceMatricesSSBO = GetSSBOByName("LightSpaceMatricesCSM");
 
 		if (csmDepthShader == nullptr) {
 			std::cerr << "OpenGLRenderer::ShadowPass() error: shader is nullptr" << std::endl;
@@ -17,8 +18,8 @@ namespace OpenGLRenderer {
 		std::vector<float>& shadowCascadeLevels = GetShadowCascadeLevels();
 
 		const auto lightMatrices = Utils::GetLightSpaceMatrices(camera->GetNearPlane(), camera->GetFarPlane(), shadowCascadeLevels, (float)Window::m_windowWidth, (float)Window::m_windowHeight, camera->getZoom(), camera->GetViewMatrix());
-
-		csmDepthUBO->UpdateDataArray(lightMatrices);
+		lightsSpaceMatricesSSBO->Update(sizeof(glm::mat4) * lightMatrices.size(), lightMatrices.data());
+		lightsSpaceMatricesSSBO->Bind(1);
 
 		csmDepth->Clear();
 		glCullFace(GL_FRONT);

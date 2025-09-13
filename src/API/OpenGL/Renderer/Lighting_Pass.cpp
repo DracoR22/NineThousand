@@ -28,26 +28,8 @@ namespace OpenGLRenderer {
 		lightingShader->activate();
 		lightingShader->setMat4("view", camera->GetViewMatrix());
 		lightingShader->setMat4("projection", camera->GetProjectionMatrix());
-		for (int i = 0; i < sceneLights.size(); i++) {
-			float lightStrength = sceneLights[i].GetStrength();
-			float lightRadius = sceneLights[i].GetRadius();
-			glm::vec3 lightPosition = sceneLights[i].GetPosition();
-			glm::vec3 lightColor = sceneLights[i].GetColor();
-			LightType lightType = sceneLights[i].GetLightType();
 
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			lightingShader->setFloat(lightUniform + ".posX", lightPosition.x);
-			lightingShader->setFloat(lightUniform + ".posY", lightPosition.y);
-			lightingShader->setFloat(lightUniform + ".posZ", lightPosition.z);
-			lightingShader->setFloat(lightUniform + ".radius", lightRadius);
-			lightingShader->setFloat(lightUniform + ".strength", lightStrength);
-			lightingShader->setFloat(lightUniform + ".colorR", lightColor.r);
-			lightingShader->setFloat(lightUniform + ".colorG", lightColor.g);
-			lightingShader->setFloat(lightUniform + ".colorB", lightColor.b);
-			lightingShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
-		}
-		lightingShader->setInt("noLights", sceneLights.size());
+		lightingShader->setInt("numLights", sceneLights.size());
 		lightingShader->set3Float("camPos", camera->cameraPos);
 		lightingShader->setVec3("lightDir", glm::normalize(glm::vec3(20.0f, 50, 20.0f)));
 		lightingShader->setFloat("farPlane", camera->GetFarPlane());

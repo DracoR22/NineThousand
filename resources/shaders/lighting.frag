@@ -14,7 +14,7 @@ struct Light {
     float colorG;
     float colorB;
 
-    int type;
+    float type;
     float _padding0;
     float _padding1;
     float _padding2;
@@ -25,10 +25,17 @@ in vec3 Normal;
 in vec3 WorldPos;
 in mat3 TBN;
 
-uniform mat4 view;
+layout (std430, binding = 0) readonly buffer LightsBuffer {
+    Light lights[MAX_POINT_LIGHTS];
+};
 
-uniform Light lights[MAX_POINT_LIGHTS];
-uniform int noLights;
+layout (std430, binding = 1) readonly buffer LightSpaceMatricesBuffer {
+    mat4 lightSpaceMatrices[];
+};
+
+uniform mat4 view;
+//uniform Light lights[MAX_POINT_LIGHTS];
+uniform int numLights;
 uniform vec3 camPos;
 
 uniform sampler2DArray shadowMap;
@@ -37,11 +44,6 @@ uniform float farPlane;
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D rmaTexture;
-
-layout (std140) uniform LightSpaceMatrices
-{
-    mat4 lightSpaceMatrices[16];
-};
 
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;
@@ -167,7 +169,7 @@ void main() {
  vec3 F0 = vec3(0.04); 
  F0  = mix(F0, albedo, metallic);
 
- for (int i = 0; i < noLights; ++i) {
+ for (int i = 0; i < numLights; ++i) {
     Light light = lights[i];
     vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
     vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
@@ -176,7 +178,7 @@ void main() {
     float attenuation = 1.0;
     vec3 radiance;
 
-  if (light.type == 0) { // Point light
+  if (int(light.type) == 0) { // Point light
      L = normalize(lightPosition - WorldPos);
 
      float distance    = length(lightPosition - WorldPos);

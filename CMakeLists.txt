@@ -13,8 +13,8 @@ set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_D
 target_include_directories(glfw INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw/include)
 
 # glad
-add_library(glad ${PROJECT_SOURCE_DIR}/vendor/glad/src/glad.c)
-target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/include)
+add_library(glad ${PROJECT_SOURCE_DIR}/vendor/glad/4.6/src/glad.c)
+target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/4.6/include)
 
 # glm
 add_library(glm INTERFACE)

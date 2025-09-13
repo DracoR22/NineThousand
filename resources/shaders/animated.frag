@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 out vec4 FragColor;
 
@@ -14,7 +14,7 @@ struct Light {
     float colorG;
     float colorB;
 
-    int type;
+    float type;
     float _padding0;
     float _padding1;
     float _padding2;
@@ -26,8 +26,11 @@ in vec3 WorldPos;
 in vec4 WorldPosLight;
 in mat3 TBN;
 
-uniform Light lights[MAX_POINT_LIGHTS];
-uniform int noLights;
+layout (std430, binding = 0) readonly buffer LightsBuffer {
+    Light lights[MAX_POINT_LIGHTS];
+};
+
+uniform int numLights;
 
 uniform sampler2D baseTexture;
 uniform sampler2D normalTexture;
@@ -146,7 +149,7 @@ void main() {
  vec3 F0 = vec3(0.04); 
  F0  = mix(F0, albedo, metallic);
 
- for (int i = 0; i < noLights; ++i) {
+ for (int i = 0; i < numLights; ++i) {
    Light light = lights[i];
    vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
    vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
@@ -155,7 +158,7 @@ void main() {
    float attenuation = 1.0;
    vec3 radiance;
 
-  if (light.type == 0) { // Point light
+  if (int(light.type) == 0) { // Point light
      L = normalize(lightPosition - WorldPos);
 
      float distance    = length(lightPosition - WorldPos);

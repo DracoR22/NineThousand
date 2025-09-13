@@ -13,26 +13,7 @@ void OpenGLRenderer::AnimationPass() {
 	animationShader->activate();
 	animationShader->setMat4("view", camera->GetViewMatrix());
 	animationShader->setMat4("projection", camera->GetProjectionMatrix());
-	animationShader->setInt("noLights", sceneLights.size());
-	for (int i = 0; i < sceneLights.size(); i++) {
-		float lightStrength = sceneLights[i].GetStrength();
-		float lightRadius = sceneLights[i].GetRadius();
-		glm::vec3 lightPosition = sceneLights[i].GetPosition();
-		glm::vec3 lightColor = sceneLights[i].GetColor();
-		LightType lightType = sceneLights[i].GetLightType();
-
-		std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-		animationShader->setFloat(lightUniform + ".posX", lightPosition.x);
-		animationShader->setFloat(lightUniform + ".posY", lightPosition.y);
-		animationShader->setFloat(lightUniform + ".posZ", lightPosition.z);
-		animationShader->setFloat(lightUniform + ".radius", lightRadius);
-		animationShader->setFloat(lightUniform + ".strength", lightStrength);
-		animationShader->setFloat(lightUniform + ".colorR", lightColor.r);
-		animationShader->setFloat(lightUniform + ".colorG", lightColor.g);
-		animationShader->setFloat(lightUniform + ".colorB", lightColor.b);
-		animationShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
-	}
+	animationShader->setInt("numLights", sceneLights.size());
 	animationShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 
 	glm::mat4 model = glm::mat4(1.0f);

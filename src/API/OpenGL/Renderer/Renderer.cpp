@@ -8,6 +8,7 @@ namespace OpenGLRenderer {
 	std::unordered_map<std::string, FrameBuffer> g_frameBuffers;
 	std::unordered_map<std::string, ShadowMap> g_shadowMaps;
 	std::unordered_map<std::string, UBO> g_ubos;
+	std::unordered_map<std::string, SSBO> g_ssbos;
 	std::unordered_map<std::string, Mesh2D> g_quadMeshes;
 
 	glm::vec2 g_viewportResolution = { 1280 , 720 };
@@ -26,6 +27,7 @@ namespace OpenGLRenderer {
 	bool g_castShadows = true;
 
 	///////////////////////////////////////
+	void UpdateSSBOS();
 	void RenderEnvMap();
 
 	unsigned int g_captureFBO, g_captureRBO;
@@ -68,7 +70,6 @@ namespace OpenGLRenderer {
 
 		glm::vec2 viewPortResolution = GetRenderResolution();
 
-		// Load frame buffers
 		if (g_rendererType == RendererType::DEFERRED) {
 			g_frameBuffers["GBuffer"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 			g_frameBuffers["GBuffer"].Bind();
@@ -120,12 +121,10 @@ namespace OpenGLRenderer {
 		g_frameBuffers["BloomPong"].DrawBuffer();
 		g_frameBuffers["BloomPong"].Unbind();
 
-		// load shadow maps
 		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));
 
-		// load ubos
-		g_ubos["CSM"] = UBO(sizeof(glm::mat4) * 16, 0);
-
+		g_ssbos["Lights"] = SSBO(sizeof(GPULight) * MAX_LIGHTS, GL_DYNAMIC_STORAGE_BIT);
+		g_ssbos["LightSpaceMatricesCSM"] = SSBO(sizeof(glm::mat4) * 5, GL_DYNAMIC_STORAGE_BIT);
 	}
 
 	void Render() {
@@ -136,8 +135,9 @@ namespace OpenGLRenderer {
 		if (g_rendererType == RendererType::DEFERRED) {
 			GBufferPass();
 		}
+		UpdateSSBOS();
 		ShadowPass();
-		PreWaterPass();
+		RefractionPass();
 		UpdateFBOs();
 		AnimationPass();
 		LightingPass();
@@ -177,6 +177,43 @@ namespace OpenGLRenderer {
 		g_Shaders["BlurVertical"].load("blur.vert", "blur_vertical.frag");
 	}
 
+	void UpdateSSBOS() {
+		SSBO* lightsSSBO = GetSSBOByName("Lights");
+
+		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
+		std::vector<GPULight> gpuLights(sceneLights.size());
+		for (size_t i = 0; i < sceneLights.size(); i++) {
+			auto& l = sceneLights[i];
+			GPULight& g = gpuLights[i];
+			g.posX = l.GetPosition().x;
+			g.posY = l.GetPosition().y;
+			g.posZ = l.GetPosition().z;
+			g.radius = l.GetRadius();
+			g.strength = l.GetStrength();
+			g.colorR = l.GetColor().r;
+			g.colorG = l.GetColor().g;
+			g.colorB = l.GetColor().b;
+			g.type = static_cast<int>(l.GetLightType());
+		}
+
+		lightsSSBO->Update(gpuLights.size() * sizeof(GPULight), gpuLights.data());
+		lightsSSBO->Bind(0);
+	}
+
+	void UpdateFBOs() {
+		FrameBuffer* postProcessFBO = GetFrameBufferByName("PostProcess");
+
+		postProcessFBO->Bind();
+		
+		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// STENCIL STUFF
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
 	void RenderEnvMap() {
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
 		Shader* lightingShader = GetShaderByName("Lighting");
@@ -212,7 +249,7 @@ namespace OpenGLRenderer {
 				lightingShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
 				lightingShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
 			}
-			lightingShader->setInt("noLights", sceneLights.size());
+			lightingShader->setInt("numLights", sceneLights.size());
 			lightingShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 			lightingShader->setVec3("lightDir", glm::normalize(glm::vec3(20.0f, 50, 20.0f)));
 			lightingShader->setFloat("farPlane", camera->GetFarPlane());
@@ -328,27 +365,6 @@ namespace OpenGLRenderer {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void UpdateFBOs() {
-		FrameBuffer* refractionFrameBuffer = GetFrameBufferByName("Refraction");
-		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("PostProcess");
-
-		/*if (refractionFrameBuffer->GetWidth() != Window::m_windowWidth) {
-			refractionFrameBuffer->ResizeRefraction(Window::m_windowWidth, Window::m_windowHeight);
-		}*/
-
-		if (g_rendererType == RendererType::FORWARD) {
-			msaaFrameBuffer->Bind();
-		}
-
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// STENCIL STUFF
-		glEnable(GL_STENCIL_TEST);
-		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
 	void DrawCube(Shader& shader, glm::mat4 modelMatrix) {
 		Model* model = AssetManager::GetModelByName("Cube");
 
@@ -363,23 +379,6 @@ namespace OpenGLRenderer {
 	void CubeMapPass() {
 		Camera* camera = CameraManager::GetActiveCamera();
 		g_renderData.cubeMaps[0].Draw(g_Shaders["Skybox"], CameraManager::GetActiveCamera()->GetViewMatrix(), camera->GetProjectionMatrix());
-
-		/*Shader* shader = GetShaderByName("HDRSkybox");
-		glDepthFunc(GL_LEQUAL);
-		shader->activate();
-
-		glm::mat4 view = glm::mat4(glm::mat3(camera->GetViewMatrix()));
-
-		shader->setMat4("view", view);
-		shader->setMat4("projection", camera->GetProjectionMatrix());
-
-		glBindVertexArray(g_renderData.cubeMaps[0].GetVAO());
-		glBindTexture(GL_TEXTURE_CUBE_MAP, g_envCubemap);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		glDepthFunc(GL_LESS);*/
-
 	}
 
 	Shader* GetShaderByName(const std::string& name) {
@@ -400,6 +399,11 @@ namespace OpenGLRenderer {
 	UBO* GetUBOByName(const std::string& name) {
 		auto it = g_ubos.find(std::string{ name });
 		return (it != g_ubos.end()) ? &it->second : nullptr;
+	}
+
+	SSBO* GetSSBOByName(const std::string& name) {
+		auto it = g_ssbos.find(std::string{ name });
+		return (it != g_ssbos.end()) ? &it->second : nullptr;
 	}
 
 	Mesh2D* GetQuadMeshByName(const std::string& name) {
