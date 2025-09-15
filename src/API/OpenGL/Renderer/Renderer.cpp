@@ -138,7 +138,7 @@ namespace OpenGLRenderer {
 		UpdateSSBOS();
 		ShadowPass();
 		RefractionPass();
-		UpdateFBOs();
+		BeginMainPass();
 		AnimationPass();
 		LightingPass();
 		WaterPass();
@@ -200,13 +200,11 @@ namespace OpenGLRenderer {
 		lightsSSBO->Bind(0);
 	}
 
-	void UpdateFBOs() {
+	void BeginMainPass() {
 		FrameBuffer* postProcessFBO = GetFrameBufferByName("PostProcess");
 
 		postProcessFBO->Bind();
-		
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		postProcessFBO->SetViewport();
 
 		// STENCIL STUFF
 		glEnable(GL_STENCIL_TEST);

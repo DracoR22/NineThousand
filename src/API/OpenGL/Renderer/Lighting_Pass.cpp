@@ -244,26 +244,7 @@ namespace OpenGLRenderer {
 		deferredLightingShader->setInt("baseTexture", 1);
 		deferredLightingShader->setInt("normalTexture", 2);
 		deferredLightingShader->setInt("rmaTexture", 3);
-		for (int i = 0; i < sceneLights.size(); i++) {
-			float lightStrength = sceneLights[i].GetStrength();
-			float lightRadius = sceneLights[i].GetRadius();
-			glm::vec3 lightPosition = sceneLights[i].GetPosition();
-			glm::vec3 lightColor = sceneLights[i].GetColor();
-			LightType lightType = sceneLights[i].GetLightType();
-
-			std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-			deferredLightingShader->setFloat(lightUniform + ".posX", lightPosition.x);
-			deferredLightingShader->setFloat(lightUniform + ".posY", lightPosition.y);
-			deferredLightingShader->setFloat(lightUniform + ".posZ", lightPosition.z);
-			deferredLightingShader->setFloat(lightUniform + ".radius", lightRadius);
-			deferredLightingShader->setFloat(lightUniform + ".strength", lightStrength);
-			deferredLightingShader->setFloat(lightUniform + ".colorR", lightColor.r);
-			deferredLightingShader->setFloat(lightUniform + ".colorG", lightColor.g);
-			deferredLightingShader->setFloat(lightUniform + ".colorB", lightColor.b);
-			deferredLightingShader->setInt(lightUniform + ".type", static_cast<int>(lightType));
-		}
-		deferredLightingShader->setInt("noLights", sceneLights.size());
+		deferredLightingShader->setInt("numLights", sceneLights.size());
 		deferredLightingShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
 		deferredLightingShader->setInt("shadowMap", 3);
 		if (lightQuadVAO == 0)

@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 out vec4 FragColor;
 
@@ -24,8 +24,11 @@ in vec2 TexCoords;
 
 //in vec4 WorldPosLight;
 
-uniform Light lights[MAX_POINT_LIGHTS];
-uniform int noLights;
+layout (std430, binding = 0) readonly buffer LightsBuffer {
+    Light lights[MAX_POINT_LIGHTS];
+};
+
+uniform int numLights;
 uniform vec3 camPos;
 
 uniform sampler2D shadowMap;
@@ -144,7 +147,7 @@ void main() {
  vec3 F0 = vec3(0.04); 
  F0  = mix(F0, albedo, metallic);
 
- for (int i = 0; i < noLights; ++i) {
+ for (int i = 0; i < numLights; ++i) {
     Light light = lights[i];
     vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
     vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);

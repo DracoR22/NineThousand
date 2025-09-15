@@ -35,6 +35,7 @@ namespace OpenGLRenderer {
 			for (int i = 0; i < blurPasses; ++i) {
 				FrameBuffer* currentFBO = horizontal ? pongFBO : pingFBO;
 				currentFBO->Bind();
+				currentFBO->SetViewport();
 
 				Shader* activeShader = horizontal ? blurHShader : blurVShader;
 				activeShader->activate();
@@ -57,8 +58,6 @@ namespace OpenGLRenderer {
 					firstIteration = false;
 			}
 		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	GLuint GetFinalBlurTexture() {

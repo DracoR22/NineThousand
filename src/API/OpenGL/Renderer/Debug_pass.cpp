@@ -55,26 +55,6 @@ void OpenGLRenderer::DebugPass() {
 	glStencilFunc(GL_ALWAYS, 1, 0xFF);
 	glEnable(GL_DEPTH_TEST);
 
-	// Debug Lights
-	/*bloomShader->activate();
-	bloomShader->set3Float("viewPos", CameraManager::GetActiveCamera()->cameraPos);
-	bloomShader->setMat4("view", camera->GetViewMatrix());
-	bloomShader->setMat4("projection", camera->GetProjectionMatrix());
-	bloomShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-	std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
-
-	for (LightCreateInfo& light : sceneLights) {
-		if (light.type == LightType::POINT_LIGHT) {
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
-			model *= glm::mat4(1.0f);
-			model = glm::scale(model, glm::vec3(1.0f));
-
-			DrawCube(*bloomShader, model);
-		}
-	}*/
-	
-
 	// Debug Physics
 	static bool drawCollisionBoxes = false;
 

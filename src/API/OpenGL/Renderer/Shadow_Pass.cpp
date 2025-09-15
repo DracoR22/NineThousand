@@ -6,7 +6,7 @@ namespace OpenGLRenderer {
 	void ShadowPass() {
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
 		Shader* csmDepthShader = GetShaderByName("CSM");
-		//UBO* csmDepthUBO = GetUBOByName("CSM");
+		
 		SSBO* lightsSpaceMatricesSSBO = GetSSBOByName("LightSpaceMatricesCSM");
 
 		if (csmDepthShader == nullptr) {
@@ -26,10 +26,6 @@ namespace OpenGLRenderer {
 		csmDepthShader->activate();
 		DrawShadows(*csmDepthShader);
 		glCullFace(GL_BACK);
-		csmDepth->Unbind();
-
-		glViewport(0, 0, GetRenderResolution().x, GetRenderResolution().y);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void DrawShadows(Shader& shader) {

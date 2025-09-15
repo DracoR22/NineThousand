@@ -62,7 +62,7 @@ namespace OpenGLRenderer {
 	void CubeMapPass();
 
 	void LoadShaders();
-	void UpdateFBOs();
+	void BeginMainPass();
 	void DrawCube(Shader& shader, glm::mat4 modelMatrix);
 	GLuint GetFinalBlurTexture();
 
