@@ -8,13 +8,12 @@
 
 #include "../Audio/AudioManager.h"
 
-#include "WeaponManager.h"
+#include "./WeaponManager.h"
 #include "./Scene.h"
 
 #include "../Core/AssetManager.h"
 #include "../Objects/GameObject.h"
 #include "../Objects/WaterObject.h"
-
 
 class Player {
 public:
@@ -25,6 +24,7 @@ public:
 	void UpdateMovement(double deltaTime);
 	void UpdateAudio(double deltaTime);
 
+	uint64_t GetPlayerId() { return m_objectId; };
 	glm::vec3 getPosition();
 	bool IsMoving();
 	bool IsSprinting();
@@ -71,8 +71,11 @@ public:
 	float m_muzzleFlashTimer = 0;
 	GameObject m_currentWeaponGameObject;
 	uint64_t m_bulletCasePhysicsId = -1;
+	bool m_firedThisFrame = false;
+	glm::vec3 m_position;
 private:
 	uint64_t m_physicsId;
+	uint64_t m_objectId;
 
 	bool m_isOnGround = true;
 	bool m_isJumping = false;
@@ -83,7 +86,6 @@ private:
 
 	float m_bulletCaseSoundCooldown = 0.0f;
 
-	glm::vec3 m_position;
 	float m_speed = 0.0f;
 	float m_height = 0.0f;
 	float m_mass = 75.0f;

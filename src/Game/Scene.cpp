@@ -2,10 +2,10 @@
 
 namespace Scene {
 	std::vector<GameObject> g_gameObjects;
-	std::vector<GameObject> g_animatedObjects;
 	std::vector<WaterObject> g_waterPlaneObjects;
 	std::vector<LightObject> g_lightObjects;
 	std::vector<BulletCaseObject> g_bulletCaseObjects;
+	std::vector<Mannequin> g_mannequins;
 
 	void CreateHardcodedObjects() {
 		WaterObjectCreateInfo waterPlaneCreateInfo{
@@ -95,6 +95,24 @@ namespace Scene {
 		if (index < g_bulletCaseObjects.size()) {
 			g_bulletCaseObjects.erase(g_bulletCaseObjects.begin() + index);
 		}
+	}
+
+	void AddMannequin(glm::vec3 position) {
+		g_mannequins.emplace_back(position);
+	}
+
+	Mannequin* GetMannequinById(uint64_t mannequinId) {
+		for (Mannequin& mannequin : g_mannequins) {
+			if (mannequin.GetObjectId() == mannequinId) {
+				return &mannequin;
+			}
+		}
+
+		return nullptr;
+	}
+
+	std::vector<Mannequin>& GetAllMannequins() {
+		return g_mannequins;
 	}
 
 	void LoadSceneFromFile(const std::string& filePath) {

@@ -14,7 +14,7 @@ struct Light {
     float colorG;
     float colorB;
 
-    int type;
+    float type;
     float _padding0;
     float _padding1;
     float _padding2;
@@ -156,7 +156,7 @@ void main() {
     float attenuation = 1.0;
     vec3 radiance;
 
-  if (light.type == 0) { // Point light
+  if (int(light.type) == 0) { // Point light
      L = normalize(lightPosition - WorldPos);
 
      float distance    = length(lightPosition - WorldPos);

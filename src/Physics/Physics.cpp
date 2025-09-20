@@ -121,25 +121,10 @@ namespace Physics {
         return capsuleActor;
     }
 
-    /*void CreateCharacterController() {
-        g_controllerManager = PxCreateControllerManager(*g_scene);
-
-        physx::PxCapsuleControllerDesc desc;
-        desc.height = 1.8f;
-        desc.radius = 0.3f;
-        desc.material = g_physics->createMaterial(0.5f, 0.5f, 0.0f);
-        desc.position = PxExtendedVec3(35.0f, 5.5f, 55.0f);
-        desc.slopeLimit = 0.707f;
-        desc.stepOffset = 0.5f;
-        desc.upDirection = PxVec3(0, 1, 0);
-
-       g_controller = g_controllerManager->createController(desc);
-    }*/
-
-    uint64_t CreateCharacterController(const glm::vec3& position, float height) {
+    uint64_t CreateCharacterController(uint64_t objectId, const glm::vec3& position, float height, ObjectType objectType) {
         PxCapsuleControllerDesc desc;
+        desc.radius = 0.5f;
         desc.height = height - 2.0f * desc.radius;
-        desc.radius = 0.3f;
         desc.material = g_defaultMaterial;
         desc.position = PxExtendedVec3(position.x, position.y, position.z);
         desc.slopeLimit = 0.707f;
@@ -147,6 +132,14 @@ namespace Physics {
         desc.upDirection = PxVec3(0, 1, 0);
 
         PxController* pxController = g_controllerManager->createController(desc);
+
+        // add user data
+        PhysicsUserData physicsUserData;
+        physicsUserData.objectId = objectId;
+        physicsUserData.physicsType = PhysicsType::CHARACTER_CONTROLLER;
+        physicsUserData.objectType = objectType;
+        physicsUserData.physicsId = 0;
+        pxController->getActor()->userData = new PhysicsUserData(physicsUserData);
 
         uint64_t physicsId = Utils::GenerateUniqueID();
         CharacterController& characterController = g_charaterControllers[physicsId];
@@ -198,6 +191,10 @@ namespace Physics {
         return nullptr;
     }
 
+    std::unordered_map<uint64_t, CharacterController>& GetCharacterControllers() {
+        return g_charaterControllers;
+    }
+
     uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
@@ -213,7 +210,6 @@ namespace Physics {
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
-        /* PxRigidBodyExt::updateMassAndInertia(*pxRigidDynamic, mass);*/
         g_scene->addActor(*pxRigidDynamic);
 
         PxVec3 force = PxVec3(initialForce.x, initialForce.y, initialForce.z);
@@ -222,10 +218,17 @@ namespace Physics {
         PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
         pxRigidDynamic->addTorque(torque, PxForceMode::eIMPULSE);
 
-        //pxRigidDynamic->setMaxAngularVelocity(1.0f);
+        uint64_t physicsId = Utils::GenerateUniqueID();
+
+        // add user data
+        PhysicsUserData physicsUserData;
+        physicsUserData.objectId = 0;
+        physicsUserData.physicsType = PhysicsType::RIGID_DYNAMIC;
+        physicsUserData.objectType = ObjectType::DYNAMIC;
+        physicsUserData.physicsId = physicsId;
+        pxRigidDynamic->userData = new PhysicsUserData(physicsUserData);
 
         // create rigid dynamic
-        uint64_t physicsId = Utils::GenerateUniqueID();
         RigidDynamic& rigidDynamic = g_rigidDynamics[physicsId];
         rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
         rigidDynamic.UpdateMassAndInertia(mass);
@@ -275,7 +278,6 @@ namespace Physics {
 
         PxShape* pxShape = g_physics->createShape(geometry, *g_defaultMaterial);
 
-        // create rigid dynamic
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
@@ -285,15 +287,23 @@ namespace Physics {
         pxShape->release();
         g_scene->addActor(*pxRigidDynamic);
 
-
         PxVec3 force = PxVec3(initialForce.x, initialForce.y, initialForce.z);
         pxRigidDynamic->addForce(force, PxForceMode::eIMPULSE);
 
         PxVec3 torque = PxVec3(initialTorque.x, initialTorque.y, initialTorque.z);
         pxRigidDynamic->addTorque(torque);
 
-        // create rigid dynamic
         uint64_t physicsId = Utils::GenerateUniqueID();
+
+        // add user data
+        PhysicsUserData physicsUserData;
+        physicsUserData.objectId = 0;
+        physicsUserData.physicsType = PhysicsType::RIGID_DYNAMIC;
+        physicsUserData.objectType = ObjectType::DYNAMIC;
+        physicsUserData.physicsId = physicsId;
+        pxRigidDynamic->userData = new PhysicsUserData(physicsUserData);
+
+        // create rigid dynamic
         RigidDynamic& rigidDynamic = g_rigidDynamics[physicsId];
         rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
         rigidDynamic.UpdateMassAndInertia(mass);
@@ -308,6 +318,7 @@ namespace Physics {
             PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
 
             if (pxRigidDynamic->userData) {
+                delete static_cast<PhysicsUserData*>(pxRigidDynamic->userData);
                 pxRigidDynamic->userData = nullptr;
             }
             if (pxRigidDynamic->getScene() != nullptr) {
@@ -341,6 +352,18 @@ namespace Physics {
         PxMat44 pxMatrix = GlmMat4ToPxMat44(transformMatrix);
         PxTransform pxTransform = PxTransform(pxMatrix);
         pxRigidDynamic->setGlobalPose(pxTransform);
+    }
+
+    void AddForceToRigidDynamic(uint64_t id, glm::vec3 direction, float strength) {
+        RigidDynamic* rigidDynamic = GetRigidDynamicById(id);
+
+        if (rigidDynamic) {
+            PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
+            PxVec3 pxDirection = PxVec3(direction.x, direction.y, direction.z);
+            PxVec3 pxNormalized = pxDirection.getNormalized();
+
+            pxRigidDynamic->addForce(pxNormalized * strength, physx::PxForceMode::eIMPULSE);
+        }
     }
 
     uint64_t CreateRigidStaticBox(PhysicsTransformData transform, const PxVec3& halfExtents) {
@@ -438,6 +461,35 @@ namespace Physics {
         PxMat44 pxMatrix = GlmMat4ToPxMat44(transformMatrix);
         PxTransform pxTransform = PxTransform(pxMatrix);
         pxRigidStatic->setGlobalPose(pxTransform);
+    }
+
+    PhysicsRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength) {
+        PxVec3 origin(rayOrigin.x, rayOrigin.y, rayOrigin.z);
+        PxVec3 direction(rayDirection.x, rayDirection.y, rayDirection.z);
+        PxReal maxDistance = rayLength;
+        PxRaycastBuffer hitBuffer;
+
+        // Defaults
+        PhysicsRayResult result;
+        result.hitPosition = glm::vec3(0, 0, 0);
+        result.hitNormal = glm::vec3(0, 0, 0);
+        result.rayDirection = rayDirection;
+        result.userData = PhysicsUserData();
+
+        result.hitFound = g_scene->raycast(origin, direction, maxDistance, hitBuffer);
+
+        // On Hit
+        if (result.hitFound) {
+            result.hitPosition = glm::vec3(hitBuffer.block.position.x, hitBuffer.block.position.y, hitBuffer.block.position.z);
+            result.hitNormal = glm::vec3(hitBuffer.block.normal.x, hitBuffer.block.normal.y, hitBuffer.block.normal.z);
+            result.hitFound = true;
+            PhysicsUserData* userData = (PhysicsUserData*)hitBuffer.block.actor->userData;
+            if (userData) {
+                result.userData = *userData;
+            }
+        }
+
+        return result;
     }
 
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec) {

@@ -118,7 +118,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Glock", "resources/models/Glock.fbx");
 		AssetManager::LoadSkinnedModel("AKS74U", "resources/models/AKS74U_Simple.fbx");
 		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
-		AssetManager::LoadSkinnedModel("Stalker", "resources/models/Stalker.fbx");
+		AssetManager::LoadSkinnedModel("Mannequin", "resources/models/Mannequin.fbx");
 		AssetManager::LoadSkinnedModel("Barrel", "resources/models/Barrel.obj");
 		AssetManager::LoadSkinnedModel("Hanging_Light", "resources/models/Hanging_Light.obj");
 		AssetManager::LoadSkinnedModel("Ceiling_Light", "resources/models/CeilingLamp.obj");
@@ -139,6 +139,7 @@ namespace Engine {
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
+		Model* stalkerModel = AssetManager::GetModelByName("Mannequin");
 
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);
@@ -181,11 +182,14 @@ namespace Engine {
 		AssetManager::LoadAnimation("P90_ADS_Out", "resources/animations/P90_ADS_Out.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_ADS_Idle", "resources/animations/P90_ADS_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_ADS_Fire", "resources/animations/P90_ADS_Fire0.fbx", p90Model);
+	
+		AssetManager::LoadAnimation("Mannequin_Run", "resources/models/Mannequin.fbx", stalkerModel);
 
 		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));
 		AssetManager::LoadAnimator("AKS74UAnimator", AssetManager::GetAnimationByName("AKS74U_Idle"));
 		AssetManager::LoadAnimator("KatanaAnimator", AssetManager::GetAnimationByName("Knife_Idle"));
+		AssetManager::LoadAnimator("MannequinAnimator", AssetManager::GetAnimationByName("Mannequin_Run"));
 
 		AssetManager::BuildMaterials();
 	}

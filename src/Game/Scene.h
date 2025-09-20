@@ -9,6 +9,7 @@
 #include "../Objects/LightObject.h"
 #include "../Objects/BulletCaseObject.h"
 #include "../Utils/JSON.h"
+#include "../Game/Mannequin.h"
 
 namespace Scene {
 	void CreateHardcodedObjects();
@@ -28,6 +29,10 @@ namespace Scene {
 	std::vector<BulletCaseObject>& GetBulletCaseObjects();
 	void AddBulletCaseObject(BulletCaseCreateInfo& createInfo);
 	void RemoveBulletCaseObjectByIndex(int index);
+
+	void AddMannequin(glm::vec3 position);
+	Mannequin* GetMannequinById(uint64_t mannequinId);
+	std::vector<Mannequin>& GetAllMannequins();
 
 	void LoadSceneFromFile(const std::string& filePath);
 	void SaveCurrentSceneToFile();

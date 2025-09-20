@@ -5,7 +5,7 @@
 #include "./Player.h"
 #include "./WeaponManager.h"
 #include "./Scene.h"
-#include "./Stalker.h"
+#include "./Mannequin.h"
 #include "./Player.h"
 
 #include "../Core/AssetManager.h"
@@ -24,9 +24,10 @@ namespace Game {
 
 	void CreatePlayers();
 
+	Player* GetPlayerById(uint64_t playerId);
 	Player& GetPLayerByIndex(int index);
-	std::vector<Stalker>& GetAllStalkers();
 
+	void ProcessBullets();
 	void UpdateWeaponPositionByName(std::string weaponName, bool flipRotation = false);
 
 	GameState GetGameState();

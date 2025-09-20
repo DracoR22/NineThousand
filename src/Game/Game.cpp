@@ -4,7 +4,6 @@ namespace Game {
 	GameState g_gameState = {};
 
 	std::vector<Player> g_players;
-	std::vector<Stalker> g_stalkers;
 
 	void Init() {
 		g_gameState = GameState::PLAYING;
@@ -12,21 +11,18 @@ namespace Game {
 
 		CreatePlayers();
 
-		Stalker stalker1 = g_stalkers.emplace_back(glm::vec3(glm::vec3(-37.0f, 5.0f, 0.0f)));
+		/*Mannequin stalker1 = g_mannequins.emplace_back(glm::vec3(glm::vec3(-37.0f, -1.0f, 0.0f)));*/
+		Scene::AddMannequin(glm::vec3(-5.0f, 5.0f, 37.0f));
 	}
 
 	void Update(double deltaTime) {
-
-	/*	if (Keyboard::KeyJustPressed(GLFW_KEY_F1)) {
-			if (GetGameState() == GameState::EDITOR) {
-				SetGameState(GameState::PLAYING);
-			}
-			else {
-				Game::SetGameState(GameState::EDITOR);
-			}
-		}*/
-
 		g_players[0].Update(Window::GetDeltaTime());
+		g_players[0].UpdateWeaponLogic();
+		/*g_mannequins[0].Update(Window::GetDeltaTime());*/
+		for (Mannequin& mannequin : Scene::GetAllMannequins()) {
+			mannequin.Update(Window::GetDeltaTime());
+		}
+		ProcessBullets();
 		UpdatePhysics();
 
 		// Update enemies
@@ -44,34 +40,6 @@ namespace Game {
 			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
 		}*/
 
-		Stalker& stalker = g_stalkers[0];
-		glm::vec3 stalkerPos = g_stalkers[0].GetPosition();
-		glm::vec3 playerPos = g_players[0].getPosition();
-		float enemySpeed = 20.0f;
-
-		static float pathfindingTimer = 0.0f;
-		pathfindingTimer += deltaTime;
-
-
-		if (g_players[0].IsMoving() || pathfindingTimer >= 0.5f) {
-			stalker.m_pathFinder.Reset();
-			stalker.m_pathFinder.FindPath(stalkerPos, playerPos);
-			pathfindingTimer = 0.0f;
-		}
-
-
-		if (!stalker.m_pathFinder.IsPathEmpty()) {
-			
-			glm::vec3 nextPos = stalker.m_pathFinder.NextPathPos(stalkerPos, glm::vec3(0.5f)); // 0.5f radius as proximity threshold
-
-			glm::vec3 moveDir = glm::normalize(nextPos - stalkerPos);
-			glm::vec3 newPosition = stalkerPos + moveDir * enemySpeed * (float)deltaTime;
-			stalker.SetPosition(glm::vec3(newPosition.x, newPosition.y, newPosition.z));
-
-			// stalker rotation
-			float yawDegrees = glm::degrees(atan2(moveDir.x, moveDir.z));
-			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
-		}
 		
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
@@ -122,11 +90,6 @@ namespace Game {
 
 		static bool isDrawing = false;
 		static bool isInADS = false;
-
-		//g_players[0].FireWeapon();
-
-		g_players[0].UpdateWeaponLogic();
-
 	
 		if (!equipedWeapon) {
 			std::cout << "ERROR: No equipped weapon!" << std::endl;
@@ -271,7 +234,6 @@ namespace Game {
 		}
 
 		for (BulletCaseObject& bulletCase : Scene::GetBulletCaseObjects()) {
-			//std::cout << "UPDATING CASEEE" << bulletCase.GetPhysicsId() << std::endl;
 			if (bulletCase.GetPhysicsId() != 0) {
 				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(bulletCase.GetPhysicsId());
 				if (rigidDynamic) {
@@ -284,16 +246,6 @@ namespace Game {
 				}
 			}
 		}
-
-		// update bullet cases
-		/*if (g_players[0].m_bulletCasePhysicsId != -1) {
-			GameObject* bulletCase = Scene::GetGameObjectByName("BulletCase1");
-			RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(g_players[0].m_bulletCasePhysicsId);
-			if (rigidDynamic) {
-				bulletCase->SetPosition(rigidDynamic->GetCurrentPosition());
-				bulletCase->SetRotationMatrix(rigidDynamic->GetCurrentRotationMatrix());
-			}
-		}*/
 	}
 
 	void CreatePlayers() {
@@ -304,6 +256,16 @@ namespace Game {
 		g_players.push_back(player);
 	}
 
+	Player* GetPlayerById(uint64_t playerId) {
+		for (Player& player : g_players) {
+			if (player.GetPlayerId() == playerId) {
+				return &player;
+			}
+		}
+
+		return nullptr;
+	}
+
 	Player& GetPLayerByIndex(int index) {
 		if (index < 0 || index >= g_players.size()) {
 			throw std::out_of_range("ERROR::GetPlayerByIndex::Index out of range!");
@@ -311,8 +273,42 @@ namespace Game {
 		return g_players[index];
 	}
 
-	std::vector<Stalker>& GetAllStalkers() {
-		return g_stalkers;
+	void ProcessBullets() {
+		Player& player = g_players[0];
+		int weaponDamage = 25;
+
+		if (player.m_firedThisFrame) {
+			player.m_firedThisFrame = false;
+
+			glm::vec3 playerPos = player.m_camera.cameraPos;
+			glm::vec3 cameraDir = glm::normalize(player.m_camera.cameraFront);
+			float maxDistance = 100000.0f;  // Maximum bullet range
+
+			PhysicsRayResult rayResult = Physics::CastPhysXRay(playerPos, cameraDir, maxDistance);
+
+			if (rayResult.hitFound) {
+				PhysicsType& physicsType = rayResult.userData.physicsType;
+				ObjectType& objectType = rayResult.userData.objectType;
+				uint64_t physicsId = rayResult.userData.physicsId;
+				uint64_t objectId = rayResult.userData.objectId;
+
+				if (physicsType == PhysicsType::RIGID_DYNAMIC) {
+					float strength = 5000.0f;
+					Physics::AddForceToRigidDynamic(physicsId, cameraDir, strength);
+				}
+
+				if (objectType == ObjectType::MANNEQUIN) {
+					std::cout << "HIT MANNEQUIN!!!" << std::endl;
+					/*for (Mannequin& mannequin : g_mannequins) {
+						if (mannequin.GetObjectId() == objectId) {
+							mannequin.TakeDamage(weaponDamage, player.GetPlayerId());
+						}
+					}*/
+					Mannequin* mannequin = Scene::GetMannequinById(objectId);
+					mannequin->TakeDamage(weaponDamage, player.GetPlayerId());
+				}
+			}
+		}
 	}
 
 	void UpdateWeaponPositionByName(std::string name, bool flipRotation) {

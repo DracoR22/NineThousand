@@ -126,6 +126,34 @@ void OpenGLRenderer::DebugPass() {
 			}
 		}
 
+		for (auto& [key, value] : Physics::GetCharacterControllers()) {
+			PxController* controller = value.GetPxController();
+			PxCapsuleController* capsule = static_cast<physx::PxCapsuleController*>(controller);
+
+			float radius = capsule->getRadius();
+			float height = capsule->getHeight();
+
+			physx::PxTransform physxTransform = controller->getActor()->getGlobalPose();
+			glm::vec3 position = Physics::PxVec3toGlmVec3(physxTransform.p);
+			glm::quat rotation = Physics::PxQuatToGlmQuat(physxTransform.q);
+
+			glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
+			modelMatrix *= glm::mat4_cast(rotation);
+			// rotate 90 degrees around X so Y points up correctly for the cube mesh
+			glm::mat4 fixOrientation = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			modelMatrix *= fixOrientation;
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(radius * 2.0f, height, radius * 2.0f));
+
+			solidColorShader->setMat4("model", modelMatrix);
+
+			Model* debugModel = AssetManager::GetModelByName("Cube");
+
+			for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+				glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+				glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+			}
+		}
+
 		glEnable(GL_DEPTH_TEST);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
