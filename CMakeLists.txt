@@ -28,6 +28,15 @@ target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendo
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/nlohmann_json/include)
 
+# miniz (used by tinyexr)
+add_library(miniz STATIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/miniz/miniz.c)
+target_include_directories(miniz PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/miniz)
+
+# tiny exr
+add_library(tinyexr INTERFACE)
+target_include_directories(tinyexr INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinyexr)
+target_link_libraries(tinyexr INTERFACE miniz)
+
 # imGui
 file(GLOB IMGUI_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/*.cpp
@@ -74,7 +83,7 @@ add_executable(NineThousand ${SOURCES})
 
 # Link all libraries
 target_include_directories(NineThousand PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/vendor/physx/include)
-target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp fmod nlohmann_json ${PHYSX_LIBS})
+target_link_libraries(NineThousand PRIVATE imgui glfw glad glm stb_image assimp fmod tinyexr nlohmann_json ${PHYSX_LIBS})
 
 # Include resources to output folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources/ DESTINATION ${CMAKE_BINARY_DIR}/resources)

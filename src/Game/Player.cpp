@@ -49,7 +49,7 @@ void Player::Update(double deltaTime) {
 
     UpdateAudio(deltaTime);
     UpdateMovement(deltaTime);
-    
+    UpdateWeaponLogic();
 }
 
 void Player::UpdateMovement(double deltaTime) {

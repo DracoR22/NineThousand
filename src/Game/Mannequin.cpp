@@ -2,6 +2,7 @@
 
 #include "../Common/Enums.hpp"
 #include "./Game.h"
+#include "../Audio/AudioManager.h"
 
 Mannequin::Mannequin(glm::vec3 position) {
 	m_position = position;
@@ -59,9 +60,10 @@ void Mannequin::SetRotationEuler(glm::vec3 rotation) {
 void Mannequin::TakeDamage(int damageAmount, uint64_t playerId) {
 	m_health -= damageAmount;
 
+	AudioManager::PlayAudio("Flesh_Bloody_Break.wav", 1.0f, 1.0f);
+
 	if (m_health <= 0) {
 		m_state = MannequinState::DEAD;
-		return;
 	}
 
 	if (m_state != MannequinState::CHASE) {

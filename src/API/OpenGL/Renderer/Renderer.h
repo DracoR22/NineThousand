@@ -55,6 +55,7 @@ namespace OpenGLRenderer {
 	void DeferredLightingPass();
 	void DebugPass();
 	void OutlinePass();
+	void BloodSplatterPass();
 	void BillboardPass();
 	void UIPass();
 	void BloomPass();

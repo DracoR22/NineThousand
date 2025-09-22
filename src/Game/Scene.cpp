@@ -5,6 +5,7 @@ namespace Scene {
 	std::vector<WaterObject> g_waterPlaneObjects;
 	std::vector<LightObject> g_lightObjects;
 	std::vector<BulletCaseObject> g_bulletCaseObjects;
+	std::vector<BloodSplatterObject> g_bloodSplatterObjects;
 	std::vector<Mannequin> g_mannequins;
 
 	void CreateHardcodedObjects() {
@@ -113,6 +114,17 @@ namespace Scene {
 
 	std::vector<Mannequin>& GetAllMannequins() {
 		return g_mannequins;
+	}
+
+	void AddBloodSplatterObject(glm::vec3 position, glm::vec3 forward) {
+		int maxAllowed = 4;
+		if (g_bloodSplatterObjects.size() < maxAllowed) {
+			g_bloodSplatterObjects.push_back(BloodSplatterObject(position, forward));
+		}
+	}
+
+	std::vector<BloodSplatterObject>& GetBloodSplatterObjects() {
+		return g_bloodSplatterObjects;
 	}
 
 	void LoadSceneFromFile(const std::string& filePath) {

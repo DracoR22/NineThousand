@@ -10,6 +10,7 @@
 #include "../Objects/BulletCaseObject.h"
 #include "../Utils/JSON.h"
 #include "../Game/Mannequin.h"
+#include "../Objects/BloodSplatterObject.h"
 
 namespace Scene {
 	void CreateHardcodedObjects();
@@ -33,6 +34,9 @@ namespace Scene {
 	void AddMannequin(glm::vec3 position);
 	Mannequin* GetMannequinById(uint64_t mannequinId);
 	std::vector<Mannequin>& GetAllMannequins();
+
+	void AddBloodSplatterObject(glm::vec3 position, glm::vec3 forward);
+	std::vector<BloodSplatterObject>& GetBloodSplatterObjects();
 
 	void LoadSceneFromFile(const std::string& filePath);
 	void SaveCurrentSceneToFile();

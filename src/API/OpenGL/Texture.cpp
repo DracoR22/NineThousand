@@ -34,6 +34,14 @@ void Texture::AllocateMemoryENVMap(TextureData& texData) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
+void Texture::AllocateMemoryEXR(TextureData& texData) {
+	glBindTexture(GL_TEXTURE_2D, m_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, texData.internalFormat, texData.width, texData.height, 0, texData.format, GL_FLOAT, texData.floatPixels.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 void Texture::Bind() {
 	glBindTexture(GL_TEXTURE_2D, m_id);
 }

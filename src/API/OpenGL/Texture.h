@@ -26,6 +26,7 @@ public:
 	void Generate();
 	void AllocateMemory(TextureData& texData);
 	void AllocateMemoryENVMap(TextureData& texData);
+	void AllocateMemoryEXR(TextureData& texData);
 	void Bind();
 
 public:

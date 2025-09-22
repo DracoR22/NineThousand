@@ -11,35 +11,29 @@ namespace Game {
 
 		CreatePlayers();
 
-		/*Mannequin stalker1 = g_mannequins.emplace_back(glm::vec3(glm::vec3(-37.0f, -1.0f, 0.0f)));*/
 		Scene::AddMannequin(glm::vec3(-5.0f, 5.0f, 37.0f));
 	}
 
 	void Update(double deltaTime) {
+		UpdatePhysics();
 		g_players[0].Update(Window::GetDeltaTime());
-		g_players[0].UpdateWeaponLogic();
-		/*g_mannequins[0].Update(Window::GetDeltaTime());*/
+		
 		for (Mannequin& mannequin : Scene::GetAllMannequins()) {
 			mannequin.Update(Window::GetDeltaTime());
 		}
+
 		ProcessBullets();
-		UpdatePhysics();
 
-		// Update enemies
-		/*if (g_players[0].IsMoving()) {
-			float enemySpeed = 20.0f;
-			glm::vec3 stalkerPos = g_stalkers[0].GetPosition();
-			glm::vec3 playerPos = g_players[0].getPosition();
+		std::vector<BloodSplatterObject>& bloodSplatterObjects = Scene::GetBloodSplatterObjects();
+		for (BloodSplatterObject& bloodSplatterObject : bloodSplatterObjects) {
+			bloodSplatterObject.Update(Window::GetDeltaTime());
+		}
 
-			glm::vec3 moveDirection = glm::normalize(playerPos - stalkerPos);
-			glm::vec3 newPosition = stalkerPos + moveDirection * enemySpeed * float(deltaTime);
-
-			g_stalkers[0].SetPosition(glm::vec3(newPosition.x, stalkerPos.y, newPosition.z));
-
-			float yawDegrees = glm::degrees(atan2(moveDirection.x, moveDirection.z));
-			g_stalkers[0].SetRotationEuler(glm::vec3(0.0f, yawDegrees, 0.0f));
-		}*/
-
+		const float MAX_LIFETIME = 1.0f; 
+		bloodSplatterObjects.erase(std::remove_if(bloodSplatterObjects.begin(), bloodSplatterObjects.end(),[MAX_LIFETIME](const BloodSplatterObject& obj) {
+			return obj.GetLifeTime() > MAX_LIFETIME;
+		  }
+		), bloodSplatterObjects.end());
 		
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
@@ -299,13 +293,10 @@ namespace Game {
 
 				if (objectType == ObjectType::MANNEQUIN) {
 					std::cout << "HIT MANNEQUIN!!!" << std::endl;
-					/*for (Mannequin& mannequin : g_mannequins) {
-						if (mannequin.GetObjectId() == objectId) {
-							mannequin.TakeDamage(weaponDamage, player.GetPlayerId());
-						}
-					}*/
 					Mannequin* mannequin = Scene::GetMannequinById(objectId);
 					mannequin->TakeDamage(weaponDamage, player.GetPlayerId());
+
+					Scene::AddBloodSplatterObject(rayResult.hitPosition, -rayResult.rayDirection);
 				}
 			}
 		}

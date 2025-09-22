@@ -69,4 +69,8 @@ namespace AssetManager {
 	Animation* GetAnimationByName(const std::string& name);
 	void LoadAnimator(const std::string& name, Animation* animation);
 	Animator* GetAnimatorByName(const std::string& name);
+
+	TextureData DecodeEXRTexture(const std::string& dir, const std::string& name);
+	void LoadEXRTexture(const std::string& dir, const std::string& name);
+	bool GetEXRLayers(const char* filename);
 }

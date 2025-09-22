@@ -45,7 +45,7 @@ namespace OpenGLRenderer {
 		DrawGameObjects(*lightingShader);
 		DrawBulletCases(*lightingShader);
 
-		glStencilMask(0x00);
+		glStencilMask(0x00);		
 	}
 
 	void DrawGameObjects(Shader& lightingShader) {

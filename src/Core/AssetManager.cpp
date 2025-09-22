@@ -1,5 +1,8 @@
 #include "AssetManager.h"
 
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
+
 namespace AssetManager {
 	std::unordered_map<std::string, int> g_modelIndexMap;
 	std::unordered_map<std::string, int> g_animationIndexMap;
@@ -414,5 +417,90 @@ namespace AssetManager {
 
 		std::cout << "AssetManager::GetAnimatorByName() failed because '" << name << "' does not exist!\n";
 		return nullptr;
+	}
+
+	TextureData DecodeEXRTexture(const std::string& dir, const std::string& name) {
+		std::string fullPath = dir + "/" + name;
+		const char* filename = fullPath.c_str();
+
+		std::cout << "IMAGE::" << fullPath << std::endl;
+
+		TextureData data;
+
+		bool layersRes = GetEXRLayers(filename);
+		if (!layersRes) {
+			std::cout << " GetEXRLayers() FAILED \n";
+		}
+
+		float* image;
+		int width = 0, height = 0;
+		const char* err = nullptr;
+		int ret = LoadEXRWithLayer(&image, &width, &height, filename, NULL, &err);
+
+		if (err) {
+			fprintf(stderr, "EXR error = %s\n", err);
+			FreeEXRErrorMessage(err);
+		}	
+
+		if (ret != 0) {
+			fprintf(stderr, "Load EXR err: %s\n", err);
+			throw std::runtime_error("Could not load EXR texture");
+		}
+
+		size_t pixelCount = static_cast<size_t>(width) * static_cast<size_t>(height) * 4;
+		data.width = width;
+		data.height = height;
+		data.channels = 4;
+		data.internalFormat = GL_RGBA32F;
+		data.format = GL_RGBA;
+		data.name = name;
+		data.floatPixels.assign(image, image + pixelCount);
+
+		free(image);
+
+		return data;
+	}
+
+	bool GetEXRLayers(const char* filename) {
+		const char** layer_names = nullptr;
+		int num_layers = 0;
+		const char* err = nullptr;
+		int ret = EXRLayers(filename, &layer_names, &num_layers, &err);
+
+		if (err) {
+			fprintf(stderr, "EXR error = %s\n", err);
+		}
+
+		if (ret != 0) {
+			fprintf(stderr, "Load EXR err: %s\n", err);
+			return false;
+		}
+		if (num_layers > 0)
+		{
+			fprintf(stdout, "EXR Contains %i Layers\n", num_layers);
+			for (int i = 0; i < (int)num_layers; ++i) {
+				fprintf(stdout, "Layer %i : %s\n", i + 1, layer_names[i]);
+			}
+		}
+		free(layer_names);
+		return true;
+	}
+
+	void LoadEXRTexture(const std::string& dir, const std::string& name) {
+		if (g_textureIndexMap.find(name) != g_textureIndexMap.end())
+			return;
+
+		TextureData data = DecodeEXRTexture(dir, name);
+		Texture texture(dir, name, data.type);
+		texture.m_format = data.format;
+		texture.m_internalFormat = data.internalFormat;
+		texture.m_numChannels = data.channels;
+		texture.m_width = data.width;
+		texture.m_height = data.height;
+
+		texture.AllocateMemoryEXR(data);
+
+		g_textures.push_back(texture);
+		g_textureIndexMap[name] = g_textures.size() - 1;
 	}
 }

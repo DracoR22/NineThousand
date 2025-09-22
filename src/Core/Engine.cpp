@@ -101,13 +101,21 @@ namespace Engine {
 		AudioManager::LoadAudio("slosh3.wav");
 		AudioManager::LoadAudio("slosh4.wav");
 		AudioManager::LoadAudio("BulletCasingBounce.wav");
+		AudioManager::LoadAudio("Flesh_Bloody_Break.wav");
 
 		// fonts
 		Text2D::LoadFont("resources/fonts/sans.fnt");
 		AssetManager::LoadTexture("resources/fonts", "sans.png", aiTextureType_DIFFUSE);
 
-		// hdr
-		AssetManager::LoadHDRTexture("resources/hdr", "newport_loft.hdr");
+		// exr
+		AssetManager::LoadEXRTexture("resources/exr", "blood_pos4.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_pos6.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_pos7.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_pos9.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_norm4.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_norm6.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_norm7.exr");
+		AssetManager::LoadEXRTexture("resources/exr", "blood_norm9.exr");
 
 		// textures
 		AssetManager::LoadAllTexturesAsync();
@@ -124,6 +132,11 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Ceiling_Light", "resources/models/CeilingLamp.obj");
 		AssetManager::LoadSkinnedModel("Bullet_Case_9mm", "resources/models/Bullet_Case_9mm.obj");
 		AssetManager::LoadSkinnedModel("Bullet_Case_Rifle", "resources/models/Bullet_Case_Rifle.obj");
+		AssetManager::LoadSkinnedModel("blood_mesh4", "resources/models/blood_mesh4.obj");
+		AssetManager::LoadSkinnedModel("blood_mesh6", "resources/models/blood_mesh6.obj");
+		AssetManager::LoadSkinnedModel("blood_mesh7", "resources/models/blood_mesh7.obj");
+		AssetManager::LoadSkinnedModel("blood_mesh9", "resources/models/blood_mesh9.obj");
+
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;
 

@@ -141,6 +141,7 @@ namespace OpenGLRenderer {
 		BeginMainPass();
 		AnimationPass();
 		LightingPass();
+		BloodSplatterPass();
 		WaterPass();
 		CubeMapPass();
 		DebugPass();
@@ -175,6 +176,7 @@ namespace OpenGLRenderer {
 		g_Shaders["Bloom"].load("solid_color.vert", "bloom.frag");
 		g_Shaders["BlurHorizontal"].load("blur.vert", "blur_horizontal.frag");
 		g_Shaders["BlurVertical"].load("blur.vert", "blur_vertical.frag");
+		g_Shaders["BloodSplatter"].load("blood_splatter.vert", "blood_splatter.frag");
 	}
 
 	void UpdateSSBOS() {
