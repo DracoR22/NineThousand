@@ -7,13 +7,10 @@
 #include "./RigidStatic.h"
 #include "./RigidDynamic.h"
 #include "./CharacterController.h"
+#include "./Ragdoll.h"
 #include "../Utils/Utils.h"
 #include "../Common/Enums.hpp"
-
-struct PhysicsTransformData {
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-};
+#include "../Common/Types.hpp"
 
 struct PhysicsUserData {
     uint64_t objectId;
@@ -37,13 +34,6 @@ namespace Physics {
     void BeginFrame();
     void Simulate(double dt);
 
-    // Create
-    PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass);
-    PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass);
-    PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents);
-
-    PhysicsTransformData GetActorTransform(const physx::PxRigidActor* actor);
-
     // Character Controller
     uint64_t CreateCharacterController(uint64_t objectId, const glm::vec3& position, float height, ObjectType objectType);
     void MoveCharacterController(uint64_t physicsId, const glm::vec3& direction);
@@ -54,7 +44,9 @@ namespace Physics {
 
     // Rigid Dynamics
     RigidDynamic* GetRigidDynamicById(uint64_t id);
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque);
+    std::unordered_map<uint64_t, RigidDynamic>& GetRigidDynamics();
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque, uint64_t objectId, ObjectType objectType);
+    uint64_t CreateRigidDynamicFromPxShape(PxShape* pxShape, glm::mat4 initialPose, glm::mat4 shapeOffsetMatrix);
     uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque);
     void RemoveRigidDynamic(uint64_t id);
     void MarkRigidDynamicForRemoval(uint64_t id);
@@ -68,6 +60,11 @@ namespace Physics {
     std::unordered_map<uint64_t, RigidStatic>& GetRigidStaticsMap();
     void SetRigidStaticGlobalPose(uint64_t id, glm::mat4 transformMatrix);
 
+    // Ragdolls
+    uint64_t CreateMannequinRagdoll();
+    Ragdoll* GetRagdollById(uint64_t id);
+
+    // Utils
     PhysicsRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength);
     glm::vec3 PxVec3toGlmVec3(PxVec3 vec);
     glm::quat PxQuatToGlmQuat(PxQuat quat);

@@ -16,6 +16,52 @@ void RigidDynamic::UpdateMassAndInertia(float mass) {
 	PxRigidBodyExt::updateMassAndInertia(*m_pxRigidDynamic, mass);
 }
 
+void RigidDynamic::ActivatePhysics() {
+	if (m_pxRigidDynamic) {
+		m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
+		m_pxRigidDynamic->wakeUp();
+	}
+}
+
+void RigidDynamic::SetGlobalPoseFromTransform(PhysicsTransformData& transform) {
+	PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
+	PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
+	PxTransform pxTransform(pxPos, pxRot);
+
+	if (m_pxRigidDynamic) {
+		m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+		m_pxRigidDynamic->setKinematicTarget(pxTransform);
+	}
+}
+
+void RigidDynamic::SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 modelMatrix) {
+	if (!animator || !m_pxRigidDynamic) return;
+
+	std::string targetBoneName = "mixamorig1:Head";
+	std::map<std::string, BoneInfo> boneIDMap = animator->GetCurrentAnimation()->GetBoneIDMap();
+
+	if (boneIDMap.find(targetBoneName) == boneIDMap.end()) {
+		std::cerr << "Bone " << targetBoneName << " not found!\n";
+		return;
+	}
+
+	int boneIndex = boneIDMap[targetBoneName].id;
+
+	glm::mat4 boneMatrix = animator->GetGlobalBoneMatrices()[boneIndex];
+
+	glm::mat4 boneWorldMatrix = modelMatrix * boneMatrix;
+
+	glm::vec3 position = glm::vec3(boneWorldMatrix[3]);
+	glm::quat rotation = glm::quat_cast(boneWorldMatrix); 
+
+	PxVec3 pxPos(position.x, position.y, position.z);
+	PxQuat pxRot(rotation.x, rotation.y, rotation.z, rotation.w);
+	PxTransform pxTransform(pxPos, pxRot);
+
+	m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
+	m_pxRigidDynamic->setKinematicTarget(pxTransform);
+}
+
 glm::vec3 RigidDynamic::GetCurrentPosition() {
 	if (m_pxRigidDynamic) {
 		PxTransform transform = m_pxRigidDynamic->getGlobalPose();

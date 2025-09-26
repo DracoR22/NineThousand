@@ -75,9 +75,9 @@ void OpenGLRenderer::AnimationPass() {
 		glm::vec3 rotationRadians = glm::radians(mannequinObject.GetRotationEuler());
 		glm::mat4 rotationMatrix = glm::toMat4(glm::quat(rotationRadians));
 		model *= rotationMatrix;
-		model = glm::scale(model, glm::vec3(0.045f));
-		animationShader->setMat4("model", model);
-		animationShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+		model = glm::scale(model, glm::vec3(0.042f));
+		animationShader->setMat4("model", mannequinObject.GetModelMatrix());
+		animationShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(mannequinObject.GetModelMatrix()))));
 		for (Mesh& mesh : mannequinModel->m_meshes) {
 			Material* meshMaterial = AssetManager::GetMaterialByName("Stalker");
 			Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);

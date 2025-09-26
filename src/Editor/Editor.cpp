@@ -30,6 +30,9 @@ namespace Editor {
 		}
 
 		if (Mouse::ButtonJustPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+			const float maxRayDistance = 1000.0f;
+			PhysicsRayResult rayResult = Physics::CastPhysXRay(g_rayOrigin, g_rayDirection, maxRayDistance);
+
 			PxRaycastBuffer hit;
 			PxQueryFilterData filterData = PxQueryFilterData(PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC);
 

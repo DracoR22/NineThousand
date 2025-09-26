@@ -15,6 +15,7 @@ public:
 	void SetPxController(PxController* pxController);
 	void SetVerticalVelocity(float jumpVelocity);
 	void Move(const glm::vec3& direction);
+	void SetPosition(glm::vec3 position);
 
 	PxController* GetPxController();
 private:

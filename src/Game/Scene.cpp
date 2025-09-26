@@ -94,6 +94,7 @@ namespace Scene {
 
 	void RemoveBulletCaseObjectByIndex(int index) {
 		if (index < g_bulletCaseObjects.size()) {
+			Physics::MarkRigidDynamicForRemoval(g_bulletCaseObjects[index].GetPhysicsId());
 			g_bulletCaseObjects.erase(g_bulletCaseObjects.begin() + index);
 		}
 	}

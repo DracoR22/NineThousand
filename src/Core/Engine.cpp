@@ -152,7 +152,7 @@ namespace Engine {
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
-		Model* stalkerModel = AssetManager::GetModelByName("Mannequin");
+		Model* mannequinModel = AssetManager::GetModelByName("Mannequin");
 
 		AssetManager::LoadAnimation("AKS74U_Idle", "resources/animations/AKS74U_Idle.fbx", aks74uModel);
 		AssetManager::LoadAnimation("AKS74U_Reload", "resources/animations/AKS74U_Reload.fbx", aks74uModel);
@@ -196,7 +196,8 @@ namespace Engine {
 		AssetManager::LoadAnimation("P90_ADS_Idle", "resources/animations/P90_ADS_Idle.fbx", p90Model);
 		AssetManager::LoadAnimation("P90_ADS_Fire", "resources/animations/P90_ADS_Fire0.fbx", p90Model);
 	
-		AssetManager::LoadAnimation("Mannequin_Run", "resources/models/Mannequin.fbx", stalkerModel);
+		AssetManager::LoadAnimation("Mannequin_Run", "resources/models/Mannequin.fbx", mannequinModel);
+		AssetManager::LoadAnimation("Mannequin_Death", "resources/animations/Mannequin_Death.fbx", mannequinModel);
 
 		AssetManager::LoadAnimator("GlockAnimator", AssetManager::GetAnimationByName("Glock_Idle"));
 		AssetManager::LoadAnimator("P90Animator", AssetManager::GetAnimationByName("P90_Idle"));

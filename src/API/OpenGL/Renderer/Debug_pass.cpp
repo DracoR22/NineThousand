@@ -72,57 +72,82 @@ void OpenGLRenderer::DebugPass() {
 		solidColorShader->setMat4("projection", camera->GetProjectionMatrix());
 		solidColorShader->setVec3("lightColor", 0.0f, 1.0f, 0.9f);
 
-		for (GameObject& gameObject : Scene::GetGameObjects()) {
-			if (gameObject.GetPhysicsId() != 0) {
-				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
-				RigidStatic* rigidStatic = Physics::GetRigidStaticById(gameObject.GetPhysicsId());
 
-				if (rigidStatic) {
-					PxBounds3 bounds = rigidStatic->GetPxRigidStatic()->getWorldBounds();
-					PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
-					PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+		//RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(gameObject.GetPhysicsId());
+		//RigidStatic* rigidStatic = Physics::GetRigidStaticById(gameObject.GetPhysicsId());
 
-					glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
-					glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+		//if (rigidStatic) {
+		//	PxBounds3 bounds = rigidStatic->GetPxRigidStatic()->getWorldBounds();
+		//	PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+		//	PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
 
-					solidColorShader->setMat4("model", gameObject.GetModelMatrix());
+		//	glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+		//	glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
+		//	solidColorShader->setMat4("model", gameObject.GetModelMatrix());
 
-					for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
-						glBindVertexArray(debugModel->m_meshes[i].GetVAO());
-						glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
-					}
-				}
+		//	Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
 
-				if (rigidDynamic) {
-					PxBounds3 bounds = rigidDynamic->GetPxRigidDynamic()->getWorldBounds();
+		//	for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+		//		glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+		//		glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+		//	}
+		//}
 
-					PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
-					PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+		//if (rigidDynamic) {
+		//	PxBounds3 bounds = rigidDynamic->GetPxRigidDynamic()->getWorldBounds();
 
-					glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
-					glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+		//	PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+		//	PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
 
-					PxTransform physxTransform = rigidDynamic->GetPxRigidDynamic()->getGlobalPose();
-					glm::vec3 position = Physics::PxVec3toGlmVec3(physxTransform.p);
-					glm::quat rotation = Physics::PxQuatToGlmQuat(physxTransform.q);
+		//	glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+		//	glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
 
-					glm::mat4 fixOrientation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1, 0, 0));
-					glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
-					modelMatrix *= glm::mat4_cast(rotation);
-					modelMatrix *= fixOrientation;
-					modelMatrix = glm::scale(modelMatrix, glmExtents * 2.0f); // Multiply by 2 to get full size
+		//	PxTransform physxTransform = rigidDynamic->GetPxRigidDynamic()->getGlobalPose();
+		//	glm::vec3 position = Physics::PxVec3toGlmVec3(physxTransform.p);
+		//	glm::quat rotation = Physics::PxQuatToGlmQuat(physxTransform.q);
 
-					solidColorShader->setMat4("model", modelMatrix);
+		//	glm::mat4 fixOrientation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1, 0, 0));
+		//	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
+		//	modelMatrix *= glm::mat4_cast(rotation);
+		//	modelMatrix *= fixOrientation;
+		//	modelMatrix = glm::scale(modelMatrix, glmExtents * 2.0f); // Multiply by 2 to get full size
 
-					Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
+		//	solidColorShader->setMat4("model", modelMatrix);
 
-					for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
-						glBindVertexArray(debugModel->m_meshes[i].GetVAO());
-						glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
-					}
-				}
+		//	Model* debugModel = AssetManager::GetModelByName(gameObject.GetModelName());
+
+		//	for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+		//		glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+		//		glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
+		//	}
+		//}
+		for (auto& [key, value] : Physics::GetRigidDynamics()) {
+			PxBounds3 bounds = value.GetPxRigidDynamic()->getWorldBounds();
+
+			PxVec3 center = (bounds.minimum + bounds.maximum) * 0.5f;
+			PxVec3 extents = (bounds.maximum - bounds.minimum) * 0.5f;
+
+			glm::vec3 glmCenter = Physics::PxVec3toGlmVec3(center);
+			glm::vec3 glmExtents = Physics::PxVec3toGlmVec3(extents);
+
+			PxTransform physxTransform = value.GetPxRigidDynamic()->getGlobalPose();
+			glm::vec3 position = Physics::PxVec3toGlmVec3(physxTransform.p);
+			glm::quat rotation = Physics::PxQuatToGlmQuat(physxTransform.q);
+
+			glm::mat4 fixOrientation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1, 0, 0));
+			glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), position);
+			modelMatrix *= glm::mat4_cast(rotation);
+			modelMatrix *= fixOrientation;
+			modelMatrix = glm::scale(modelMatrix, glmExtents * 2.0f); // Multiply by 2 to get full size
+
+			solidColorShader->setMat4("model", modelMatrix);
+
+			Model* debugModel = AssetManager::GetModelByName("Cube");
+
+			for (unsigned int i = 0; i < debugModel->m_meshes.size(); i++) {
+				glBindVertexArray(debugModel->m_meshes[i].GetVAO());
+				glDrawElements(GL_TRIANGLES, debugModel->m_meshes[i].GetIndices().size(), GL_UNSIGNED_INT, 0);
 			}
 		}
 

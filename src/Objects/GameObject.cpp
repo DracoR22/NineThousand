@@ -78,7 +78,9 @@ GameObject::GameObject(GameObjectCreateInfo& createInfo) {
 			createInfo.size * 0.5f,
 			mass,
 			initialForce,
-			initialTorque
+			initialTorque,
+			0,
+			ObjectType::DYNAMIC
 		);
 
 		m_physicsId = physicsId;

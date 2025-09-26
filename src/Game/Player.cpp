@@ -131,7 +131,7 @@ void Player::UpdateAudio(double deltaTime) {
 
         if (m_footstepTimer <= 0.0f) {
             int randAudio = std::rand() % sloshFootSteps.size();
-            AudioManager::PlayAudio(sloshFootSteps[randAudio], 0.5f, 1.0f);
+            AudioManager::PlayAudio(sloshFootSteps[randAudio], 0.7f, 1.0f);
 
             m_footstepTimer = m_footstepInterval;
 
@@ -456,8 +456,6 @@ void Player::ReloadWeapon() {
         int randAudio = std::rand() % weaponInfo->audioFiles.fire.size();
         AudioManager::PlayAudio(weaponInfo->audioFiles.fire[randAudio], 1.0f, 1.0f);
 
-      
-
         m_firedThisFrame = true;
 
         // spawn muzzle flash
@@ -652,6 +650,7 @@ void Player::SpawnBulletCase() {
 
     for (int i = 0; i < Scene::GetBulletCaseObjects().size(); i++) {
         Scene::RemoveBulletCaseObjectByIndex(i);
+
     }
 
     BulletCaseCreateInfo createInfo;
@@ -707,7 +706,9 @@ void Player::SpawnBulletCase() {
         glm::vec3(0.07f) * 0.5f,
         caseMass,
         initialForce,
-        worldTorque
+        worldTorque,
+        0,
+        ObjectType::DYNAMIC
     );
 
     createInfo.physicsId = physicsId;

@@ -4,6 +4,8 @@
 #include <PxPhysicsAPI.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "../Common/Types.hpp"
+#include "../Animation/Animator.hpp"
 
 using namespace physx;
 
@@ -14,6 +16,10 @@ public:
 
 	void SetPxRigidDynamic(PxRigidDynamic* rigidDynamic);
 	void UpdateMassAndInertia(float mass);
+	void SetGlobalPoseFromTransform(PhysicsTransformData& transform);
+	void SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 modelMatrix);
+
+	void ActivatePhysics();
 
 	glm::vec3 GetCurrentPosition();
 	glm::quat GetCurrentRotation();

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/glm.hpp>
 
 #define MAX_LIGHTS 20
 
@@ -29,4 +32,9 @@ struct GPULight {
 	float _padding0;
 	float _padding1;
 	float _padding2;
+};
+
+struct PhysicsTransformData {
+	glm::vec3 position = glm::vec3(0.0f);
+	glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 };

@@ -7,6 +7,7 @@
 #include <assimp/Importer.hpp>
 #include "Bone.hpp"
 #include "Animation.hpp"
+#include <glm/gtx/matrix_decompose.hpp>
 
 class Animator
 {
@@ -18,9 +19,12 @@ public:
 		m_CurrentAnimation = animation;
 
 		m_FinalBoneMatrices.reserve(100);
+		m_GlobalBoneMatrices.reserve(100);
 
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 100; i++) {
 			m_FinalBoneMatrices.push_back(glm::mat4(1.0f));
+			m_GlobalBoneMatrices.push_back(glm::mat4(1.0f));
+		}
 	}
 
 	void UpdateAnimation(float dt)
@@ -101,6 +105,7 @@ public:
 		const auto& boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
 		if (boneInfoMap.find(nodeName) != boneInfoMap.end()) {
 			int index = boneInfoMap.at(nodeName).id;
+			m_GlobalBoneMatrices[index] = globalTransformation;
 			m_FinalBoneMatrices[index] = globalTransformation * boneInfoMap.at(nodeName).offset;
 		}
 
@@ -108,8 +113,38 @@ public:
 			CalculateBoneTransform(&node->children[i], globalTransformation);
 	}
 
-	std::vector<glm::mat4> GetFinalBoneMatrices() {
+	void OverrideBoneTransform(const std::string& boneName, const glm::mat4& worldBoneMatrix, const glm::mat4& modelMatrix) {
+		if (!m_CurrentAnimation) return;
+
+		const auto& boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
+		auto it = boneInfoMap.find(boneName);
+		if (it == boneInfoMap.end()) {
+			std::cerr << "Animator::OverrideBoneTransform() - Bone not found: " << boneName << "\n";
+			return;
+		}
+
+		int index = it->second.id;
+
+		glm::vec3 translation, skew;
+		glm::vec4 perspective;
+		glm::vec3 scale;
+		glm::quat rotation;
+		glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+
+		glm::mat4 modelNoScale = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation);
+
+		glm::mat4 modelSpaceBone = glm::inverse(modelNoScale) * worldBoneMatrix;
+
+		m_GlobalBoneMatrices[index] = modelSpaceBone;
+		m_FinalBoneMatrices[index] = modelSpaceBone * it->second.offset;
+	}
+
+	std::vector<glm::mat4>& GetFinalBoneMatrices() {
 		return m_FinalBoneMatrices;
+	}
+
+	std::vector<glm::mat4>& GetGlobalBoneMatrices() {
+		return m_GlobalBoneMatrices;
 	}
 
 	Animation* GetCurrentAnimation() const {
@@ -122,5 +157,6 @@ private:
 	float m_AnimationSpeed = 1.0f;
 	bool m_AnimationFinished = false;
 	std::vector<glm::mat4> m_FinalBoneMatrices;
+	std::vector<glm::mat4> m_GlobalBoneMatrices;
 	Animation* m_CurrentAnimation;
 };

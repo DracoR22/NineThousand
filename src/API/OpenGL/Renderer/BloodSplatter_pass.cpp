@@ -19,7 +19,6 @@ namespace OpenGLRenderer {
 		Texture* bloodNorm7Texture = AssetManager::GetTextureByName("blood_pos7.exr");
 		Texture* bloodNorm9Texture = AssetManager::GetTextureByName("blood_pos9.exr");
 
-		std::vector<BloodSplatterObject>& bloodSplatterObjects = Scene::GetBloodSplatterObjects();
 		Shader* bloodSplatterShader = GetShaderByName("BloodSplatter");
 
 		bloodSplatterShader->activate();
@@ -27,7 +26,7 @@ namespace OpenGLRenderer {
 		bloodSplatterShader->setMat4("projection", camera->GetProjectionMatrix());
 		bloodSplatterShader->setInt("u_PosTex", 0);
 		bloodSplatterShader->setInt("u_NormTex", 1);
-		for (BloodSplatterObject& bloodObject : bloodSplatterObjects) {
+		for (BloodSplatterObject& bloodObject : Scene::GetBloodSplatterObjects()) {
 			bloodSplatterShader->setFloat("u_time", bloodObject.GetLifeTime());
 			bloodSplatterShader->setMat4("model", bloodObject.GetModelMatrix());
 			bloodSplatterShader->setMat4("inverseModel", glm::inverse(bloodObject.GetModelMatrix()));

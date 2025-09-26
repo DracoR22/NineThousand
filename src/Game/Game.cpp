@@ -11,7 +11,7 @@ namespace Game {
 
 		CreatePlayers();
 
-		Scene::AddMannequin(glm::vec3(-5.0f, 5.0f, 37.0f));
+		Scene::AddMannequin(glm::vec3(-5.0f, 1.2f, 37.0f));
 	}
 
 	void Update(double deltaTime) {
@@ -288,13 +288,15 @@ namespace Game {
 
 				if (physicsType == PhysicsType::RIGID_DYNAMIC) {
 					float strength = 5000.0f;
+					
 					Physics::AddForceToRigidDynamic(physicsId, cameraDir, strength);
 				}
 
 				if (objectType == ObjectType::MANNEQUIN) {
-					std::cout << "HIT MANNEQUIN!!!" << std::endl;
 					Mannequin* mannequin = Scene::GetMannequinById(objectId);
-					mannequin->TakeDamage(weaponDamage, player.GetPlayerId());
+					if (mannequin) {
+						mannequin->TakeDamage(weaponDamage, player.GetPlayerId());
+					}
 
 					Scene::AddBloodSplatterObject(rayResult.hitPosition, -rayResult.rayDirection);
 				}

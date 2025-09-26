@@ -29,6 +29,10 @@ void CharacterController::Move(const glm::vec3& direction) {
 	}
 }
 
+void CharacterController::SetPosition(glm::vec3 position) {
+	m_pxController->setPosition(PxExtendedVec3(position.x, position.y, position.z));
+}
+
 PxController* CharacterController::GetPxController() {
 	if (m_pxController) {
 		return m_pxController;

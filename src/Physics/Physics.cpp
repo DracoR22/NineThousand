@@ -12,11 +12,10 @@ namespace Physics {
     PxMaterial* g_defaultMaterial = nullptr;
     PxControllerManager* g_controllerManager = nullptr;
 
-    PxRigidDynamic* g_cubeActor = nullptr;
-
     std::unordered_map<uint64_t, RigidStatic> g_rigidStatics;
     std::unordered_map<uint64_t, RigidDynamic> g_rigidDynamics;
     std::unordered_map<uint64_t, CharacterController> g_charaterControllers;
+    std::unordered_map<uint64_t, Ragdoll> g_ragdolls;
 
     double g_fixedDeltaTime = 1.0 / 60.0;
     double g_accumulatedTime = 0.0;
@@ -74,56 +73,9 @@ namespace Physics {
         }
     }
 
-    PxRigidDynamic* CreateDynamicBox(const PxVec3& position, const PxVec3& halfExtents, PxReal mass) {
-        PxTransform transform(position);
-        PxRigidDynamic* cubeActor = g_physics->createRigidDynamic(transform);
-
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
-        cubeActor->attachShape(*shape);
-        shape->release();
-
-        PxRigidBodyExt::updateMassAndInertia(*cubeActor, mass);
-        g_scene->addActor(*cubeActor);
-
-        g_cubeActor = cubeActor;
-
-        return cubeActor;
-    }
-
-    PxRigidStatic* CreateStaticBox(const PxVec3& position, const PxVec3& halfExtents) {
-        PxTransform transform(position);
-
-        PxRigidStatic* staticActor = g_physics->createRigidStatic(transform);
-
-        PxShape* shape = g_physics->createShape(PxBoxGeometry(halfExtents), *g_defaultMaterial);
-        staticActor->attachShape(*shape);
-        shape->release();
-
-        g_scene->addActor(*staticActor);
-
-        return staticActor;
-    }
-
-    PxRigidDynamic* CreateDynamicCapsule(const PxVec3& position, PxReal halfHeight, PxReal radius, PxReal mass) {
-        PxTransform transform(position);
-
-        PxRigidDynamic* capsuleActor = g_physics->createRigidDynamic(transform);
-
-        PxShape* shape = g_physics->createShape(PxCapsuleGeometry(radius, halfHeight), *g_defaultMaterial);
-        capsuleActor->attachShape(*shape);
-
-        shape->release();
-
-        PxRigidBodyExt::updateMassAndInertia(*capsuleActor, mass);
-
-        g_scene->addActor(*capsuleActor);
-
-        return capsuleActor;
-    }
-
     uint64_t CreateCharacterController(uint64_t objectId, const glm::vec3& position, float height, ObjectType objectType) {
         PxCapsuleControllerDesc desc;
-        desc.radius = 0.5f;
+        desc.radius = 0.3f;
         desc.height = height - 2.0f * desc.radius;
         desc.material = g_defaultMaterial;
         desc.position = PxExtendedVec3(position.x, position.y, position.z);
@@ -195,7 +147,7 @@ namespace Physics {
         return g_charaterControllers;
     }
 
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque, uint64_t objectId, ObjectType objectType) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
@@ -207,6 +159,7 @@ namespace Physics {
         PxTransform shapeOffset(PxVec3(0, pxHalfExtents.y, 0));
         PxShape* shape = g_physics->createShape(PxBoxGeometry(pxHalfExtents), *g_defaultMaterial);
         shape->setLocalPose(shapeOffset);
+        shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
         pxRigidDynamic->attachShape(*shape);
         shape->release();
 
@@ -222,9 +175,9 @@ namespace Physics {
 
         // add user data
         PhysicsUserData physicsUserData;
-        physicsUserData.objectId = 0;
+        physicsUserData.objectId = objectId;
         physicsUserData.physicsType = PhysicsType::RIGID_DYNAMIC;
-        physicsUserData.objectType = ObjectType::DYNAMIC;
+        physicsUserData.objectType = objectType;
         physicsUserData.physicsId = physicsId;
         pxRigidDynamic->userData = new PhysicsUserData(physicsUserData);
 
@@ -236,12 +189,34 @@ namespace Physics {
         return physicsId;
     }
 
+    uint64_t CreateRigidDynamicFromPxShape(PxShape* pxShape, glm::mat4 initialPose, glm::mat4 shapeOffsetMatrix) {
+        PxTransform pxTransform = PxTransform(GlmMat4ToPxMat44(initialPose));
+
+        PxRigidDynamic* pxRigidDynamic = g_physics->createRigidDynamic(pxTransform);
+        pxRigidDynamic->attachShape(*pxShape);
+        g_scene->addActor(*pxRigidDynamic);
+
+        PxMat44 localShapeMatrix = GlmMat4ToPxMat44(shapeOffsetMatrix);
+        PxTransform localShapeTransform(localShapeMatrix);
+        pxShape->setLocalPose(localShapeTransform);
+
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        RigidDynamic& rigidDynamic = g_rigidDynamics[physicsId];
+        rigidDynamic.SetPxRigidDynamic(pxRigidDynamic);
+
+        return physicsId;
+    }
+
     RigidDynamic* GetRigidDynamicById(uint64_t id) {
         auto it = g_rigidDynamics.find(id);
         if (it != g_rigidDynamics.end()) {
             return &it->second;
         }
         return nullptr;
+    }
+
+    std::unordered_map<uint64_t, RigidDynamic>& GetRigidDynamics() {
+        return g_rigidDynamics;
     }
 
     uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
@@ -359,10 +334,12 @@ namespace Physics {
 
         if (rigidDynamic) {
             PxRigidDynamic* pxRigidDynamic = rigidDynamic->GetPxRigidDynamic();
-            PxVec3 pxDirection = PxVec3(direction.x, direction.y, direction.z);
-            PxVec3 pxNormalized = pxDirection.getNormalized();
+            if (!(pxRigidDynamic->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)) {
+                PxVec3 pxDirection = PxVec3(direction.x, direction.y, direction.z);
+                PxVec3 pxNormalized = pxDirection.getNormalized();
 
-            pxRigidDynamic->addForce(pxNormalized * strength, physx::PxForceMode::eIMPULSE);
+                pxRigidDynamic->addForce(pxNormalized * strength, physx::PxForceMode::eIMPULSE);
+            }
         }
     }
 
@@ -463,6 +440,76 @@ namespace Physics {
         pxRigidStatic->setGlobalPose(pxTransform);
     }
 
+    uint64_t CreateMannequinRagdoll() {
+        std::vector<std::string> boneNames;
+
+        boneNames.push_back("mixamorig1:Head");
+        boneNames.push_back("mixamorig1:Neck");
+        boneNames.push_back("mixamorig1:Spine2");
+        boneNames.push_back("mixamorig1:Spine1");
+        boneNames.push_back("mixamorig1:Spine");
+        boneNames.push_back("mixamorig1:Hips");
+
+        // connects with neck
+        boneNames.push_back("mixamorig1:LeftShoulder");
+        boneNames.push_back("mixamorig1:LeftArm");
+        boneNames.push_back("mixamorig1:LeftForeArm");
+        boneNames.push_back("mixamorig1:LeftHand");
+
+        // connects with neck
+        boneNames.push_back("mixamorig1:RightShoulder");
+        boneNames.push_back("mixamorig1:RightArm");
+        boneNames.push_back("mixamorig1:RightForeArm");
+        boneNames.push_back("mixamorig1:RightHand");
+
+        // connects with hips
+        boneNames.push_back("mixamorig1:LeftUpLeg");
+        boneNames.push_back("mixamorig1:LeftLeg");
+        boneNames.push_back("mixamorig1:LeftFoot");
+        boneNames.push_back("mixamorig1:LeftToeBase");
+        boneNames.push_back("mixamorig1:LeftToe_End");
+        //boneNames.push_back("mixamorig1:LeftToe_End_end");
+
+        // connects with hips
+        boneNames.push_back("mixamorig1:RightUpLeg");
+        boneNames.push_back("mixamorig1:RightLeg");
+        boneNames.push_back("mixamorig1:RightFoot");
+        boneNames.push_back("mixamorig1:RightToeBase");
+        boneNames.push_back("mixamorig1:RightToe_End");
+        //boneNames.push_back("mixamorig1:RightToe_End_end");
+
+        uint64_t physicsId = Utils::GenerateUniqueID();
+        Ragdoll& ragdoll = g_ragdolls[physicsId];
+
+        for (std::string& boneName : boneNames) {
+            glm::vec3 boxExtents = glm::vec3(0.6f);
+            PxBoxGeometry geom = PxBoxGeometry(boxExtents.x * 0.5f, boxExtents.y * 0.5f, boxExtents.z * 0.5f);
+            PxShape* pxShape = g_physics->createShape(geom, *g_defaultMaterial, true);
+            //pxShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+
+            uint64_t rigidDynamicId = CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), glm::mat4(1.0f));
+
+            RigidComponent rigidComponent;
+            rigidComponent.boneName = boneName;
+            rigidComponent.id = rigidDynamicId;
+            rigidComponent.mass = 500.0f;
+
+            ragdoll.SetRigidDynamicId(rigidDynamicId);
+            ragdoll.SetRigidComponent(rigidComponent);
+        }
+
+        return physicsId;
+    }
+
+    Ragdoll* GetRagdollById(uint64_t id) {
+        auto it = g_ragdolls.find(id);
+        if (it != g_ragdolls.end()) {
+            return &it->second;
+        }
+
+        return nullptr;
+    }
+
     PhysicsRayResult CastPhysXRay(glm::vec3 rayOrigin, glm::vec3 rayDirection, float rayLength) {
         PxVec3 origin(rayOrigin.x, rayOrigin.y, rayOrigin.z);
         PxVec3 direction(rayDirection.x, rayDirection.y, rayDirection.z);
@@ -512,17 +559,6 @@ namespace Physics {
         return g_scene;
     }
 
-    PhysicsTransformData GetActorTransform(const physx::PxRigidActor* actor) {
-        PhysicsTransformData transformData;
-
-        if (!actor) return transformData;
-
-        const physx::PxTransform& transform = actor->getGlobalPose();
-        transformData.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
-        transformData.rotation = glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z);
-
-        return transformData;
-    }
 
     double GetInterpolationAlpha() {
         return g_accumulatedTime / g_fixedDeltaTime;
