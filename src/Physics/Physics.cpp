@@ -20,6 +20,8 @@ namespace Physics {
     double g_fixedDeltaTime = 1.0 / 60.0;
     double g_accumulatedTime = 0.0;
 
+    std::unordered_map<std::string, RigidComponent> g_ragdollRigidComponents;
+
     void Init() {
         g_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, g_allocator, g_errorCallback);
         g_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *g_foundation, PxTolerancesScale(), true);
@@ -147,7 +149,7 @@ namespace Physics {
         return g_charaterControllers;
     }
 
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque, uint64_t objectId, ObjectType objectType) {
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque) {
         PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
         PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
         PxTransform pxTransform(pxPos, pxRot);
@@ -175,9 +177,9 @@ namespace Physics {
 
         // add user data
         PhysicsUserData physicsUserData;
-        physicsUserData.objectId = objectId;
+        physicsUserData.objectId = 0;
         physicsUserData.physicsType = PhysicsType::RIGID_DYNAMIC;
-        physicsUserData.objectType = objectType;
+        physicsUserData.objectType = ObjectType::DYNAMIC;
         physicsUserData.physicsId = physicsId;
         pxRigidDynamic->userData = new PhysicsUserData(physicsUserData);
 
@@ -443,6 +445,7 @@ namespace Physics {
     uint64_t CreateMannequinRagdoll() {
         std::vector<std::string> boneNames;
 
+        boneNames.push_back("mixamorig1:HeadTop_End");
         boneNames.push_back("mixamorig1:Head");
         boneNames.push_back("mixamorig1:Neck");
         boneNames.push_back("mixamorig1:Spine2");
@@ -465,18 +468,16 @@ namespace Physics {
         // connects with hips
         boneNames.push_back("mixamorig1:LeftUpLeg");
         boneNames.push_back("mixamorig1:LeftLeg");
-        boneNames.push_back("mixamorig1:LeftFoot");
-        boneNames.push_back("mixamorig1:LeftToeBase");
-        boneNames.push_back("mixamorig1:LeftToe_End");
-        //boneNames.push_back("mixamorig1:LeftToe_End_end");
+      /*  boneNames.push_back("mixamorig1:LeftFoot");
+        boneNames.push_back("mixamorig1:LeftToeBase");*/
+        //boneNames.push_back("mixamorig1:LeftToe_End");
 
         // connects with hips
         boneNames.push_back("mixamorig1:RightUpLeg");
         boneNames.push_back("mixamorig1:RightLeg");
-        boneNames.push_back("mixamorig1:RightFoot");
-        boneNames.push_back("mixamorig1:RightToeBase");
-        boneNames.push_back("mixamorig1:RightToe_End");
-        //boneNames.push_back("mixamorig1:RightToe_End_end");
+       /* boneNames.push_back("mixamorig1:RightFoot");
+        boneNames.push_back("mixamorig1:RightToeBase");*/
+        //boneNames.push_back("mixamorig1:RightToe_End");
 
         uint64_t physicsId = Utils::GenerateUniqueID();
         Ragdoll& ragdoll = g_ragdolls[physicsId];
@@ -485,7 +486,6 @@ namespace Physics {
             glm::vec3 boxExtents = glm::vec3(0.6f);
             PxBoxGeometry geom = PxBoxGeometry(boxExtents.x * 0.5f, boxExtents.y * 0.5f, boxExtents.z * 0.5f);
             PxShape* pxShape = g_physics->createShape(geom, *g_defaultMaterial, true);
-            //pxShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
 
             uint64_t rigidDynamicId = CreateRigidDynamicFromPxShape(pxShape, glm::mat4(1.0f), glm::mat4(1.0f));
 
@@ -494,9 +494,78 @@ namespace Physics {
             rigidComponent.id = rigidDynamicId;
             rigidComponent.mass = 500.0f;
 
+            g_ragdollRigidComponents[boneName] = rigidComponent;
+
             ragdoll.SetRigidDynamicId(rigidDynamicId);
             ragdoll.SetRigidComponent(rigidComponent);
         }
+
+       std::vector<std::pair<std::string, std::string>> boneHierarchy = {
+        {"mixamorig1:Hips", "mixamorig1:Spine"},
+        {"mixamorig1:Hips", "mixamorig1:LeftUpLeg"},
+        {"mixamorig1:Hips", "mixamorig1:RightUpLeg"},
+
+        {"mixamorig1:Spine", "mixamorig1:Spine1"},
+        {"mixamorig1:Spine1", "mixamorig1:Spine2"},
+
+        {"mixamorig1:Spine2", "mixamorig1:Neck"},
+        {"mixamorig1:Spine2", "mixamorig1:LeftShoulder"},
+        {"mixamorig1:Spine2", "mixamorig1:RightShoulder"},
+
+        {"mixamorig1:Neck", "mixamorig1:Head"},
+
+        {"mixamorig1:LeftShoulder", "mixamorig1:LeftArm"},
+        {"mixamorig1:LeftArm", "mixamorig1:LeftForeArm"},
+        {"mixamorig1:LeftForeArm", "mixamorig1:LeftHand"},
+
+        {"mixamorig1:RightShoulder", "mixamorig1:RightArm"},
+        {"mixamorig1:RightArm", "mixamorig1:RightForeArm"},
+        {"mixamorig1:RightForeArm", "mixamorig1:RightHand"},
+
+        {"mixamorig1:LeftUpLeg", "mixamorig1:LeftLeg"},
+        {"mixamorig1:LeftLeg", "mixamorig1:LeftFoot"},
+        {"mixamorig1:LeftFoot", "mixamorig1:LeftToeBase"},
+        {"mixamorig1:LeftToeBase", "mixamorig1:LeftToe_End"},
+
+        {"mixamorig1:RightUpLeg", "mixamorig1:RightLeg"},
+        {"mixamorig1:RightLeg", "mixamorig1:RightFoot"},
+        {"mixamorig1:RightFoot", "mixamorig1:RightToeBase"},
+        {"mixamorig1:RightToeBase", "mixamorig1:RightToe_End"},
+       };
+
+       for (auto& [parentBone, childBone] : boneHierarchy) {
+           RigidComponent& parentComponent = g_ragdollRigidComponents[parentBone];
+           RigidComponent& childComponent = g_ragdollRigidComponents[childBone];
+
+           RigidDynamic* parentRigidDynamic = GetRigidDynamicById(parentComponent.id);
+           RigidDynamic* childRigidDynamic = GetRigidDynamicById(childComponent.id);
+
+           if (parentRigidDynamic && childRigidDynamic) {
+               PxRigidDynamic* pxParent = parentRigidDynamic->GetPxRigidDynamic();
+               PxRigidDynamic* pxChild = childRigidDynamic->GetPxRigidDynamic();
+
+               if (pxParent && pxChild) {
+                   PxTransform parentPose = pxParent->getGlobalPose();
+                   PxTransform childPose = pxChild->getGlobalPose();
+
+                   PxVec3 jointPosWorld = (parentPose.p + childPose.p) * 0.5f;
+                   PxTransform localParentFrame = PxTransform(parentPose.transformInv(PxTransform(jointPosWorld)));
+                   PxTransform localChildFrame = PxTransform(childPose.transformInv(PxTransform(jointPosWorld)));
+
+                   PxD6Joint* joint = PxD6JointCreate(
+                       *g_physics,
+                       pxParent, localParentFrame,
+                       pxChild, localChildFrame
+                   );
+
+                   joint->setMotion(PxD6Axis::eTWIST, PxD6Motion::eLIMITED);
+                   joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eLIMITED);
+                   joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eLIMITED);
+                   joint->setSwingLimit(PxJointLimitCone(PxPi / 4, PxPi / 4));
+                   joint->setTwistLimit(PxJointAngularLimitPair(-PxPi / 8, PxPi / 8));
+               }
+           }
+       }
 
         return physicsId;
     }

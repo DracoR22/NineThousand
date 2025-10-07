@@ -91,7 +91,7 @@ namespace Game {
 
 		if (equipedWeapon->name == "Glock") {
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F)) {
-				glockAnimator->PlayAnimation(glockDrawAnimation);
+				glockAnimator->PlayAnimation(AssetManager::GetAnimationByName("Glock_Spawn"));
 				drawAnimationFinishTime = 0.0f;
 				isDrawing = true;
 			}

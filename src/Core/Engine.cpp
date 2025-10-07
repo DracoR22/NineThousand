@@ -102,6 +102,7 @@ namespace Engine {
 		AudioManager::LoadAudio("slosh4.wav");
 		AudioManager::LoadAudio("BulletCasingBounce.wav");
 		AudioManager::LoadAudio("Flesh_Bloody_Break.wav");
+		AudioManager::LoadAudio("Blood_Splash.wav");
 
 		// fonts
 		Text2D::LoadFont("resources/fonts/sans.fnt");
@@ -177,6 +178,7 @@ namespace Engine {
 		AssetManager::LoadAnimation("Glock_ADS_Fire", "resources/animations/Glock_ADS_Fire1.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Walk", "resources/animations/Glock_ADS_Walk.fbx", glockModel);
+		AssetManager::LoadAnimation("Glock_Spawn", "resources/animations/Glock_Spawn.fbx", glockModel);
 
 		AssetManager::LoadAnimation("Knife_Idle", "resources/animations/Knife_Idle.fbx", katanaModel);
 		AssetManager::LoadAnimation("Knife_Swing0", "resources/animations/Knife_Swing0.fbx", katanaModel);

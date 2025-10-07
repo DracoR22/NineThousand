@@ -12,13 +12,6 @@
 #include "../Common/Enums.hpp"
 #include "../Common/Types.hpp"
 
-struct PhysicsUserData {
-    uint64_t objectId;
-    uint64_t physicsId;
-    PhysicsType physicsType;
-    ObjectType objectType;
-};
-
 struct PhysicsRayResult {
     PhysicsUserData userData;
     glm::vec3 hitPosition;
@@ -45,7 +38,7 @@ namespace Physics {
     // Rigid Dynamics
     RigidDynamic* GetRigidDynamicById(uint64_t id);
     std::unordered_map<uint64_t, RigidDynamic>& GetRigidDynamics();
-    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque, uint64_t objectId, ObjectType objectType);
+    uint64_t CreateRigidDynamicBox(PhysicsTransformData transform, const glm::vec3& halfExtents, PxReal mass, const glm::vec3 initialForce, const glm::vec3 initialTorque);
     uint64_t CreateRigidDynamicFromPxShape(PxShape* pxShape, glm::mat4 initialPose, glm::mat4 shapeOffsetMatrix);
     uint64_t CreateRigidDynamicConvexMeshFromVertices(std::vector<Vertex>& vertices, const PhysicsTransformData& transform, float mass, const glm::vec3& scale, const glm::vec3 initialForce, const glm::vec3 initialTorque);
     void RemoveRigidDynamic(uint64_t id);

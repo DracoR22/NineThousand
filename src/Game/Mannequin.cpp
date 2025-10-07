@@ -3,6 +3,7 @@
 #include "../Common/Enums.hpp"
 #include "./Game.h"
 #include "../Audio/AudioManager.h"
+#include <glm/gtx/string_cast.hpp>
 
 Mannequin::Mannequin(glm::vec3 position) {
 	m_position = position;
@@ -13,7 +14,12 @@ Mannequin::Mannequin(glm::vec3 position) {
 
 	uint64_t objectId = Utils::GenerateUniqueID();
 
-	uint64_t controllerPhysicsId = Physics::CreateCharacterController(objectId, position, 10.0f, ObjectType::MANNEQUIN);
+	glm::quat rotationQuat = glm::quat(glm::radians(m_rotationEuler));
+	glm::vec3 forwardDir = rotationQuat * glm::vec3(0.0f, 0.0f, 1.0f);
+
+	glm::vec3 controllerPosition = position + forwardDir * 0.5f;
+
+	uint64_t controllerPhysicsId = Physics::CreateCharacterController(objectId, position, 1.0f, ObjectType::MANNEQUIN);
 	m_controllerPhysicsId = controllerPhysicsId;
 
 	m_objectId = objectId;
@@ -32,8 +38,10 @@ Mannequin::Mannequin(glm::vec3 position) {
 
 void Mannequin::Update(double deltaTime) {
 	Animator* mannequinAnimator = AssetManager::GetAnimatorByName("MannequinAnimator");
-	mannequinAnimator->UpdateAnimation(deltaTime);
+
 	UpdateMovement();
+
+	mannequinAnimator->UpdateAnimation(deltaTime);
 
 	if (m_health <= 0 && m_state != MannequinState::DEAD) {
 		Kill();
@@ -65,29 +73,10 @@ void Mannequin::UpdateMovement() {
 	Animator* mannequinAnimator = AssetManager::GetAnimatorByName("MannequinAnimator");
 	Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
 
-	if (m_state != MannequinState::DEAD || m_state == MannequinState::DEAD) {
-		glm::vec3 characterControllerPos = Physics::GetCharacterControllerPosition(m_controllerPhysicsId);
-		m_position = glm::vec3(characterControllerPos.x, characterControllerPos.y / m_height, characterControllerPos.z);
-	
-		ragdoll->SetGlobalPoseFromAnimator(mannequinAnimator, GetModelMatrix());
-	}
-	/*else if (m_state == MannequinState::DEAD) {
-		Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+	glm::vec3 characterControllerPos = Physics::GetCharacterControllerPosition(m_controllerPhysicsId);
+	m_position = glm::vec3(characterControllerPos.x, characterControllerPos.y / m_height, characterControllerPos.z);
 
-		if (ragdoll) {
-			for (RigidComponent& rigidComponent : ragdoll->GetRigidComponents()) {
-				RigidDynamic* rigidDynamic = Physics::GetRigidDynamicById(rigidComponent.id);
-
-				if (rigidDynamic) {
-					glm::vec3 pos = rigidDynamic->GetCurrentPosition();
-					glm::quat rot = rigidDynamic->GetCurrentRotation();
-
-					glm::mat4 boneWorldMatrix = glm::translate(glm::mat4(1.0f), pos) * glm::toMat4(rot);
-					mannequinAnimator->OverrideBoneTransform(rigidComponent.boneName, boneWorldMatrix, GetModelMatrix());
-				}
-			}
-		}
-	}*/
+	ragdoll->SetGlobalPoseFromAnimator(mannequinAnimator, GetModelMatrix());
 }
 
 void Mannequin::UpdateAudio(double deltaTime) {
@@ -137,25 +126,29 @@ glm::mat4 Mannequin::GetModelMatrix() const {
 
 void Mannequin::TakeDamage(int damageAmount, uint64_t playerId) {
 	if (m_health > 0) {
+		AudioManager::PlayAudio("Flesh_Bloody_Break.wav", 1.0f, 1.0f);
 		m_health -= damageAmount;
 	}
-
-	AudioManager::PlayAudio("Flesh_Bloody_Break.wav", 1.0f, 1.0f);
+	else {
+		AudioManager::PlayAudio("Flesh_Bloody_Break.wav", 1.0f, 1.0f);
+	}
 
 	if (m_state != MannequinState::CHASE && m_state != MannequinState::DEAD) {
 		ChasePlayer(playerId);
 	}
 }
-
+	
 void Mannequin::Kill() {
 	Animator* mannequinAnimator = AssetManager::GetAnimatorByName("MannequinAnimator");
-
-	m_state = MannequinState::DEAD;
-	m_isMoving = false;
 	mannequinAnimator->PlayAnimation(AssetManager::GetAnimationByName("Mannequin_Death"));
 
-	//Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
-	//ragdoll->ActivatePhysics();
+	AudioManager::PlayAudio("Blood_Splash.wav", 1.0f, 1.0f);
+
+	m_isMoving = false;
+	m_state = MannequinState::DEAD;
+
+	/*Ragdoll* ragdoll = Physics::GetRagdollById(m_ragdollId);
+	ragdoll->ActivatePhysics();*/
 }
 
 void Mannequin::ChasePlayer(uint64_t playerId) {

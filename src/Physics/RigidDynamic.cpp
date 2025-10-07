@@ -1,13 +1,6 @@
 #include "RigidDynamic.h"
 #include <glm/gtx/quaternion.hpp>
 
-//RigidDynamic::~RigidDynamic() {
-//	if (m_pxRigidDynamic) {
-//		m_pxRigidDynamic->release();
-//		m_pxRigidDynamic = nullptr;
-//	}
-//}
-
 void RigidDynamic::SetPxRigidDynamic(PxRigidDynamic* rigidDynamic) {
 	m_pxRigidDynamic = rigidDynamic;
 }
@@ -20,17 +13,6 @@ void RigidDynamic::ActivatePhysics() {
 	if (m_pxRigidDynamic) {
 		m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 		m_pxRigidDynamic->wakeUp();
-	}
-}
-
-void RigidDynamic::SetGlobalPoseFromTransform(PhysicsTransformData& transform) {
-	PxVec3 pxPos(transform.position.x, transform.position.y, transform.position.z);
-	PxQuat pxRot(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w);
-	PxTransform pxTransform(pxPos, pxRot);
-
-	if (m_pxRigidDynamic) {
-		m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
-		m_pxRigidDynamic->setKinematicTarget(pxTransform);
 	}
 }
 
@@ -60,6 +42,12 @@ void RigidDynamic::SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 model
 
 	m_pxRigidDynamic->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
 	m_pxRigidDynamic->setKinematicTarget(pxTransform);
+}
+
+void RigidDynamic::SetUserData(PhysicsUserData userData) {
+		if (m_pxRigidDynamic) {
+			m_pxRigidDynamic->userData = new PhysicsUserData(userData);
+		}
 }
 
 glm::vec3 RigidDynamic::GetCurrentPosition() {

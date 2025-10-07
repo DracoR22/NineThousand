@@ -10,7 +10,21 @@
 struct RigidComponent {
 	uint64_t id;
 	std::string boneName;
+	std::string shape;
 	float mass;
+	float radius;
+	float height;
+	glm::vec3 boxExtents;
+};
+
+struct JointComponent {
+	uint64_t parentId;
+	uint64_t childId;
+};
+
+struct RagdollComponents {
+	std::vector<JointComponent> jointComponents;
+	std::vector<RigidComponent> rigidComponents;
 };
 
 class Ragdoll {
@@ -21,6 +35,7 @@ public:
 	void SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 modelMatrix);
 
 	std::vector<RigidComponent>& GetRigidComponents() { return m_rigidComponents; };
+	RigidComponent* GetRigidComponentByBoneName(const std::string& boneName);
 
 	void SetRigidDynamicId(uint64_t id);
 	void SetRigidComponent(RigidComponent& component);

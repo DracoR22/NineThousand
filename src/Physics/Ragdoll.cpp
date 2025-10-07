@@ -54,6 +54,16 @@ void Ragdoll::SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 modelMatri
 	}
 }
 
+RigidComponent* Ragdoll::GetRigidComponentByBoneName(const std::string& boneName) {
+	for (RigidComponent& component : m_rigidComponents) {
+		if (component.boneName == boneName) {
+			return &component;
+		}
+	}
+
+	return nullptr;
+}
+
 void Ragdoll::SetRigidComponent(RigidComponent& component) {
 	m_rigidComponents.push_back(component);
 }

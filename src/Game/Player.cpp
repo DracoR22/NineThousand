@@ -706,9 +706,7 @@ void Player::SpawnBulletCase() {
         glm::vec3(0.07f) * 0.5f,
         caseMass,
         initialForce,
-        worldTorque,
-        0,
-        ObjectType::DYNAMIC
+        worldTorque
     );
 
     createInfo.physicsId = physicsId;

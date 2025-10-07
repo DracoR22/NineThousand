@@ -36,8 +36,8 @@ void main() {
   vec4 textureNorm = textureLod(u_NormTex, TexCoord, 0);
 
   vec3 normal = textureNorm.xzy * 2.0 - 1.0;
-  mat3 normalMatrix = transpose(mat3(inverseModel));
-  Normal = normalize(normalMatrix * normal);
+  //mat3 normalMatrix = transpose(mat3(inverseModel));
+  Normal = normalize(normal);
 
   WorldPos = model * vec4(texturePos.xzy, 1.0);
 

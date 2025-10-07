@@ -6,18 +6,19 @@
 #include <glm/gtc/quaternion.hpp>
 #include "../Common/Types.hpp"
 #include "../Animation/Animator.hpp"
+#include "../Common/Enums.hpp"
+#include "../Common/Types.hpp"
 
 using namespace physx;
 
 class RigidDynamic {
 public:
 	RigidDynamic() = default;
-	//~RigidDynamic();
 
 	void SetPxRigidDynamic(PxRigidDynamic* rigidDynamic);
 	void UpdateMassAndInertia(float mass);
-	void SetGlobalPoseFromTransform(PhysicsTransformData& transform);
 	void SetGlobalPoseFromAnimator(Animator* animator, glm::mat4 modelMatrix);
+	void SetUserData(PhysicsUserData userData);
 
 	void ActivatePhysics();
 

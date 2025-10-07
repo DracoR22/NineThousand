@@ -5,6 +5,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/glm.hpp>
 
+#include "./Enums.hpp"
+
 #define MAX_LIGHTS 20
 
 struct Material {
@@ -37,4 +39,11 @@ struct GPULight {
 struct PhysicsTransformData {
 	glm::vec3 position = glm::vec3(0.0f);
 	glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+};
+
+struct PhysicsUserData {
+	uint64_t objectId;
+	uint64_t physicsId;
+	PhysicsType physicsType;
+	ObjectType objectType;
 };
