@@ -51,4 +51,5 @@ private:
 	uint64_t m_chasedPlayerId;
 
 	MannequinState m_state;
+	bool m_isReleased = false;
 };

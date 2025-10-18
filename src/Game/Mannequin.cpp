@@ -41,7 +41,13 @@ void Mannequin::Update(double deltaTime) {
 
 	UpdateMovement();
 
-	mannequinAnimator->UpdateAnimation(deltaTime);
+	if (mannequinAnimator->IsAnimationFinished() && m_state == MannequinState::DEAD && !m_isReleased) {
+		m_isReleased = true;
+	}
+
+	if (!m_isReleased) {
+		mannequinAnimator->UpdateAnimation(deltaTime);
+	}
 
 	if (m_health <= 0 && m_state != MannequinState::DEAD) {
 		Kill();

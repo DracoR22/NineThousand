@@ -137,6 +137,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("blood_mesh6", "resources/models/blood_mesh6.obj");
 		AssetManager::LoadSkinnedModel("blood_mesh7", "resources/models/blood_mesh7.obj");
 		AssetManager::LoadSkinnedModel("blood_mesh9", "resources/models/blood_mesh9.obj");
+		AssetManager::LoadSkinnedModel("AKS74U_Pickup", "resources/models/AKS74U_Pickup.obj");
 
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = end - start;

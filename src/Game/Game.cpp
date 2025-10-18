@@ -25,7 +25,7 @@ namespace Game {
 		ProcessBullets();
 
 		std::vector<BloodSplatterObject>& bloodSplatterObjects = Scene::GetBloodSplatterObjects();
-		for (BloodSplatterObject& bloodSplatterObject : bloodSplatterObjects) {
+		for (BloodSplatterObject& bloodSplatterObject : Scene::GetBloodSplatterObjects()) {
 			bloodSplatterObject.Update(Window::GetDeltaTime());
 		}
 
@@ -34,6 +34,10 @@ namespace Game {
 			return obj.GetLifeTime() > MAX_LIFETIME;
 		  }
 		), bloodSplatterObjects.end());
+
+		for (PickUpObject& pickUpObject : Scene::GetPickUpObjects()) {
+			pickUpObject.Update(Window::GetDeltaTime());
+		}
 		
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");

@@ -53,6 +53,12 @@ struct LightCreateInfo {
 	LightType type = LightType::POINT_LIGHT;
 };
 
+struct PickUpObjectCreateInfo {
+	glm::vec3 position = glm::vec3(0.0f);
+	glm::vec3 size = glm::vec3(1.0f);
+	glm::vec3 rotation = glm::vec3(0.0f);
+};
+
 struct LevelCreateInfo {
 	std::string name;
 	std::vector<GameObjectCreateInfo> gameObjects;

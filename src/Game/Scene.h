@@ -8,6 +8,7 @@
 #include "../Objects/WaterObject.h"
 #include "../Objects/LightObject.h"
 #include "../Objects/BulletCaseObject.h"
+#include "../Objects/PickUpObject.h"
 #include "../Utils/JSON.h"
 #include "../Game/Mannequin.h"
 #include "../Objects/BloodSplatterObject.h"
@@ -30,6 +31,8 @@ namespace Scene {
 	std::vector<BulletCaseObject>& GetBulletCaseObjects();
 	void AddBulletCaseObject(BulletCaseCreateInfo& createInfo);
 	void RemoveBulletCaseObjectByIndex(int index);
+
+	std::vector<PickUpObject>& GetPickUpObjects();
 
 	void AddMannequin(glm::vec3 position);
 	Mannequin* GetMannequinById(uint64_t mannequinId);

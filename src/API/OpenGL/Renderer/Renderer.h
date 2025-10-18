@@ -61,6 +61,7 @@ namespace OpenGLRenderer {
 	void BloomPass();
 	void PostProcessingPass();
 	void CubeMapPass();
+	void PickUpPass();
 
 	void LoadShaders();
 	void BeginMainPass();

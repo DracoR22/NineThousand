@@ -4,6 +4,9 @@ namespace OpenGLRenderer {
 	void DrawShadows(Shader& shader);
 
 	void ShadowPass() {
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(2.0f, 4.0f);
+
 		ShadowMap* csmDepth = GetShadowMapByName("CSM");
 		Shader* csmDepthShader = GetShaderByName("CSM");
 		
@@ -26,6 +29,8 @@ namespace OpenGLRenderer {
 		csmDepthShader->activate();
 		DrawShadows(*csmDepthShader);
 		glCullFace(GL_BACK);
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	void DrawShadows(Shader& shader) {

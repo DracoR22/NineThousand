@@ -141,6 +141,7 @@ namespace OpenGLRenderer {
 		BeginMainPass();
 		AnimationPass();
 		LightingPass();
+		PickUpPass();
 		BloodSplatterPass();
 		WaterPass();
 		CubeMapPass();
@@ -373,6 +374,27 @@ namespace OpenGLRenderer {
 			glBindVertexArray(mesh.GetVAO());
 			glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
 			glBindVertexArray(0);
+		}
+	}
+
+	void PickUpPass() {
+		Shader* shader = GetShaderByName("SolidColor");
+		Camera* camera = CameraManager::GetActiveCamera();
+
+		Model* pickUpModel = AssetManager::GetModelByName("AKS74U_Pickup");
+
+		shader->activate();
+		shader->setMat4("view", camera->GetViewMatrix());
+		shader->setMat4("projection", camera->GetProjectionMatrix());
+		shader->setVec3("lightColor", glm::vec3(1.0f, 0.0f, 0.0f));
+
+		for (PickUpObject& object : Scene::GetPickUpObjects()) {
+			shader->setMat4("model", object.GetModelMatrix());
+			for (Mesh& mesh : pickUpModel->m_meshes) {
+				glBindVertexArray(mesh.GetVAO());
+				glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
+				glBindVertexArray(0);
+			}
 		}
 	}
 

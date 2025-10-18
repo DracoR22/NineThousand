@@ -79,7 +79,7 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
         bias *= 1.0 / (cascadePlaneDistances[layer] * biasModifier);
     }
 
-    // PCF 2x2 centered
+  // PCF 2x2 centered
   float shadow = 0.0;
   vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
   vec2 offsets[4] = vec2[](
@@ -87,23 +87,24 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
     vec2(0.5, -0.5),
     vec2(-0.5, 0.5),
     vec2(0.5, 0.5)
-);
+  );
 
-for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 4; ++i) {
     float pcfDepth = texture(
         shadowMap,
         vec3(projCoords.xy + offsets[i] * texelSize, layer)
     ).r;
     shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
-}
-shadow /= 4.0;
+   }
+
+   shadow /= 4.0;
     
-     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-     if(projCoords.z > 1.0) {
+   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+   if(projCoords.z > 1.0) {
        shadow = 0.0;
-     }
+   }
     
-     return shadow * 0.4;
+   return shadow * 0.4;
 }
 
 

@@ -6,6 +6,8 @@ namespace Scene {
 	std::vector<LightObject> g_lightObjects;
 	std::vector<BulletCaseObject> g_bulletCaseObjects;
 	std::vector<BloodSplatterObject> g_bloodSplatterObjects;
+	std::vector<PickUpObject> g_pickUpObjects;
+
 	std::vector<Mannequin> g_mannequins;
 
 	void CreateHardcodedObjects() {
@@ -20,6 +22,14 @@ namespace Scene {
 		};
 
 		g_waterPlaneObjects.emplace_back(waterPlaneCreateInfo);
+
+		PickUpObjectCreateInfo pickUpObjectCreateInfo{
+			glm::vec3(5.0f, 3.0f, 5.0f),
+			glm::vec3(5.0f),
+			glm::vec3(0.0f)
+		};
+
+		g_pickUpObjects.emplace_back(pickUpObjectCreateInfo);
 	}
 
 	void AddGameObject(GameObjectCreateInfo createInfo) {
@@ -97,6 +107,10 @@ namespace Scene {
 			Physics::MarkRigidDynamicForRemoval(g_bulletCaseObjects[index].GetPhysicsId());
 			g_bulletCaseObjects.erase(g_bulletCaseObjects.begin() + index);
 		}
+	}
+
+	std::vector<PickUpObject>& GetPickUpObjects() {
+		return g_pickUpObjects;
 	}
 
 	void AddMannequin(glm::vec3 position) {
