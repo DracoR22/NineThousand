@@ -1,6 +1,6 @@
 #version 430 core
 
-#include "./common/pbr_core.glsl"
+#include "./common/lights.glsl"
 
 out vec4 FragColor;
 
@@ -108,8 +108,7 @@ float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
 }
 
 
-vec3 getNormalFromMap()
-{
+vec3 getNormalFromMap() {
     vec3 tangentNormal = texture(normalTexture, TexCoords).xyz * 2.0 - 1.0;
     return normalize(TBN * tangentNormal);
 }
@@ -124,33 +123,20 @@ void main() {
  float ao        = rma.b;
 
  vec3 N = getNormalFromMap();
- vec3 V = normalize(camPos - WorldPos);
-
  vec3 color = vec3(0.0);
 
  for (int i = 0; i < numLights; ++i) {
     Light light = lights[i];
-    vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
+
+    vec3 lightPos = vec3(light.posX, light.posY, light.posZ);
     vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
 
-    float attenuation = 1.0;
-
-    vec3 L;
-    vec3 radiance;
-
-  if (int(light.type) == 0) { // Point light
-     L = normalize(lightPosition - WorldPos);
-
-     float distance    = length(lightPosition - WorldPos);
-     attenuation =  smoothstep(light.radius, 0, length(lightPosition - WorldPos));    
-     radiance = lightColor * attenuation * light.strength;
-  } else { // Directional light
-     L = normalize(-vec3(1.0, -1.0, 0.0)); 
-
-     radiance = lightColor * light.strength;
-  }
-
-   color += MicrofacetBRDF(L, V, N, albedo, metallic, 1.0, roughness) * radiance;
+    if (int(light.type) == 0) {
+      color += GetSpotLightLighting(lightPos, lightColor, light.strength, light.radius, WorldPos, camPos, N, albedo, metallic, roughness);
+    } else {
+      vec3 lightDir = -vec3(1.0, -1.0, 0.0);
+      color += GetDirectionalLighting(lightDir, lightColor, light.strength, WorldPos, camPos, N, albedo, metallic, roughness);
+    }
  }
 
   float shadow = ShadowCalculationCSM(WorldPos);
