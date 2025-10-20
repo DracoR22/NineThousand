@@ -26,7 +26,9 @@ namespace Scene {
 		PickUpObjectCreateInfo pickUpObjectCreateInfo{
 			glm::vec3(5.0f, 3.0f, 5.0f),
 			glm::vec3(5.0f),
-			glm::vec3(0.0f)
+			glm::vec3(0.0f),
+			PickUpType::AKS74U,
+			{}
 		};
 
 		g_pickUpObjects.emplace_back(pickUpObjectCreateInfo);

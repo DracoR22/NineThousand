@@ -11,3 +11,7 @@ enum ObjectType {
 	MANNEQUIN,
     DYNAMIC
 };
+
+enum PickUpType {
+    AKS74U
+};

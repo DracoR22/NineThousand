@@ -57,6 +57,8 @@ struct PickUpObjectCreateInfo {
 	glm::vec3 position = glm::vec3(0.0f);
 	glm::vec3 size = glm::vec3(1.0f);
 	glm::vec3 rotation = glm::vec3(0.0f);
+	PickUpType pickUpType;
+	std::vector<MeshRenderingInfo> meshRenderingInfo;
 };
 
 struct LevelCreateInfo {

@@ -4,6 +4,19 @@ PickUpObject::PickUpObject(PickUpObjectCreateInfo& createInfo) {
 	m_position = createInfo.position;
 	m_eulerRotation = createInfo.rotation;
 	m_size = createInfo.size;
+	m_pickUpType = createInfo.pickUpType;
+
+	if (m_pickUpType == PickUpType::AKS74U) {
+		Model* model = AssetManager::GetModelByName("AKS74U");
+
+		SetMaterialByMeshName("AKS74UHandGuard", "AKS74U_0");
+		SetMaterialByMeshName("AKS74UBolt", "AKS74U_1");
+		SetMaterialByMeshName("AKS74UPistolGrip", "AKS74U_2");
+		SetMaterialByMeshName("AKS74UMag", "AKS74U_3");
+		SetMaterialByMeshName("AKS74UBarrel", "AKS74U_4");
+		SetMaterialByMeshName("AKS74UReceiver", "AKS74U_1");
+		SetMaterialByMeshName("AKS74UFollower", "AKS74U_1");
+	}
 }
 
 void PickUpObject::Update(double deltaTime) {
@@ -35,4 +48,23 @@ glm::mat4 PickUpObject::GetModelMatrix() const {
 	model = glm::scale(model, m_size);
 
 	return model;
+}
+
+void PickUpObject::SetMaterialByMeshName(const std::string meshName, const std::string& materialName) {
+	MeshRenderingInfo& info = m_meshRenderingInfo.emplace_back();
+	info.meshIndex = AssetManager::GetMeshIndexByName(meshName);
+	info.materialIndex = AssetManager::GetMaterialIndexByName(materialName);
+
+	m_meshRenderingIndexMap[meshName] = m_meshRenderingInfo.size() - 1;
+}
+
+int PickUpObject::GetMeshMaterialIndex(const std::string& meshName) {
+	auto it = m_meshRenderingIndexMap.find(meshName);
+	if (it != m_meshRenderingIndexMap.end()) {
+		size_t infoIndex = it->second;
+		return m_meshRenderingInfo[infoIndex].materialIndex;
+	}
+
+	std::cout << "PickUpObject::GetMeshMaterialIndex() failed: mesh '" << meshName << "' not found.\n";
+	return -1;
 }

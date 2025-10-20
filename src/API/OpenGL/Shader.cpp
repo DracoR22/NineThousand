@@ -1,7 +1,5 @@
 #include "Shader.h"
-
-// constructor
-Shader::Shader() {};
+#include <regex>
 
 void Shader::load(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath) {
 	if (id != 0) {
@@ -60,8 +58,8 @@ void Shader::activate() {
 	glUseProgram(id);
 }
 
-std::string Shader::loadShaderSrc(const char* filename) {
-	std::ifstream file;
+std::string Shader::loadShaderSrc(const char* filepath) {
+	/*std::ifstream file;
 	std::stringstream buf;
 
 	std::string ret = "";
@@ -78,7 +76,9 @@ std::string Shader::loadShaderSrc(const char* filename) {
 
 	file.close();
 
-	return ret;
+	return ret;*/
+	std::unordered_set<std::string> includedFiles;
+	return PreprocessShader(filepath, includedFiles);
 }
 
 GLuint Shader::compileShader(const char* filepath, GLenum type) {
@@ -101,8 +101,45 @@ GLuint Shader::compileShader(const char* filepath, GLenum type) {
 	return ret;
 }
 
-// uniform functions
-//glUniform4f(vertexColorLoc, 0.0f, 0.0f, blueValue, 1.0f);
+std::string Shader::LoadFile(const std::string& filepath) {
+	std::ifstream file(filepath);
+	if (!file.is_open()) {
+		std::cout << "Cannot open shader file: " + filepath << std::endl;
+		throw std::runtime_error("Cannot open shader file: " + filepath);
+	}
+	std::stringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}
+
+std::string Shader::PreprocessShader(const std::string& filepath, std::unordered_set<std::string>& includedFiles) {
+	if (includedFiles.count(filepath)) {
+		return "";
+	}
+	includedFiles.insert(filepath);
+
+	std::string src = LoadFile(filepath);
+	std::stringstream processed;
+	std::regex includeRegex("^\\s*#include\\s+\"([^\"]+)\"\\s*");
+
+	std::istringstream stream(src);
+	std::string line;
+	std::string baseDir = filepath.substr(0, filepath.find_last_of("/\\") + 1);
+
+	while (std::getline(stream, line)) {
+		std::smatch match;
+		if (std::regex_match(line, match, includeRegex)) {
+			std::string includePath = baseDir + match[1].str();
+			processed << PreprocessShader(includePath, includedFiles) << "\n";
+		}
+		else {
+			processed << line << "\n";
+		}
+	}
+
+	return processed.str();
+}
+
 void Shader::setBool(const std::string& name, bool value) {
 	glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
 }

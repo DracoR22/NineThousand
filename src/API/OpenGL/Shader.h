@@ -10,28 +10,26 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <unordered_set>
 
 class Shader {
 public:
-	unsigned int id;
-
-	Shader();
+	Shader() = default;
 
 	void generate(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath);
 
 	void load(const char* vertexShaderPath, const char* fragmentShaderPath, const char* geometryShaderPath = nullptr);
 
-	/*static void hotLoadShaders(std::vector<Shader*>& shaders);*/
-
 	void activate();
 
 	std::vector<Shader*> shaders;
 
-	// utility functions 
 	std::string loadShaderSrc(const char* filepath);
 	GLuint compileShader(const char* filepath, GLenum type);
+	std::string LoadFile(const std::string& filepath);
+	std::string PreprocessShader(const std::string& filepath, std::unordered_set<std::string>& includedFiles);
 
-	// uniform functions
+
 	void setBool(const std::string& name, bool value);
 	void setInt(const std::string& name, int value);
 
@@ -49,4 +47,6 @@ public:
 
 	void setVec2(const std::string& name, float x, float y);
 	void setVec2(const std::string& name, glm::vec2 value);
+public:
+	unsigned int id;
 };

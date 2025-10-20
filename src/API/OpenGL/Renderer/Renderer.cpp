@@ -26,16 +26,8 @@ namespace OpenGLRenderer {
 	bool g_enableBloom = true;
 	bool g_castShadows = true;
 
-	///////////////////////////////////////
 	void UpdateSSBOS();
 	void RenderEnvMap();
-
-	unsigned int g_captureFBO, g_captureRBO;
-	unsigned int g_envCubemap;
-	unsigned int g_irradianceMap;
-	glm::mat4 g_captureProjection = {};
-	glm::mat4 g_captureViews[6];
-	///////////////////////////////////////
 
 	void Init() {
 		LoadShaders();
@@ -170,14 +162,12 @@ namespace OpenGLRenderer {
 		g_Shaders["SobelEdges"].load("sobel_edges.vert", "sobel_edges.frag");
 		g_Shaders["PostProcess"].load("post_process.vert", "post_process.frag");
 		g_Shaders["Instanced"].load("instanced.vert", "instanced.frag");
-		g_Shaders["SimpleTexture"].load("simple_texture.vert", "simple_texture.frag");
-		g_Shaders["HDRSkybox"].load("hdr_skybox.vert", "hdr_skybox.frag");
 		g_Shaders["Irradiance"].load("irradiance_convolution.vert", "irradiance_convolution.frag");
-		g_Shaders["EquirectangularToCubemap"].load("equirectangularMap.vert", "equirectangularMap.frag");
 		g_Shaders["Bloom"].load("solid_color.vert", "bloom.frag");
 		g_Shaders["BlurHorizontal"].load("blur.vert", "blur_horizontal.frag");
 		g_Shaders["BlurVertical"].load("blur.vert", "blur_vertical.frag");
 		g_Shaders["BloodSplatter"].load("blood_splatter.vert", "blood_splatter.frag");
+		g_Shaders["PickUp"].load("pickup.vert", "pickup.frag");
 	}
 
 	void UpdateSSBOS() {
@@ -216,154 +206,7 @@ namespace OpenGLRenderer {
 	}
 
 	void RenderEnvMap() {
-		ShadowMap* csmDepth = GetShadowMapByName("CSM");
-		Shader* lightingShader = GetShaderByName("Lighting");
-		Shader* irradianceShader = GetShaderByName("Irradiance");
-	
-	/*	Camera* camera = CameraManager::GetActiveCamera();
-		std::vector<LightCreateInfo>& sceneLights = GetSceneLights();
-		std::vector<float>& shadowCascadeLevels = GetShadowCascadeLevels();
-
-		glViewport(0, 0, 512, 512);
-		glBindFramebuffer(GL_FRAMEBUFFER, g_captureFBO);
-
-		for (unsigned int i = 0; i < 6; ++i) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, g_envCubemap, 0);
-
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			lightingShader->activate();
-			lightingShader->setMat4("view", g_captureViews[i]);
-			lightingShader->setMat4("projection", g_captureProjection);
-
-			for (int i = 0; i < sceneLights.size(); i++) {
-				std::string lightUniform = "lights[" + std::to_string(i) + "]";
-
-				lightingShader->setFloat(lightUniform + ".posX", sceneLights[i].position.x);
-				lightingShader->setFloat(lightUniform + ".posY", sceneLights[i].position.y);
-				lightingShader->setFloat(lightUniform + ".posZ", sceneLights[i].position.z);
-				lightingShader->setFloat(lightUniform + ".radius", sceneLights[i].radius);
-				lightingShader->setFloat(lightUniform + ".strength", sceneLights[i].strength);
-				lightingShader->setFloat(lightUniform + ".colorR", sceneLights[i].color.r);
-				lightingShader->setFloat(lightUniform + ".colorG", sceneLights[i].color.g);
-				lightingShader->setFloat(lightUniform + ".colorB", sceneLights[i].color.b);
-				lightingShader->setInt(lightUniform + ".type", static_cast<int>(sceneLights[i].type));
-			}
-			lightingShader->setInt("numLights", sceneLights.size());
-			lightingShader->set3Float("camPos", CameraManager::GetActiveCamera()->cameraPos);
-			lightingShader->setVec3("lightDir", glm::normalize(glm::vec3(20.0f, 50, 20.0f)));
-			lightingShader->setFloat("farPlane", camera->GetFarPlane());
-			lightingShader->setInt("cascadeCount", shadowCascadeLevels.size());
-			for (size_t i = 0; i < shadowCascadeLevels.size(); ++i)
-			{
-				lightingShader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", shadowCascadeLevels[i]);
-			}
-			glActiveTexture(GL_TEXTURE3);
-			glBindTexture(GL_TEXTURE_2D_ARRAY, csmDepth->GetTextureID());
-			lightingShader->setInt("shadowMap", 3);
-			for (GameObject& gameObject : Scene::GetGameObjects()) {
-				if (gameObject.GetModelName() == "Plane" || gameObject.GetModelName() == "Cube") {
-					lightingShader->setMat4("model", gameObject.GetModelMatrix());
-					lightingShader->setVec2("textureScale", gameObject.GetTextureScale());
-					lightingShader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(gameObject.GetModelMatrix()))));
-
-					Model* gameObjectModel = AssetManager::GetModelByName(gameObject.GetModelName());
-					for (Mesh& mesh : gameObjectModel->m_meshes) {
-						int materialIndex = gameObject.GetMeshMaterialIndex(mesh.m_Name);
-						Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
-						Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
-						Texture* normalTexture = AssetManager::GetTextureByIndex(meshMaterial->normalTexture);
-						Texture* rmaTexture = AssetManager::GetTextureByIndex(meshMaterial->rmaTexture);
-
-						glActiveTexture(GL_TEXTURE0);
-						lightingShader->setInt("baseTexture", 0);
-						baseTexture->Bind();
-
-						glActiveTexture(GL_TEXTURE1);
-						lightingShader->setInt("normalTexture", 1);
-						normalTexture->Bind();
-
-						glActiveTexture(GL_TEXTURE2);
-						lightingShader->setInt("rmaTexture", 2);
-						rmaTexture->Bind();
-
-						glBindVertexArray(mesh.GetVAO());
-						glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-						glBindVertexArray(0);
-
-						glActiveTexture(GL_TEXTURE0);
-						glBindTexture(GL_TEXTURE_2D, 0);
-					}
-				}
-			}
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
-
-		glViewport(0, 0, 512, 512);
-		glBindFramebuffer(GL_FRAMEBUFFER, g_captureFBO);
-		Shader* equirectShader = GetShaderByName("EquirectangularToCubemap");
-		equirectShader->activate();
-		equirectShader->setInt("equirectangularMap", 0);
-		equirectShader->setMat4("projection", g_captureProjection);
-
-		Texture* hdrTexture = AssetManager::GetTextureByName("newport_loft.hdr");
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, hdrTexture->m_id);
-
-		for (unsigned int i = 0; i < 6; ++i) {
-			equirectShader->setMat4("view", g_captureViews[i]);
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, g_envCubemap, 0);
-
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// draw cube
-			Model* model = AssetManager::GetModelByName("Cube");
-
-			for (Mesh& mesh : model->m_meshes) {
-				glBindVertexArray(mesh.GetVAO());
-				glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-				glBindVertexArray(0);
-			}
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// Resize depth buffer to 32x32 for irradiance capture
-		glBindFramebuffer(GL_FRAMEBUFFER, g_captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER, g_captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-
-		irradianceShader->activate();
-		irradianceShader->setInt("environmentMap", 0);
-		irradianceShader->setMat4("projection", g_captureProjection);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, g_envCubemap);
-
-		glViewport(0, 0, 32, 32);
-		glBindFramebuffer(GL_FRAMEBUFFER, g_captureFBO);
-		for (unsigned int i = 0; i < 6; ++i)
-		{
-			irradianceShader->setMat4("view", g_captureViews[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, g_irradianceMap, 0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// draw cube
-			Model* model = AssetManager::GetModelByName("Cube");
-
-			for (Mesh& mesh : model->m_meshes) {
-				glBindVertexArray(mesh.GetVAO());
-				glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-				glBindVertexArray(0);
-			}
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
 	}
 
 	void DrawCube(Shader& shader, glm::mat4 modelMatrix) {
@@ -378,19 +221,32 @@ namespace OpenGLRenderer {
 	}
 
 	void PickUpPass() {
-		Shader* shader = GetShaderByName("SolidColor");
+		Shader* shader = GetShaderByName("PickUp");
 		Camera* camera = CameraManager::GetActiveCamera();
 
 		Model* pickUpModel = AssetManager::GetModelByName("AKS74U_Pickup");
 
+		static float elapsedTime = 0.0f;
+		elapsedTime += Window::GetDeltaTime();
+		if (elapsedTime > 10000.0f) elapsedTime = 0.0f;
+
 		shader->activate();
-		shader->setMat4("view", camera->GetViewMatrix());
-		shader->setMat4("projection", camera->GetProjectionMatrix());
-		shader->setVec3("lightColor", glm::vec3(1.0f, 0.0f, 0.0f));
+		shader->setMat4("viewMatrix", camera->GetViewMatrix());
+		shader->setMat4("projectionMatrix", camera->GetProjectionMatrix());
+		shader->setFloat("time", elapsedTime);
 
 		for (PickUpObject& object : Scene::GetPickUpObjects()) {
-			shader->setMat4("model", object.GetModelMatrix());
+			shader->setMat4("modelMatrix", object.GetModelMatrix());
 			for (Mesh& mesh : pickUpModel->m_meshes) {
+				int materialIndex = object.GetMeshMaterialIndex(mesh.m_Name);
+
+				Material* meshMaterial = AssetManager::GetMaterialByIndex(materialIndex);
+				Texture* baseTexture = AssetManager::GetTextureByIndex(meshMaterial->baseTexture);
+
+				glActiveTexture(GL_TEXTURE0);
+				baseTexture->Bind();
+				shader->setInt("baseTexture", 0);
+
 				glBindVertexArray(mesh.GetVAO());
 				glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
 				glBindVertexArray(0);

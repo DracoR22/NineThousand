@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../Common/CreateInfo.hpp"
+#include "../Core/AssetManager.h"
 #include <glm/gtx/quaternion.hpp>
+#include <unordered_map>
 
 class PickUpObject {
 public:
@@ -19,8 +21,16 @@ public:
 	glm::vec3 GetRotationEuler() const { return m_eulerRotation;  };
 	glm::mat4 GetModelMatrix() const;
 
+	void SetMaterialByMeshName(const std::string meshName, const std::string& materialName);
+	int GetMeshMaterialIndex(const std::string& meshName);
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_size;
 	glm::vec3 m_eulerRotation;
+
+	PickUpType m_pickUpType;
+
+	// mesh stuff
+	std::vector<MeshRenderingInfo> m_meshRenderingInfo;
+	std::unordered_map<std::string, size_t> m_meshRenderingIndexMap;
 };

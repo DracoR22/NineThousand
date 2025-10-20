@@ -1,5 +1,7 @@
 #version 430 core
 
+#include "./common/pbr_core.glsl"
+
 out vec4 FragColor;
 
 #define MAX_POINT_LIGHTS 20
@@ -34,7 +36,6 @@ layout (std430, binding = 1) readonly buffer LightSpaceMatricesBuffer {
 };
 
 uniform mat4 view;
-//uniform Light lights[MAX_POINT_LIGHTS];
 uniform int numLights;
 uniform vec3 camPos;
 
@@ -49,10 +50,9 @@ uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;
 uniform vec3 lightDir;
 
-const float PI = 3.14159265359;
 
 float ShadowCalculationCSM(vec3 fragPosWorldSpace) {
-  vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
+    vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
 
     vec4 csmClipSpaceZFar = vec4(cascadePlaneDistances[0], cascadePlaneDistances[1], cascadePlaneDistances[2], cascadePlaneDistances[3]);
@@ -114,69 +114,28 @@ vec3 getNormalFromMap()
     return normalize(TBN * tangentNormal);
 }
 
-vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-  return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}
-
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a      = roughness * roughness;
-    float a2     = a * a;
-    float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH * NdotH;
-	
-    float num   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-	
-    return num / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
-
-    float num   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-	
-    return num / denom;
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-	
-    return ggx1 * ggx2;
-}
-
 
 void main() {
  vec3 albedo = pow(texture(baseTexture, TexCoords).rgb, vec3(2.2));
  vec3 rma = texture(rmaTexture, TexCoords).rgb;
+
  float roughness = rma.r;
  float metallic  = rma.g;
  float ao        = rma.b;
 
  vec3 N = getNormalFromMap();
-
  vec3 V = normalize(camPos - WorldPos);
 
- vec3 Lo = vec3(0.0);
-
- vec3 F0 = vec3(0.04); 
- F0  = mix(F0, albedo, metallic);
+ vec3 color = vec3(0.0);
 
  for (int i = 0; i < numLights; ++i) {
     Light light = lights[i];
     vec3 lightPosition = vec3(light.posX, light.posY, light.posZ);
     vec3 lightColor = vec3(light.colorR, light.colorG, light.colorB);
 
-    vec3 L;
     float attenuation = 1.0;
+
+    vec3 L;
     vec3 radiance;
 
   if (int(light.type) == 0) { // Point light
@@ -191,33 +150,13 @@ void main() {
      radiance = lightColor * light.strength;
   }
 
-     vec3 H = normalize(V + L);
-
-   vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
-   float NDF = DistributionGGX(N, H, roughness);       
-   float G   = GeometrySmith(N, V, L, roughness);    
-
-   vec3 numerator    = NDF * G * F;
-   float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)  + 0.0001;
-   vec3 specular     = numerator / denominator;  
-
-   vec3 kS = F;
-   vec3 kD = vec3(1.0) - kS;
-  
-   kD *= 1.0 - metallic;
-
-   float NdotL = max(dot(N, L), 0.0);        
-   Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+   color += MicrofacetBRDF(L, V, N, albedo, metallic, 1.0, roughness) * radiance;
  }
 
-
   float shadow = ShadowCalculationCSM(WorldPos);
-  Lo *= (1.0 - shadow);
-  
+  color *= (1.0 - shadow);
 
   vec3 ambient = vec3(0.02) * albedo * ao;
-  //vec3 color   = ambient + Lo; 
-  vec3 color = Lo;
 
   FragColor = vec4(color, 1.0);
 }
