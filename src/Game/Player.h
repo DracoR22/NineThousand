@@ -15,6 +15,10 @@
 #include "../Objects/GameObject.h"
 #include "../Objects/WaterObject.h"
 
+struct PlayerInventory {
+	std::vector<WeaponInfo> weapons;
+};
+
 class Player {
 public:
 	Player() = default;
@@ -31,8 +35,13 @@ public:
 
 	void InitWeaponStates();
 
+	void GiveWeapon(const std::string& weaponName);
+	void NextWeapon();
+	bool SwitchWeapon(const std::string& weaponName, bool syncIndex = true);
+
 	WeaponInfo* GetEquipedWeaponInfo();
 	WeaponState* GetEquipedWeaponState();
+	WeaponState* GetWeaponStateByName(const std::string& name);
 	WeaponAction GetWeaponAction();
 	std::string GetStringWeaponAction();
 
@@ -48,6 +57,7 @@ public:
 	bool PressingADS();
 	bool PressedADS();
 	bool PressedReload();
+	bool PressedDraw();
 	bool ReleasedADS();
 	bool ReleasedFire();
 	bool IsInADS();
@@ -58,9 +68,9 @@ public:
 	void EnterADS();
 	void LeaveADS();
 
-	void EquipWeapon(std::string weaponName);
+	void EquipWeapon(const std::string weaponName);
 	
-	void UpdateWeaponLogic();
+	void UpdateWeaponLogic(double deltaTime);
 
 	void SetWeaponAction(WeaponAction action);
 	void SetAmmoMode(AmmoMode mode);
@@ -93,4 +103,7 @@ private:
 	WeaponInfo* m_equippedWeapon = nullptr;
 	WeaponAction m_weaponAction = WeaponAction::IDLE;
 	std::unordered_map<std::string, WeaponState> m_weaponStates;
+	int m_currentWeaponIndex = 0;
+
+	PlayerInventory m_inventory;
 };

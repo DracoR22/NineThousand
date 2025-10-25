@@ -24,6 +24,8 @@ Player::Player(glm::vec3 position, float height)
     };
 
     m_currentWeaponGameObject = GameObject(gunCreateInfo);
+
+    InitWeaponStates();
 }
 
 void Player::Update(double deltaTime) {
@@ -49,7 +51,7 @@ void Player::Update(double deltaTime) {
 
     UpdateAudio(deltaTime);
     UpdateMovement(deltaTime);
-    UpdateWeaponLogic();
+    UpdateWeaponLogic(deltaTime);
 }
 
 void Player::UpdateMovement(double deltaTime) {
@@ -250,7 +252,7 @@ bool Player::CanFireWeapon() {
     }
 }
 
-void Player::EquipWeapon(std::string weaponName) {
+void Player::EquipWeapon(const std::string weaponName) {
     WeaponInfo* weapon = WeaponManager::GetWeaponInfoByName(weaponName);
     m_equippedWeapon = weapon;
     std::cout << "Equipped weapon: " << weapon->name << std::endl;
@@ -269,6 +271,70 @@ void Player::InitWeaponStates() {
     }
 }
 
+void Player::GiveWeapon(const std::string& weaponName) {
+    WeaponInfo* weaponInfo = WeaponManager::GetWeaponInfoByName(weaponName);
+    WeaponState* weaponState = GetWeaponStateByName(weaponName);
+
+    if (weaponInfo && weaponState) {
+        weaponState->has = true;
+        weaponState->ammoInMag = weaponInfo->magSize;
+    }
+}
+
+void Player::NextWeapon() {
+    std::vector<WeaponInfo>& allWeapons = WeaponManager::GetAllWeaponInfos();
+    if (allWeapons.empty()) return;
+
+    size_t startIndex = m_currentWeaponIndex;
+    do {
+        m_currentWeaponIndex = (m_currentWeaponIndex + 1) % allWeapons.size();
+        const std::string& weaponName = allWeapons[m_currentWeaponIndex].name;
+
+        if (m_weaponStates[weaponName].has) {
+            SwitchWeapon(weaponName, false);
+            return;
+        }
+    } while (m_currentWeaponIndex != startIndex);
+}
+
+bool Player::SwitchWeapon(const std::string& weaponName, bool syncIndex) {
+    WeaponState* weaponState = GetWeaponStateByName(weaponName);
+    WeaponInfo* weaponInfo = WeaponManager::GetWeaponInfoByName(weaponName);
+
+    if (!weaponInfo || !weaponState) {
+        std::cout << "Player::SwitchWeapon error: weapon not found -> " << weaponName << std::endl;
+        return false;
+    }
+
+    if (!weaponState->has) {
+        //std::cout << "Player::SwitchWeapon error: player does not own -> " << weaponName << std::endl;
+        return false;
+    }
+
+    if (m_equippedWeapon == weaponInfo) {
+        return false;
+    }
+
+    m_equippedWeapon = weaponInfo;
+
+    if (syncIndex) {
+        std::vector<WeaponInfo>& allWeapons = WeaponManager::GetAllWeaponInfos();
+        for (size_t i = 0; i < allWeapons.size(); ++i) {
+            if (allWeapons[i].name == weaponName) {
+                m_currentWeaponIndex = i;
+                break;
+            }
+        }
+    }
+
+    Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
+    Animation* weaponDrawAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.draw);
+
+    currentWeaponAnimator->PlayAnimation(weaponDrawAnimation);
+    std::cout << "Equipped weapon: " << weaponInfo->name << std::endl;
+    return true;
+}
+
 WeaponInfo* Player::GetEquipedWeaponInfo() {
     return m_equippedWeapon;
 }
@@ -279,6 +345,16 @@ WeaponState* Player::GetEquipedWeaponState() {
     const std::string& weaponName = m_equippedWeapon->name;
 
     return &m_weaponStates[weaponName];
+}
+
+WeaponState* Player::GetWeaponStateByName(const std::string& name) {
+    auto it = m_weaponStates.find(name);
+
+    if (it != m_weaponStates.end()) {
+        return &it->second;
+    }
+
+    return nullptr;
 }
 
 WeaponAction Player::GetWeaponAction() {
@@ -377,6 +453,15 @@ bool Player::PressedADS() {
 
 bool Player::PressedReload() {
     if (Keyboard::KeyJustPressed(GLFW_KEY_R)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Player::PressedDraw() {
+    if (Keyboard::KeyJustPressed(GLFW_KEY_1)) {
         return true;
     }
     else {
@@ -521,13 +606,14 @@ void Player::LeaveADS() {
     }
 }
 
-void Player::UpdateWeaponLogic() {
+void Player::UpdateWeaponLogic(double deltaTime) {
     WeaponInfo* weaponInfo = GetEquipedWeaponInfo();
     WeaponState* weaponState = GetEquipedWeaponState();
     Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(weaponInfo->name + "Animator");
 
     Animation* weaponIdleAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.idle);
     Animation* weaponWalkAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.walk);
+    Animation* weaponDrawAnimation = AssetManager::GetAnimationByName(weaponInfo->animations.draw);
 
     if (PressingFire() && CanFireWeapon()) {
         FireWeapon();
@@ -545,6 +631,14 @@ void Player::UpdateWeaponLogic() {
     if (weaponState->waitingForReload && currentWeaponAnimator->AnimationIsPastFrameNumber(weaponInfo->animationCancelFrames.reload)) {
         weaponState->ammoInMag = weaponInfo->magSize;
         weaponState->waitingForReload = false;
+    }
+
+    // draw weapon animation
+    if (PressedDraw()) {
+        NextWeapon();
+        m_weaponAction = WeaponAction::DRAW;
+        std::cout << "PLAYING: " << weaponInfo->animations.draw << std::endl;
+       /* currentWeaponAnimator->PlayAnimation(weaponDrawAnimation);*/
     }
 
     // change ammo mode
@@ -633,6 +727,8 @@ void Player::UpdateWeaponLogic() {
         currentWeaponAnimator->PlayAnimation(weaponIdleAnimation);
         m_weaponAction = WeaponAction::IDLE;
     }
+
+    currentWeaponAnimator->UpdateAnimation(deltaTime);
 }
 
 void Player::SetWeaponAction(WeaponAction action) {

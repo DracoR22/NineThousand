@@ -11,6 +11,7 @@ namespace WeaponManager {
 		glock.name = "Glock";
 		glock.modelName = "Glock";
 		glock.animations.idle = "Glock_Idle";
+		glock.animations.draw = "Glock_Draw";
 		glock.animations.walk = "Glock_Walk";
 		glock.animations.reload = "Glock_Reload";
 		glock.animations.reloadEmpty = "Glock_ReloadEmpty";
@@ -51,6 +52,7 @@ namespace WeaponManager {
 		katana.name = "Katana";
 		katana.modelName = "Katana";
 		katana.animations.idle = "Knife_Idle";
+		katana.animations.draw = "Knife_Draw";
 		katana.animations.walk = "Knife_Walk";
 		katana.animations.fire.push_back("Knife_Swing0");
 		katana.animations.fire.push_back("Knife_Swing1");
@@ -69,6 +71,7 @@ namespace WeaponManager {
 		WeaponInfo& aks74u = g_weapons.emplace_back();
 		aks74u.name = "AKS74U";
 		aks74u.modelName = "AKS74U";
+		aks74u.animations.draw = "AKS74U_Draw";
 		aks74u.animations.idle = "AKS74U_Idle";
 		aks74u.animations.walk = "AKS74U_Walk";
 		aks74u.animations.reload = "AKS74U_Reload";
@@ -119,6 +122,7 @@ namespace WeaponManager {
 		p90.name = "P90";
 		p90.modelName = "P90";
 		p90.animations.idle = "P90_Idle";
+		p90.animations.draw = "P90_Draw";
 		p90.animations.walk = "P90_Walk";
 		p90.animations.reload = "P90_Reload";
 		p90.animations.reloadEmpty = "P90_ReloadEmpty";
@@ -171,7 +175,7 @@ namespace WeaponManager {
 		p90.ammoInfo.caseSpawnOffsetADS = glm::vec3(-0.5f, 4.3f, 3.7f);
 	}
 
-	WeaponInfo* GetWeaponInfoByName(std::string& name) {
+	WeaponInfo* GetWeaponInfoByName(const std::string& name) {
 		for (int i = 0; i < g_weapons.size(); i++) {
 			if (g_weapons[i].name == name) {
 				return &g_weapons[i];

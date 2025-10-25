@@ -7,6 +7,11 @@
 #include "../Core/Model.h"
 #include "../Physics/Physics.h"
 
+enum class WeaponName {
+	GLOCK,
+	AKS74U
+};
+
 enum class WeaponAction {
 	IDLE,
 	DRAW,
@@ -89,6 +94,7 @@ struct WeaponInfo {
 };
 
 struct WeaponState {
+	bool has = false;
 	int ammoInMag = 0;
 	bool waitingForReload = false;
 	AmmoMode ammoMode = AmmoMode::DEFAULT;
@@ -96,6 +102,6 @@ struct WeaponState {
 
 namespace WeaponManager {
 	void Init();
-	WeaponInfo* GetWeaponInfoByName(std::string& name);
+	WeaponInfo* GetWeaponInfoByName(const std::string& name);
 	std::vector<WeaponInfo>& GetAllWeaponInfos();
 }

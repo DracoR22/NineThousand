@@ -21,12 +21,19 @@ public:
 	glm::vec3 GetRotationEuler() const { return m_eulerRotation;  };
 	glm::mat4 GetModelMatrix() const;
 
+	PickUpType GetType() const { return m_pickUpType; };
+
+	bool IsCollected() const { return m_isCollected; };
+	void SetCollected();
+
 	void SetMaterialByMeshName(const std::string meshName, const std::string& materialName);
 	int GetMeshMaterialIndex(const std::string& meshName);
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_size;
 	glm::vec3 m_eulerRotation;
+
+	bool m_isCollected;
 
 	PickUpType m_pickUpType;
 

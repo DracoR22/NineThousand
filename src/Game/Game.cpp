@@ -38,6 +38,8 @@ namespace Game {
 		for (PickUpObject& pickUpObject : Scene::GetPickUpObjects()) {
 			pickUpObject.Update(Window::GetDeltaTime());
 		}
+
+		ProcessPickups();
 		
 		// Weapon Animations
 		Animator* glockAnimator = AssetManager::GetAnimatorByName("GlockAnimator");
@@ -93,7 +95,11 @@ namespace Game {
 			std::cout << "ERROR: No equipped weapon!" << std::endl;
 		}
 
-		if (equipedWeapon->name == "Glock") {
+		/*Animator* currentWeaponAnimator = AssetManager::GetAnimatorByName(equipedWeapon->name + "Animator");
+		
+		currentWeaponAnimator->UpdateAnimation(deltaTime);*/
+
+	/*	if (equipedWeapon->name == "Glock") {
 			if (Keyboard::KeyJustPressed(GLFW_KEY_F)) {
 				glockAnimator->PlayAnimation(AssetManager::GetAnimationByName("Glock_Spawn"));
 				drawAnimationFinishTime = 0.0f;
@@ -168,7 +174,7 @@ namespace Game {
 			
 			g_players[0].EquipWeapon("P90");
 			p90Animator->PlayAnimation(p90DrawAnimation);
-			/*p90Animator->Reset();*/
+			
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
@@ -178,7 +184,7 @@ namespace Game {
 			g_players[0].EquipWeapon("Katana");
 			katanaAnimator->PlayAnimation(katanaDrawAnimation, 0.75f);
 			AudioManager::PlayAudio(g_players[0].GetEquipedWeaponInfo()->audioFiles.draw, 1.0f, 1.0f);
-			/*p90Animator->Reset();*/
+			
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
@@ -187,11 +193,11 @@ namespace Game {
 		
 			g_players[0].EquipWeapon("Glock");
 			glockAnimator->PlayAnimation(glockDrawAnimation);
-			/*p90Animator->Reset();*/
+			
 			previousWeapon = equipedWeapon->name;
 			drawAnimationFinishTime = 0.0f;
 			isDrawing = true;
-		}
+		}*/
 
 		// Weapons Position
 		if (glockAnimator->GetCurrentAnimation() == glockADSInAnimation ||
@@ -248,8 +254,9 @@ namespace Game {
 
 	void CreatePlayers() {
 		Player player(glm::vec3(35.0f, 5.5f, 55.0f), 4.2f);
-		player.EquipWeapon("Glock");
-		player.InitWeaponStates();
+		player.GiveWeapon("Glock");
+		//player.GiveWeapon("AKS74U");
+		player.SwitchWeapon("Glock");
 
 		g_players.push_back(player);
 	}
@@ -303,6 +310,23 @@ namespace Game {
 					}
 
 					Scene::AddBloodSplatterObject(rayResult.hitPosition, -rayResult.rayDirection);
+				}
+			}
+		}
+	}
+
+	void ProcessPickups() {
+		Player& player = g_players[0];
+
+		static float pickupRadius = 10.5f;
+
+		for (PickUpObject& pickup : Scene::GetPickUpObjects()) {
+			float distance = glm::distance(player.getPosition(), pickup.GetPosition());
+			if (!pickup.IsCollected() && distance < pickupRadius) {
+				if (pickup.GetType() == PickUpType::AKS74U) {
+					player.GiveWeapon("AKS74U");
+					player.SwitchWeapon("AKS74U");
+					pickup.SetCollected();
 				}
 			}
 		}

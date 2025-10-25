@@ -51,8 +51,7 @@ public:
 		CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
 	}
 
-	void PlayAnimation(Animation* pAnimation, float speed = 1.0f)
-	{
+	void PlayAnimation(Animation* pAnimation, float speed = 1.0f) {
 	     	m_AnimationFinished = false;
 			m_CurrentAnimation = pAnimation;
 			m_CurrentTime = 0.0f;

@@ -28,6 +28,7 @@ namespace Game {
 	Player& GetPLayerByIndex(int index);
 
 	void ProcessBullets();
+	void ProcessPickups();
 	void UpdateWeaponPositionByName(std::string weaponName, bool flipRotation = false);
 
 	GameState GetGameState();

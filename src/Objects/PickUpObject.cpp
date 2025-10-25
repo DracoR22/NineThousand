@@ -6,6 +6,8 @@ PickUpObject::PickUpObject(PickUpObjectCreateInfo& createInfo) {
 	m_size = createInfo.size;
 	m_pickUpType = createInfo.pickUpType;
 
+	m_isCollected = false;
+
 	if (m_pickUpType == PickUpType::AKS74U) {
 		Model* model = AssetManager::GetModelByName("AKS74U");
 
@@ -48,6 +50,10 @@ glm::mat4 PickUpObject::GetModelMatrix() const {
 	model = glm::scale(model, m_size);
 
 	return model;
+}
+
+void PickUpObject::SetCollected() {
+	m_isCollected = true;
 }
 
 void PickUpObject::SetMaterialByMeshName(const std::string meshName, const std::string& materialName) {
