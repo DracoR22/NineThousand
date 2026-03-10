@@ -76,40 +76,40 @@ namespace OpenGLRenderer {
 
 		g_frameBuffers["Refraction"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["Refraction"].Bind();
-		g_frameBuffers["Refraction"].CreateAttachment("refractionAttachment", GL_RGBA16F);
+		g_frameBuffers["Refraction"].CreateAttachment("Color", GL_RGBA16F);
 		g_frameBuffers["Refraction"].CreateDepthTextureAttachment();
 		g_frameBuffers["Refraction"].DrawBuffer();
 		g_frameBuffers["Refraction"].Unbind();
 
-		g_frameBuffers["PostProcess"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["PostProcess"].Bind();
-		g_frameBuffers["PostProcess"].CreateAttachment("hdrAttachment", GL_RGBA16F);
-		g_frameBuffers["PostProcess"].CreateAttachment("emissiveAttachment", GL_RGBA16F);
-		g_frameBuffers["PostProcess"].CreateDepthAttachment();
-		g_frameBuffers["PostProcess"].DrawBuffers();
-		g_frameBuffers["PostProcess"].Unbind();
+		g_frameBuffers["Scene"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["Scene"].Bind();
+		g_frameBuffers["Scene"].CreateAttachment("Color", GL_RGBA16F);
+		g_frameBuffers["Scene"].CreateAttachment("Emissive", GL_RGBA16F);
+		g_frameBuffers["Scene"].CreateDepthAttachment();
+		g_frameBuffers["Scene"].DrawBuffers();
+		g_frameBuffers["Scene"].Unbind();
 
-		g_frameBuffers["FinalImage"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["FinalImage"].Bind();
-		g_frameBuffers["FinalImage"].CreateAttachment("colorAttachment", GL_RGBA16F);
-		g_frameBuffers["FinalImage"].DrawBuffer();
-		g_frameBuffers["FinalImage"].Unbind();
+		g_frameBuffers["CompositeScene"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["CompositeScene"].Bind();
+		g_frameBuffers["CompositeScene"].CreateAttachment("Color", GL_RGBA16F);
+		g_frameBuffers["CompositeScene"].DrawBuffer();
+		g_frameBuffers["CompositeScene"].Unbind();
 
-		g_frameBuffers["MSAAPostProcess"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["MSAAPostProcess"].Bind();
-		g_frameBuffers["MSAAPostProcess"].CreateMSAAAttachment("msaaAttachment");
-		g_frameBuffers["MSAAPostProcess"].DrawBuffer();
-		g_frameBuffers["MSAAPostProcess"].Unbind();
+		g_frameBuffers["FXAA"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["FXAA"].Bind();
+		g_frameBuffers["FXAA"].CreateAttachment("Color", GL_RGBA16F);
+		g_frameBuffers["FXAA"].DrawBuffer();
+		g_frameBuffers["FXAA"].Unbind();
 
 		g_frameBuffers["BloomPing"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["BloomPing"].Bind();
-		g_frameBuffers["BloomPing"].CreateAttachment("pingColor", GL_RGBA16F);
+		g_frameBuffers["BloomPing"].CreateAttachment("Color", GL_RGBA16F);
 		g_frameBuffers["BloomPing"].DrawBuffer();
 		g_frameBuffers["BloomPing"].Unbind();
 
 		g_frameBuffers["BloomPong"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
 		g_frameBuffers["BloomPong"].Bind();
-		g_frameBuffers["BloomPong"].CreateAttachment("pongColor", GL_RGBA16F);
+		g_frameBuffers["BloomPong"].CreateAttachment("Color", GL_RGBA16F);
 		g_frameBuffers["BloomPong"].DrawBuffer();
 		g_frameBuffers["BloomPong"].Unbind();
 
@@ -139,9 +139,9 @@ namespace OpenGLRenderer {
 		CubeMapPass();
 		DebugPass();
 		BillboardPass();
-		UIPass();
 		BloomPass();
 		PostProcessingPass();
+		UIPass();
 
 		EditorPanel::Render();
 	}
@@ -168,6 +168,8 @@ namespace OpenGLRenderer {
 		g_Shaders["BlurVertical"].load("blur.vert", "blur_vertical.frag");
 		g_Shaders["BloodSplatter"].load("blood_splatter.vert", "blood_splatter.frag");
 		g_Shaders["PickUp"].load("pickup.vert", "pickup.frag");
+		g_Shaders["FXAA"].load("fxaa.vert", "fxaa.frag");
+
 	}
 
 	void UpdateSSBOS() {
@@ -194,10 +196,10 @@ namespace OpenGLRenderer {
 	}
 
 	void BeginMainPass() {
-		FrameBuffer* postProcessFBO = GetFrameBufferByName("PostProcess");
+		FrameBuffer* sceneFBO = GetFrameBufferByName("Scene");
 
-		postProcessFBO->Bind();
-		postProcessFBO->SetViewport();
+		sceneFBO->Bind();
+		sceneFBO->SetViewport();
 
 		// STENCIL STUFF
 		glEnable(GL_STENCIL_TEST);
@@ -305,18 +307,18 @@ namespace OpenGLRenderer {
 		return g_viewportResolution;
 	}
 
-	void SetRenderResolution(int x, int y) {
-		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
-		FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAAPostProcess");
+	//void SetRenderResolution(int x, int y) {
+	//	FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
+	//	FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAAPostProcess");
 
-		postProcessingFrameBuffer->Resize(x, y);
-		if (g_rendererType == RendererType::FORWARD) {
-			msaaFrameBuffer->ResizeMSAA(x, y);
-		}
+	//	postProcessingFrameBuffer->Resize(x, y);
+	//	if (g_rendererType == RendererType::FORWARD) {
+	//		msaaFrameBuffer->ResizeMSAA(x, y);
+	//	}
 
-		g_viewportResolution.x = x;
-		g_viewportResolution.y = y;
-	}
+	//	g_viewportResolution.x = x;
+	//	g_viewportResolution.y = y;
+	//}
 
 	void Cleanup() {
 		for (CubeMap cubeMap : g_renderData.cubeMaps) {

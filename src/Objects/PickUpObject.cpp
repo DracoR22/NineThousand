@@ -9,7 +9,9 @@ PickUpObject::PickUpObject(PickUpObjectCreateInfo& createInfo) {
 	m_isCollected = false;
 
 	if (m_pickUpType == PickUpType::AKS74U) {
-		Model* model = AssetManager::GetModelByName("AKS74U");
+		Model* model = AssetManager::GetModelByName("AKS74U_Pickup");
+
+		m_modelName = model->GetName();
 
 		SetMaterialByMeshName("AKS74UHandGuard", "AKS74U_0");
 		SetMaterialByMeshName("AKS74UBolt", "AKS74U_1");
@@ -18,6 +20,10 @@ PickUpObject::PickUpObject(PickUpObjectCreateInfo& createInfo) {
 		SetMaterialByMeshName("AKS74UBarrel", "AKS74U_4");
 		SetMaterialByMeshName("AKS74UReceiver", "AKS74U_1");
 		SetMaterialByMeshName("AKS74UFollower", "AKS74U_1");
+	}
+	else {
+		Model* model = AssetManager::GetModelByName("AKS74U_Pickup");
+		m_modelName = model->GetName();
 	}
 }
 

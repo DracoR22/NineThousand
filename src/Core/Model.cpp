@@ -230,24 +230,24 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 		}
 	}
 	// process default material
-	if (mesh->mMaterialIndex >= 0) {
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		
-		// diffuse maps
-		std::vector<Texture> diffuseMaps = LoadDefaultMaterials(material, aiTextureType_DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	//if (mesh->mMaterialIndex >= 0) {
+	//	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	//	
+	//	// diffuse maps
+	//	std::vector<Texture> diffuseMaps = LoadDefaultMaterials(material, aiTextureType_DIFFUSE);
+	//	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-		// RMA maps
-		std::vector<Texture> rmaMaps = LoadDefaultMaterials(material, aiTextureType_AMBIENT_OCCLUSION);
-		textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
+	//	// RMA maps	
+	//	std::vector<Texture> rmaMaps = LoadDefaultMaterials(material, aiTextureType_AMBIENT_OCCLUSION);
+	//	textures.insert(textures.end(), rmaMaps.begin(), rmaMaps.end());
 
-		// normal maps (.obj files use aiTextureType_HEIGHT) 
-		std::vector<Texture> normalMaps = LoadDefaultMaterials(material, aiTextureType_NORMALS);
-		if (normalMaps.empty()) {
-		   normalMaps = LoadDefaultMaterials(material, aiTextureType_HEIGHT);
-		}
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-	}
+	//	// normal maps (.obj files use aiTextureType_HEIGHT) 
+	//	std::vector<Texture> normalMaps = LoadDefaultMaterials(material, aiTextureType_NORMALS);
+	//	if (normalMaps.empty()) {
+	//	   normalMaps = LoadDefaultMaterials(material, aiTextureType_HEIGHT);
+	//	}
+	//	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+	//}
 
 	ExtractBoneWeightForVertices(vertices, mesh, scene);
 

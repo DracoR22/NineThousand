@@ -6,6 +6,9 @@ void OpenGLRenderer::UIPass() {
 	Mesh2D* textMesh = GetQuadMeshByName("Text");
 	Mesh2D* textureMesh = GetQuadMeshByName("Texture");
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, Window::m_windowWidth, Window::m_windowHeight);
+
 	glDisable(GL_DEPTH_TEST);
 	glm::mat4 UiProjection = glm::ortho(0.0f, (float)Window::m_windowWidth, (float)Window::m_windowHeight, 0.0f);
 	Texture* sansFontTexture = AssetManager::GetTextureByName("sans.png");

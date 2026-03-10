@@ -106,7 +106,7 @@ namespace EditorPanel {
 			Editor::SetViewportPos(panelPos.x, panelPos.y); 
 			Editor::SetViewportSize(panelSize.x, panelSize.y);
 
-			FrameBuffer* postProcessingFBO = OpenGLRenderer::GetFrameBufferByName("FinalImage");
+			FrameBuffer* postProcessingFBO = OpenGLRenderer::GetFrameBufferByName("CompositeScene");
 
 			ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
@@ -154,8 +154,7 @@ namespace EditorPanel {
 						if (ImGui::Selectable(g_resolutionOptions[i], isSelected)) {
 							g_currentResolutionIndex = i;
 
-							// Apply the selected resolution
-							OpenGLRenderer::SetRenderResolution(g_resolutionValues[i].x, g_resolutionValues[i].y);
+							//OpenGLRenderer::SetRenderResolution(g_resolutionValues[i].x, g_resolutionValues[i].y);
 						}
 						if (isSelected)
 							ImGui::SetItemDefaultFocus();

@@ -185,11 +185,11 @@ namespace OpenGLRenderer {
 		Shader* deferredLightingShader = GetShaderByName("DeferredLighting");
 
 		FrameBuffer* gBuffer = GetFrameBufferByName("GBuffer");
-		FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
+		FrameBuffer* sceneFBO = GetFrameBufferByName("Scene");
 
 		std::vector<LightObject>& sceneLights = Scene::GetLightObjects();
 
-		postProcessingFrameBuffer->Bind();
+		sceneFBO->Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		deferredLightingShader->activate();
@@ -233,13 +233,13 @@ namespace OpenGLRenderer {
 		glBindVertexArray(0);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer->GetFBO());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessingFrameBuffer->GetFBO());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sceneFBO->GetFBO());
 		glBlitFramebuffer(
 			0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
 			0, 0, Window::SCR_WIDTH, Window::SCR_HEIGHT,
 			GL_DEPTH_BUFFER_BIT, GL_NEAREST
 		);
-		glBindFramebuffer(GL_FRAMEBUFFER, postProcessingFrameBuffer->GetFBO());
+		glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO->GetFBO());
 	}
 }
 

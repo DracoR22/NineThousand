@@ -4,8 +4,7 @@ namespace OpenGLRenderer {
 	GLuint g_finalBlurTexture = 0;
 
 	void BloomPass() {
-		FrameBuffer* msaaFBO = GetFrameBufferByName("MSAAPostProcess");
-		FrameBuffer* postProcessingFBO = GetFrameBufferByName("PostProcess");
+		FrameBuffer* sceneFBO = GetFrameBufferByName("Scene");
 
 		Mesh2D* postProcessQuad = GetQuadMeshByName("PostProcess");
 
@@ -40,7 +39,7 @@ namespace OpenGLRenderer {
 				Shader* activeShader = horizontal ? blurHShader : blurVShader;
 				activeShader->activate();
 
-				GLuint srcTex = firstIteration ? postProcessingFBO->GetColorAttachmentTextureIdByIndex(1) : (horizontal ? pingTex : pongTex);
+				GLuint srcTex = firstIteration ? sceneFBO->GetColorAttachmentTextureIdByIndex(1) : (horizontal ? pingTex : pongTex);
 
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, srcTex);

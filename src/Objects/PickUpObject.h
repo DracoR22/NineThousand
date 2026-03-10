@@ -22,6 +22,7 @@ public:
 	glm::mat4 GetModelMatrix() const;
 
 	PickUpType GetType() const { return m_pickUpType; };
+	std::string& GetModelName() { return m_modelName; };
 
 	bool IsCollected() const { return m_isCollected; };
 	void SetCollected();
@@ -33,6 +34,7 @@ private:
 	glm::vec3 m_size;
 	glm::vec3 m_eulerRotation;
 
+	std::string m_modelName;
 	bool m_isCollected;
 
 	PickUpType m_pickUpType;

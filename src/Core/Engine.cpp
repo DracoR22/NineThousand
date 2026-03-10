@@ -93,6 +93,14 @@ namespace Engine {
 		AudioManager::LoadAudio("AKS74U_Fire3.wav");
 		AudioManager::LoadAudio("AKS74U_Reload.wav");
 		AudioManager::LoadAudio("AKS74U_ReloadEmpty.wav");
+		AudioManager::LoadAudio("Smith_Fire0.wav");
+		AudioManager::LoadAudio("Smith_Fire1.wav");
+		AudioManager::LoadAudio("Smith_Fire2.wav");
+		AudioManager::LoadAudio("Smith_ReloadBegin.wav");
+		AudioManager::LoadAudio("Smith_ReloadEnd.wav");
+		AudioManager::LoadAudio("Smith_ReloadLoop0.wav");
+		AudioManager::LoadAudio("Smith_ReloadLoop1.wav");
+		AudioManager::LoadAudio("Smith_ReloadLoop2.wav");
 		AudioManager::LoadAudio("NextWeapon.wav");
 		AudioManager::LoadAudio("Katana_Hit1.wav");
 		AudioManager::LoadAudio("Katana_Draw.wav");
@@ -127,6 +135,7 @@ namespace Engine {
 		AssetManager::LoadSkinnedModel("Glock", "resources/models/Glock.fbx");
 		AssetManager::LoadSkinnedModel("AKS74U", "resources/models/AKS74U_Simple.fbx");
 		AssetManager::LoadSkinnedModel("Katana", "resources/models/Katana.fbx");
+		AssetManager::LoadSkinnedModel("Smith", "resources/models/Smith.fbx");
 		AssetManager::LoadSkinnedModel("Mannequin", "resources/models/Mannequin.fbx");
 		AssetManager::LoadSkinnedModel("Barrel", "resources/models/Barrel.obj");
 		AssetManager::LoadSkinnedModel("Hanging_Light", "resources/models/Hanging_Light.obj");
@@ -153,6 +162,7 @@ namespace Engine {
 		Model* glockModel = AssetManager::GetModelByName("Glock");
 		Model* p90Model = AssetManager::GetModelByName("P90");
 		Model* aks74uModel = AssetManager::GetModelByName("AKS74U");
+		Model* smithModel = AssetManager::GetModelByName("Smith");
 		Model* katanaModel = AssetManager::GetModelByName("Katana");
 		Model* mannequinModel = AssetManager::GetModelByName("Mannequin");
 
@@ -180,6 +190,14 @@ namespace Engine {
 		AssetManager::LoadAnimation("Glock_ADS_Idle", "resources/animations/Glock_ADS_Idle.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_ADS_Walk", "resources/animations/Glock_ADS_Walk.fbx", glockModel);
 		AssetManager::LoadAnimation("Glock_Spawn", "resources/animations/Glock_Spawn.fbx", glockModel);
+
+		AssetManager::LoadAnimation("Smith_Idle", "resources/animations/Smith_Idle.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_Draw", "resources/animations/Smith_Draw.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_Fire0", "resources/animations/Smith_Fire0.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_Walk", "resources/animations/Smith_Walk.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_ReloadStart", "resources/animations/Smith_ReloadStart.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_ReloadLoop", "resources/animations/Smith_ReloadLoop.fbx", smithModel);
+		AssetManager::LoadAnimation("Smith_ReloadEnd", "resources/animations/Smith_ReloadEnd.fbx", smithModel);
 
 		AssetManager::LoadAnimation("Knife_Idle", "resources/animations/Knife_Idle.fbx", katanaModel);
 		AssetManager::LoadAnimation("Knife_Swing0", "resources/animations/Knife_Swing0.fbx", katanaModel);

@@ -5,8 +5,6 @@ namespace OpenGLRenderer {
 		Shader* shader = GetShaderByName("PickUp");
 		Camera* camera = CameraManager::GetActiveCamera();
 
-		Model* pickUpModel = AssetManager::GetModelByName("AKS74U_Pickup");
-
 		static float elapsedTime = 0.0f;
 		elapsedTime += Window::GetDeltaTime();
 		if (elapsedTime > 10000.0f) elapsedTime = 0.0f;
@@ -20,6 +18,8 @@ namespace OpenGLRenderer {
 
 		for (PickUpObject& object : Scene::GetPickUpObjects()) {
 			if (!object.IsCollected()) {
+				Model* pickUpModel = AssetManager::GetModelByName(object.GetModelName());
+
 				shader->setMat4("modelMatrix", object.GetModelMatrix());
 				shader->setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(object.GetModelMatrix()))));
 				for (Mesh& mesh : pickUpModel->m_meshes) {

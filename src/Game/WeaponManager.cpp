@@ -118,6 +118,20 @@ namespace WeaponManager {
 		aks74u.ammoInfo.caseMeshName = "sleeve";
 		aks74u.ammoInfo.caseSize = 0.07f;
 
+		WeaponInfo& smith = g_weapons.emplace_back();
+		smith.name = "Smith";
+		smith.modelName = "Smith";
+		smith.animations.idle = "Smith_Idle";
+		smith.animations.draw = "Smith_Draw";
+		smith.animations.fire.push_back("Smith_Fire0");
+		smith.animations.walk = "Smith_Walk";
+		smith.animationCancelFrames.fire = 2;
+		smith.animationCancelFrames.reload = 50;
+		smith.animationCancelFrames.ADSWalk = 7;
+		smith.audioFiles.fire.push_back("Smith_Fire0.wav");
+		smith.audioFiles.fire.push_back("Smith_Fire1.wav");
+		smith.audioFiles.fire.push_back("Smith_Fire2.wav");
+
 		WeaponInfo& p90 = g_weapons.emplace_back();
 		p90.name = "P90";
 		p90.modelName = "P90";
