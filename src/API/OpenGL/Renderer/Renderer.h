@@ -65,7 +65,7 @@ namespace OpenGLRenderer {
 
 	void LoadShaders();
 	void BeginMainPass();
-	void DrawCube(Shader& shader, glm::mat4 modelMatrix);
+
 	GLuint GetFinalBlurTexture();
 
 	Shader* GetShaderByName(const std::string& name);

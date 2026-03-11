@@ -27,7 +27,7 @@ namespace OpenGLRenderer {
 	bool g_castShadows = true;
 
 	void UpdateSSBOS();
-	void RenderEnvMap();
+	void BlitToDefaultFrameBuffer(FrameBuffer* scrFrameBuffer, const char* srcName, GLbitfield mask, GLenum filter);
 
 	void Init() {
 		LoadShaders();
@@ -120,6 +120,8 @@ namespace OpenGLRenderer {
 	}
 
 	void Render() {
+		FrameBuffer* resolvedSceneFBO = GetFrameBufferByName("FXAA");
+
 		if (Keyboard::KeyJustPressed(GLFW_KEY_2)) {
 			LoadShaders();
 		}
@@ -141,6 +143,10 @@ namespace OpenGLRenderer {
 		BillboardPass();
 		BloomPass();
 		PostProcessingPass();
+
+		// blit to swapchain
+		BlitToDefaultFrameBuffer(resolvedSceneFBO, "Color", GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
 		UIPass();
 
 		EditorPanel::Render();
@@ -205,21 +211,6 @@ namespace OpenGLRenderer {
 		glEnable(GL_STENCIL_TEST);
 		glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	void RenderEnvMap() {
-		
-	}
-
-	void DrawCube(Shader& shader, glm::mat4 modelMatrix) {
-		Model* model = AssetManager::GetModelByName("Cube");
-
-		for (Mesh& mesh : model->m_meshes) {
-			shader.setMat4("model", modelMatrix);
-			glBindVertexArray(mesh.GetVAO());
-			glDrawElements(GL_TRIANGLES, mesh.GetIndices().size(), GL_UNSIGNED_INT, 0);
-			glBindVertexArray(0);
-		}
 	}
 
 	void CubeMapPass() {
@@ -307,18 +298,15 @@ namespace OpenGLRenderer {
 		return g_viewportResolution;
 	}
 
-	//void SetRenderResolution(int x, int y) {
-	//	FrameBuffer* postProcessingFrameBuffer = GetFrameBufferByName("PostProcess");
-	//	FrameBuffer* msaaFrameBuffer = GetFrameBufferByName("MSAAPostProcess");
-
-	//	postProcessingFrameBuffer->Resize(x, y);
-	//	if (g_rendererType == RendererType::FORWARD) {
-	//		msaaFrameBuffer->ResizeMSAA(x, y);
-	//	}
-
-	//	g_viewportResolution.x = x;
-	//	g_viewportResolution.y = y;
-	//}
+	void BlitToDefaultFrameBuffer(FrameBuffer* scrFrameBuffer, const char* srcName, GLbitfield mask, GLenum filter) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, scrFrameBuffer->GetFBO());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(
+			0, 0, scrFrameBuffer->GetWidth(), scrFrameBuffer->GetHeight(),
+			0, 0, Window::m_windowWidth, Window::m_windowHeight,
+			GL_COLOR_BUFFER_BIT, GL_NEAREST
+		);
+	}
 
 	void Cleanup() {
 		for (CubeMap cubeMap : g_renderData.cubeMaps) {

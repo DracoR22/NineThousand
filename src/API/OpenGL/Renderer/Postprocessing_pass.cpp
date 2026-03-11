@@ -17,8 +17,9 @@ void OpenGLRenderer::PostProcessingPass() {
 	float gamma = GetGammaValue();
 	float exposure = GetExposure();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, compositeSceneFBO->GetFBO());
-	glViewport(0, 0, compositeSceneFBO->GetWidth(), compositeSceneFBO->GetHeight());
+	// Compose Scene
+	compositeSceneFBO->Bind();
+	compositeSceneFBO->SetViewport();
 
 	switch (currentMode) {
 	case RendererCommon::PostProcessMode::NONE:
@@ -40,7 +41,6 @@ void OpenGLRenderer::PostProcessingPass() {
 		break;
 	}
 
-	// draw quad
 	glBindVertexArray(postProcessQuad->GetVAO());
 	glDisable(GL_DEPTH_TEST);
 
@@ -67,13 +67,4 @@ void OpenGLRenderer::PostProcessingPass() {
 	glBindTexture(GL_TEXTURE_2D, compositeSceneFBO->GetColorAttachmentTextureIdByIndex(0));
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	// final pass (copy stuff from final image fbo to the main fbo)
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, FXAAFBO->GetFBO());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(
-		0, 0, FXAAFBO->GetWidth(), FXAAFBO->GetHeight(),
-		0, 0, Window::m_windowWidth, Window::m_windowHeight,
-		GL_COLOR_BUFFER_BIT, GL_NEAREST
-	);
 }
