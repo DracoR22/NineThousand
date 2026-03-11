@@ -58,7 +58,7 @@ namespace OpenGLRenderer {
 		// load 2d meshes
 		g_quadMeshes["Text"] = Mesh2D(RendererCommon::UI_VERTICES, sizeof(RendererCommon::UI_VERTICES));
 		g_quadMeshes["Texture"] = Mesh2D(RendererCommon::UI_VERTICES, sizeof(RendererCommon::UI_VERTICES));
-		g_quadMeshes["PostProcess"] = Mesh2D(RendererCommon::POSTPROCESS_QUAD_VERTICES, sizeof(RendererCommon::POSTPROCESS_QUAD_VERTICES));
+		g_quadMeshes["Quad"] = Mesh2D(RendererCommon::QUAD_VERTICES, sizeof(RendererCommon::QUAD_VERTICES));
 
 		glm::vec2 viewPortResolution = GetRenderResolution();
 
@@ -101,17 +101,11 @@ namespace OpenGLRenderer {
 		g_frameBuffers["FXAA"].DrawBuffer();
 		g_frameBuffers["FXAA"].Unbind();
 
-		g_frameBuffers["BloomPing"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["BloomPing"].Bind();
-		g_frameBuffers["BloomPing"].CreateAttachment("Color", GL_RGBA16F);
-		g_frameBuffers["BloomPing"].DrawBuffer();
-		g_frameBuffers["BloomPing"].Unbind();
-
-		g_frameBuffers["BloomPong"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
-		g_frameBuffers["BloomPong"].Bind();
-		g_frameBuffers["BloomPong"].CreateAttachment("Color", GL_RGBA16F);
-		g_frameBuffers["BloomPong"].DrawBuffer();
-		g_frameBuffers["BloomPong"].Unbind();
+		g_frameBuffers["Emissive"] = FrameBuffer(viewPortResolution.x, viewPortResolution.y);
+		g_frameBuffers["Emissive"].Bind();
+		g_frameBuffers["Emissive"].CreateAttachment("ColorA", GL_RGBA16F);
+		g_frameBuffers["Emissive"].CreateAttachment("ColorB", GL_RGBA16F);
+		g_frameBuffers["Emissive"].Unbind();
 
 		g_shadowMaps["CSM"].InitCSM(int(g_shadowCascadeLevels.size()));
 
@@ -141,7 +135,7 @@ namespace OpenGLRenderer {
 		CubeMapPass();
 		DebugPass();
 		BillboardPass();
-		BloomPass();
+		EmissivePass();
 		PostProcessingPass();
 
 		// blit to swapchain

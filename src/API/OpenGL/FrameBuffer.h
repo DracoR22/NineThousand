@@ -39,6 +39,8 @@ public:
 	void CreateDepthTextureAttachment();
 	void DrawBuffers();
 	void DrawBuffer();
+	void DrawBuffer(const char* attachmentName);
+	void DrawBuffers(std::vector<const char*> attachmentNames);
 	void Unbind();
 	void Bind();
 	void BindTextures();
@@ -52,5 +54,7 @@ public:
 	unsigned int GetFBO() const;
 	GLuint GetColorAttachmentByIndex(int index); 
 	GLuint GetColorAttachmentTextureIdByIndex(int index);
+	GLuint GetColorAttachmentTextureIdByName(const char* name) const;
 	GLuint GetDepthTextureAttachmentId();
+	GLuint GetColorAttachmentSlotByName(const char* name) const;
 };

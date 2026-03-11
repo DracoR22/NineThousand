@@ -58,7 +58,7 @@ namespace OpenGLRenderer {
 	void BloodSplatterPass();
 	void BillboardPass();
 	void UIPass();
-	void BloomPass();
+	void EmissivePass();
 	void PostProcessingPass();
 	void CubeMapPass();
 	void PickUpPass();

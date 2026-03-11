@@ -88,6 +88,23 @@ void FrameBuffer::DrawBuffer() {
    glDrawBuffer(GL_COLOR_ATTACHMENT0);
 }
 
+void FrameBuffer::DrawBuffer(const char* attachmentName) {
+	for (int i = 0; i < m_colorAttachments.size(); i++) {
+		if (strcmp(attachmentName, m_colorAttachments[i].name) == 0) {
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
+			return;
+		}
+	}
+}
+
+void FrameBuffer::DrawBuffers(std::vector<const char*> attachmentNames) {
+	std::vector<GLuint> attachments;
+	for (const char* attachmentName : attachmentNames) {
+		attachments.push_back(GetColorAttachmentSlotByName(attachmentName));
+	}
+	glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
+}
+
 void FrameBuffer::Unbind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -186,6 +203,26 @@ GLuint FrameBuffer::GetColorAttachmentTextureIdByIndex(int index) {
 	return m_colorAttachments[index].textureID;
 }
 
+GLuint FrameBuffer::GetColorAttachmentTextureIdByName(const char* name) const {
+	for (int i = 0; i < m_colorAttachments.size(); i++) {
+		if (strcmp(name, m_colorAttachments[i].name) == 0) {
+			return m_colorAttachments[i].textureID;
+		}
+	}
+	std::cerr << "GetColorAttachmentHandleByName() with name '" << name << "' failed. Name does not exist in FrameBuffer '" << "'\n";
+	return GL_NONE;
+}
+
 GLuint FrameBuffer::GetDepthTextureAttachmentId() {
 	return m_depthTextureID;
+}
+
+GLenum FrameBuffer::GetColorAttachmentSlotByName(const char* name) const {
+	for (int i = 0; i < m_colorAttachments.size(); i++) {
+		if (strcmp(name, m_colorAttachments[i].name) == 0) {
+			return GL_COLOR_ATTACHMENT0 + i;
+		}
+	}
+	std::cerr << "GetColorAttachmentSlotByName() with name '" << name << "' failed. Name does not exist in FrameBuffer '" << "'\n";
+	return GL_INVALID_VALUE;
 }

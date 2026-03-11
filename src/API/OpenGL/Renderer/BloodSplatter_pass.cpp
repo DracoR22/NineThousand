@@ -26,6 +26,8 @@ namespace OpenGLRenderer {
 		bloodSplatterShader->setMat4("projection", camera->GetProjectionMatrix());
 		bloodSplatterShader->setInt("u_PosTex", 0);
 		bloodSplatterShader->setInt("u_NormTex", 1);
+		bloodSplatterShader->setInt("numLights", Scene::GetLightObjects().size());
+		bloodSplatterShader->set3Float("camPos", camera->cameraPos);
 		for (BloodSplatterObject& bloodObject : Scene::GetBloodSplatterObjects()) {
 			bloodSplatterShader->setFloat("u_time", bloodObject.GetLifeTime());
 			bloodSplatterShader->setMat4("model", bloodObject.GetModelMatrix());

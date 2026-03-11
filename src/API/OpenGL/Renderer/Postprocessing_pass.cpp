@@ -12,7 +12,7 @@ void OpenGLRenderer::PostProcessingPass() {
 	Shader* sobelEdgesShader = GetShaderByName("SobelEdges");
 	Shader* FXAAShader = GetShaderByName("FXAA");
 
-	Mesh2D* postProcessQuad = GetQuadMeshByName("PostProcess");
+	Mesh2D* quadMesh = GetQuadMeshByName("Quad");
 
 	float gamma = GetGammaValue();
 	float exposure = GetExposure();
@@ -41,7 +41,7 @@ void OpenGLRenderer::PostProcessingPass() {
 		break;
 	}
 
-	glBindVertexArray(postProcessQuad->GetVAO());
+	glBindVertexArray(quadMesh->GetVAO());
 	glDisable(GL_DEPTH_TEST);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -60,7 +60,7 @@ void OpenGLRenderer::PostProcessingPass() {
 	FXAAShader->setInt("screenTexture", 0);
 	FXAAShader->setVec2("resolution", glm::vec2(FXAAFBO->GetWidth(), FXAAFBO->GetHeight()));
 
-	glBindVertexArray(postProcessQuad->GetVAO());
+	glBindVertexArray(quadMesh->GetVAO());
 	glDisable(GL_DEPTH_TEST);
 
 	glActiveTexture(GL_TEXTURE0);
